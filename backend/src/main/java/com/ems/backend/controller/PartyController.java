@@ -66,8 +66,8 @@ public class PartyController {
         return "redirect:/admin/parties/list";
     }
 
-    @GetMapping("/disable")
-    public String showDisablePanel(Model model) {
+    @GetMapping("/status")
+    public String showStatusPanel(Model model) {
         model.addAttribute("parties", partyService.findAll());
         return "parties/disableparty";
     }
@@ -76,13 +76,13 @@ public class PartyController {
     public String disableParty(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         partyService.disable(id);
         redirectAttributes.addFlashAttribute("successMessage", "Partido deshabilitado correctamente.");
-        return "redirect:/admin/parties/disable";
+        return "redirect:/admin/parties/status";
     }
 
     @GetMapping("/enable/{id}")
     public String enableParty(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         partyService.enable(id);
         redirectAttributes.addFlashAttribute("successMessage", "Partido habilitado correctamente.");
-        return "redirect:/admin/parties/disable";
+        return "redirect:/admin/parties/status";
     }
 }
