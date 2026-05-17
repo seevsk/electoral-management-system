@@ -12,7 +12,7 @@
         <h1 class="h3 mb-0">Partidos Politicos</h1>
         <div class="d-flex gap-2">
             <a class="btn btn-primary" th:href="@{/admin/parties/register}">Registrar Partido</a>
-            <a class="btn btn-outline-dark" th:href="@{/admin/parties/disable}">Habilitar/Deshabilitar</a>
+            <a class="btn btn-outline-dark" th:href="@{/admin/parties/status}">Habilitar/Deshabilitar</a>
         </div>
     </div>
 
@@ -20,16 +20,16 @@
 
     <div class="card shadow-sm">
         <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0">
+            <table class="table table-striped table-hover align-middle mb-0" style="table-layout: fixed;">
                 <thead>
                 <tr>
+                    <th style="width: 8rem;">Posicion Lista</th>
+                    <th style="width: 8rem;">Imagen</th>
                     <th>Nombre</th>
                     <th>Siglas</th>
                     <th>Representante</th>
-                    <th>Imagen</th>
-                    <th>Posicion Lista</th>
-                    <th>Estado</th>
-                    <th class="text-end">Acciones</th>
+                    <th style="width: 8rem;">Estado</th>
+                    <th style="width: 9rem;" class="text-center">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -37,6 +37,7 @@
                     <td colspan="7" class="text-center text-secondary">No se encontraron partidos.</td>
                 </tr>
                 <tr th:each="party : ${parties}">
+                    <td th:text="${party.listPosition}"></td>
                     <td>
                         <img th:if="${party.logoUrl != null and !#strings.isEmpty(party.logoUrl)}"
                              th:src="${party.logoUrl}"
@@ -47,14 +48,13 @@
                     <td th:text="${party.name}"></td>
                     <td th:text="${party.acronym}"></td>
                     <td th:text="${party.representative}"></td>
-                    <td th:text="${party.listPosition}"></td>
                     <td>
-                        <span class="badge" th:classappend="${party.isActive} ? ' text-bg-success' : ' text-bg-secondary'"
-                              th:text="${party.isActive} ? 'Activo' : 'Inactivo'"></span>
+                        <span class="badge text-bg-success">Activo</span>
                     </td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-warning" th:href="@{/admin/parties/update/{id}(id=${party.id})}">Actualizar</a>
-                        <a class="btn btn-sm btn-outline-danger" th:href="@{/admin/parties/disable/{id}(id=${party.id})}">Deshabilitar</a>
+                    <td class="text-center">
+                        <div class="d-grid gap-2">
+                            <a class="btn btn-sm btn-warning" th:href="@{/admin/parties/update/{id}(id=${party.id})}">Actualizar</a>
+                        </div>
                     </td>
                 </tr>
                 </tbody>

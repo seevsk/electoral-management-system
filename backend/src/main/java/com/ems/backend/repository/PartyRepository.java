@@ -8,4 +8,6 @@ import java.util.List;
 public interface PartyRepository extends JpaRepository<Party, Integer> {
 
     List<Party> findAllByOrderByListPositionAsc();
+
+    List<Party> findByIsActiveTrueOrderByListPositionAsc();
 }
