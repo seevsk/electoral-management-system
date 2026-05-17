@@ -1,0 +1,7 @@
+IF OBJECT_ID('tokens', 'U') IS NOT NULL
+BEGIN
+    DROP TABLE tokens;
+END;
+
+ALTER TABLE accounts
+ALTER COLUMN password_hash VARCHAR(120) NULL;
