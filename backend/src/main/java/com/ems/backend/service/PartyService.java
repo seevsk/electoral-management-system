@@ -8,6 +8,8 @@ public interface PartyService {
 
     List<Party> findAll();
 
+    List<Party> findAllActive();
+
     Party findById(Integer id);
 
     Party save(Party party);

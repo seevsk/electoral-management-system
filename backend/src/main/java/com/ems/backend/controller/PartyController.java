@@ -33,7 +33,7 @@ public class PartyController {
 
     @GetMapping("/list")
     public String listParties(Model model) {
-        model.addAttribute("parties", partyService.findAll());
+        model.addAttribute("parties", partyService.findAllActive());
         return "parties/listparty";
     }
 

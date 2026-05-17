@@ -23,6 +23,11 @@ public class PartyServiceImpl implements PartyService {
     }
 
     @Override
+    public List<Party> findAllActive() {
+        return partyRepository.findByIsActiveTrueOrderByListPositionAsc();
+    }
+
+    @Override
     public Party findById(Integer id) {
         return partyRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Party not found with id: " + id));
