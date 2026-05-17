@@ -1,180 +1,172 @@
-# Electoral Management System - Backend
+# Sistema de Gestion Electoral - Backend
 
-Backend API for the Electoral Management System focused on Lima Metropolitana (43 districts), designed to support voter identity validation, account activation, ballot casting, and public election reporting.
+Backend del Sistema de Gestion Electoral enfocado en Lima Metropolitana (43 distritos).
+Para PA2 se trabaja con Spring Boot MVC + Thymeleaf y flujos CRUD funcionales.
 
-## Scope
+## Alcance
 
-- This document covers only the `backend/` module.
-- Frontend is developed as a separate client application and consumes this backend through REST endpoints.
-- Current geographic scope: Lima Metropolitana (43 districts), with a scalable schema for broader national growth.
+- Este documento cubre solo el modulo `backend/`.
+- En PA2 las vistas se renderizan desde backend con Thymeleaf.
+- El alcance geografico actual es Lima Metropolitana (43 distritos), con esquema escalable.
 
-## Project Context
+## Contexto del Proyecto
 
-This system simulates a presidential election process with two authenticated actors (`admin`, `user`) and one public view (no authentication):
+Este sistema simula un proceso de eleccion presidencial con dos actores autenticados (`admin`, `user`) y una vista publica (sin autenticacion):
 
-- `admin`: configures and manages electoral entities (voters, parties, candidates, elections).
-- `user` (voter): activates account using DNI identity data, authenticates, and votes.
-- public users: can access participation and results endpoints according to election state.
+- `admin`: configura y gestiona entidades electorales (votantes, partidos, candidatos, elecciones).
+- `user` (votante): activa cuenta con datos DNI, autentica y emite voto.
+- publico: accede a informacion de participacion y resultados segun estado de la eleccion.
 
-## Backend Tech Stack
+## Stack Tecnologico Backend
 
 - Java 21
 - Spring Boot 3.5.14
 - Spring Web
 - Spring Data JPA (Hibernate)
-- Spring Security
-- JWT (`jjwt 0.11.5`)
+- Spring MVC + Thymeleaf
 - Flyway
 - SQL Server (Microsoft JDBC driver)
 - Lombok
 - Maven
 
-## Architecture
+## Arquitectura
 
-- Monorepo module: `backend/`
-- Backend style: REST API (no server-side rendering)
-- Security: stateless JWT with server-side token persistence (`tokens` table) for real logout
-- Data integrity: JPA/service validations + SQL constraints (PK, FK, UNIQUE)
+- Modulo monorepo: `backend/`
+- Estilo backend PA2: MVC con renderizado server-side (Thymeleaf)
+- Integridad de datos: validaciones en servicio/JPA + constraints SQL (PK, FK, UNIQUE)
 
-## Database Model (Core)
+## Modelo de Base de Datos (Nucleo)
 
-Main tables:
+Tablas principales:
 
-- `locations`: INEI ubigeo reference data
-- `accounts`: authentication identity (`dni`, password hash, role, active flag)
-- `voters`: electoral citizen profile linked to `accounts`
-- `tokens`: active JWT token registry for logout invalidation
+- `locations`: datos de ubigeo INEI
+- `accounts`: identidad de autenticacion (`dni`, `password_hash`, `role`, `is_active`)
+- `voters`: perfil electoral asociado a `accounts`
 - `parties`, `candidates`, `elections`, `votes`
 
-Important relationship:
+Relacion importante:
 
 - `voters.account_id -> accounts.id` (FK)
-- `accounts.dni` is unique and used as login identifier for both admin and users
+- `accounts.dni` es unico y se usa como identificador de login para admin y votantes
 
-## Business Rules (Critical)
+## Reglas de Negocio (Criticas)
 
-1. One vote per voter per election (service-level check + DB UNIQUE constraint).
-2. Election availability is controlled by `start_date` and `end_date`.
-3. Full candidate results are visible only after election closure.
-4. Account activation uses fixed DNI identity fields (`birth_date`, `dni_expiry_date`, `location_code`).
-5. Admin account exists only in `accounts` (no `voters` row), so admin cannot vote.
-6. Ballot party display order must use `parties.list_position`.
+1. Un voto por votante por eleccion (validacion de servicio + UNIQUE en BD).
+2. Disponibilidad de eleccion controlada por `start_date` y `end_date`.
+3. Resultados completos por candidato visibles al cierre de eleccion.
+4. Activacion y recuperacion validan datos de identidad DNI (`birth_date`, `dni_expiry_date`, `location_code`).
+5. Admin existe solo en `accounts` (sin fila en `voters`), por lo tanto no vota.
+6. El orden de partidos en cedula usa `parties.list_position`, nunca `id`.
 
-## Authentication and Identity Flow
+## Ajuste Temporal PA2
 
-### Preloaded Data Pattern
+Para esta entrega PA2 se definio temporalmente:
 
-- Admin account is seeded with:
-  - `role='admin'`
-  - `is_active=1`
-  - BCrypt `password_hash`
-- Voter accounts are seeded with:
-  - `role='user'`
-  - `is_active=0`
-  - `password_hash=NULL`
-- Voter profile rows are seeded in `voters` with `status='I'`.
+- No usar JWT en esta fase.
+- No usar persistencia de tokens (`tokens` table).
+- No aplicar hasheo de contrasena en esta fase.
 
-### Activation
+Estos puntos se reintroducen en una fase posterior de hardening sin perder el avance CRUD.
 
-When voter identity data matches the preloaded voter record:
+## Migraciones Flyway
 
-- `accounts.password_hash` is set (BCrypt)
-- `accounts.is_active` becomes `1`
-- `voters.status` becomes `'A'`
+Baseline actual:
 
-All updates must happen in a single transaction.
+- `V1__create_core_schema.sql` - Creacion del esquema base
+- `V2__seed_locations_lima_metropolitana.sql` - Seed de 43 distritos de Lima Metropolitana
+- `V3__seed_admin_account.sql` - Seed de cuenta admin
+- `V4__seed_initial_voter_accounts.sql` - Seed inicial de cuentas de votantes
+- `V5__seed_initial_voter_profile.sql` - Seed inicial de perfil de votantes
+- `V6__pa2_simplify_auth_schema.sql` - Elimina tabla `tokens` y ajusta `accounts.password_hash` para PA2
 
-### Recovery
+Notas:
 
-Password recovery validates DNI identity data and updates only `accounts.password_hash` (unless business rules explicitly require activation changes).
+- No usar `CREATE DATABASE`, `USE` ni `GO` dentro de migraciones Flyway.
+- La base (`EMS`) debe existir previamente; Flyway gestiona objetos y seeds.
 
-## Flyway Migrations
+## Product Backlog Priorizado (PA2)
 
-Current migration baseline:
+| ID | Funcionalidad | Prioridad | Estado PA2 |
+|---|---|---|---|
+| PB-04 | Registrar votantes en el padron (CRUD) | Must have | En progreso |
+| PB-05 | Registrar partidos politicos | Must have | En progreso |
+| PB-06 | Registrar candidatos presidenciales | Must have | En progreso |
+| PB-01 | Login del votante | Must have | Pendiente |
+| PB-02 | Activacion de cuenta del votante | Must have | Pendiente |
+| PB-03 | Login del administrador | Must have | Pendiente |
+| PB-07 | Crear eleccion con fechas | Must have | Pendiente |
+| PB-08 | Cedula de sufragio presidencial | Must have | Pendiente |
+| PB-09 | Emitir voto y confirmacion | Must have | Pendiente |
+| PB-10 | Vista de participacion y resultados publicos | Must have | Pendiente |
+| PB-11 | Restricciones del proceso | Must have | Pendiente |
+| PB-12 | Redireccion post-voto | Must have | Pendiente |
+| PB-13 | Landing publica con estado del proceso | Must have | Pendiente |
+| PB-14 | Busqueda de votante por DNI | Should have | Pendiente |
+| PB-15 | Restablecimiento de contrasena | Should have | Pendiente |
+| PB-16 | Inhabilitar candidato | Should have | Pendiente |
+| PB-17 | Editar datos de candidato | Should have | Pendiente |
+| PB-18 | Filtro de resultados por distrito | Should have | Pendiente |
+| PB-19 | Grafico porcentual de resultados | Should have | Pendiente |
+| PB-20 | API REST de resultados electorales | Should have | Pendiente |
+| PB-21 | Total de votantes habilitados por distrito | Should have | Pendiente |
+| PB-22 | Pantalla de condiciones de uso | Could have | Pendiente |
+| PB-23 | Historial de estados de la eleccion | Could have | Pendiente |
 
-- `V1__create_core_schema.sql` - Core schema creation
-- `V2__seed_locations_lima_metropolitana.sql` - 43 Lima Metropolitana districts
-- `V3__seed_admin_account.sql` - Admin account seed
-- `V4__seed_initial_voter_accounts.sql` - Initial voter account seeds
-- `V5__seed_initial_voter_profile.sql` - Initial voter profile seed
+## Configuracion Local
 
-Notes:
+### 1) Variables de Entorno
 
-- Do not use `CREATE DATABASE`, `USE`, or `GO` inside Flyway migration files.
-- Database must already exist (`EMS`), Flyway manages schema objects and seeded data.
+Crear archivo local: `backend/.env` (no versionado)
 
-## Local Configuration
-
-### 1) Environment Variables
-
-Create local file: `backend/.env` (not tracked)
-
-Example values:
+Valores de ejemplo:
 
 ```properties
 DB_URL=jdbc:sqlserver://YOUR_SERVER;databaseName=EMS;encrypt=true;trustServerCertificate=true
 DB_USER=your_sql_user
 DB_PASSWORD=your_sql_password
 
-JWT_SECRET=your_secret_key_min_256_bits
-JWT_EXPIRATION=900000
-
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Reference template (tracked): `backend/.env.example`
+Plantilla versionada: `backend/.env.example`
 
 ### 2) Application Properties
 
-`application.properties` imports `.env` using:
+`application.properties` importa `.env` con:
 
 ```properties
 spring.config.import=optional:file:.env[.properties]
 ```
 
-Server context path is currently:
+Context path actual:
 
 ```properties
 server.servlet.context-path=/api
 ```
 
-## Run the Backend
+## Ejecucion
 
-From repository root (Windows PowerShell):
+Desde la raiz del repositorio (Windows PowerShell):
 
 ```powershell
 .\backend\mvnw.cmd spring-boot:run
 ```
 
-Or from `backend/`:
+Desde `backend/`:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-## API Status
+## Flujo Git (Backend)
 
-Backend implementation is being built incrementally.
+- Usar ramas cortas desde `main`.
+- Abrir PR por cada objetivo de negocio.
+- Mantener secretos fuera de commits (`.env` debe quedar local).
 
-Current priority sequence:
-
-1. Voter activation
-2. Login (admin + voter)
-3. Logout (token invalidation)
-4. Password recovery
-
-Then admin management modules and voting/result modules.
-
-## Git Workflow (Backend)
-
-- Use short-lived feature branches from `main`.
-- Open PRs and merge in GitHub web.
-- Use standard PR merge strategy configured in the repository.
-- Keep secrets out of commits (`.env` must remain local).
-
-## Team
+## Equipo
 
 - Escriba Arango, Cristhian Luis
 - Salas Rojas, Sebastian Jose
