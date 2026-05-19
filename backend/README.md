@@ -8,6 +8,7 @@ Para PA2 se trabaja con Spring Boot MVC + Thymeleaf y flujos CRUD funcionales.
 - Este documento cubre solo el modulo `backend/`.
 - En PA2 las vistas se renderizan desde backend con Thymeleaf.
 - El alcance geografico actual es Lima Metropolitana (43 distritos), con esquema escalable.
+- Rama integradora de trabajo PA2: `developer`.
 
 ## Contexto del Proyecto
 
@@ -78,6 +79,7 @@ Baseline actual:
 - `V4__seed_initial_voter_accounts.sql` - Seed inicial de cuentas de votantes
 - `V5__seed_initial_voter_profile.sql` - Seed inicial de perfil de votantes
 - `V6__pa2_simplify_auth_schema.sql` - Elimina tabla `tokens` y ajusta `accounts.password_hash` para PA2
+- `V7__seed_parties_catalog.sql` - Seed de catalogo de partidos politicos para PA2
 
 Notas:
 
@@ -89,7 +91,7 @@ Notas:
 | ID | Funcionalidad | Prioridad | Estado PA2 |
 |---|---|---|---|
 | PB-04 | Registrar votantes en el padron (CRUD) | Must have | En progreso |
-| PB-05 | Registrar partidos politicos | Must have | En progreso |
+| PB-05 | Registrar partidos politicos | Must have | En progreso (seed + MVC base) |
 | PB-06 | Registrar candidatos presidenciales | Must have | En progreso |
 | PB-01 | Login del votante | Must have | Pendiente |
 | PB-02 | Activacion de cuenta del votante | Must have | Pendiente |
@@ -114,11 +116,7 @@ Notas:
 
 ## Configuracion Local
 
-### 1) Variables de Entorno
-
-Crear archivo local: `backend/.env` (no versionado)
-
-Valores de ejemplo:
+Crear archivo local `backend/.env` (no versionado) y usar esta plantilla minima:
 
 ```properties
 DB_URL=jdbc:sqlserver://YOUR_SERVER;databaseName=EMS;encrypt=true;trustServerCertificate=true
@@ -130,21 +128,24 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Plantilla versionada: `backend/.env.example`
-
-### 2) Application Properties
-
-`application.properties` importa `.env` con:
+En `application.properties` se importa `.env` y se resuelven variables:
 
 ```properties
 spring.config.import=optional:file:.env[.properties]
+spring.datasource.url=${DB_URL:}
+spring.datasource.username=${DB_USER:}
+spring.datasource.password=${DB_PASSWORD:}
+server.servlet.context-path=/ems
 ```
 
-Context path actual:
+Plantilla versionada recomendada: `backend/.env.example`.
 
-```properties
-server.servlet.context-path=/api
-```
+## Rutas MVC de Partidos (PA2)
+
+- Listado principal (solo activos): `/ems/admin/parties/list`
+- Registro: `/ems/admin/parties/register`
+- Actualizacion: `/ems/admin/parties/update/{id}`
+- Gestion de estado (activos e inactivos): `/ems/admin/parties/status`
 
 ## Ejecucion
 
@@ -162,7 +163,10 @@ Desde `backend/`:
 
 ## Flujo Git (Backend)
 
-- Usar ramas cortas desde `main`.
+- Durante PA2, la rama base para desarrollo es `developer`.
+- Las ramas de trabajo (feature/fix/chore/docs) deben partir desde `developer`.
+- `main` se mantiene como rama estable de referencia y recibe cambios por hitos via PR desde `developer`.
+- Se recomienda configurar `developer` como default branch del repositorio durante PA2 para clonado/onboarding.
 - Abrir PR por cada objetivo de negocio.
 - Mantener secretos fuera de commits (`.env` debe quedar local).
 
