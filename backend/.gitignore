@@ -34,6 +34,8 @@ build/
 
 # OpenCode
 .opencode/
+.agents/
+skills-lock.json
 
 # Local environment variables
 .env

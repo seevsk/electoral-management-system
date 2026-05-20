@@ -9,6 +9,7 @@
 <body class="bg-light">
 <div class="container py-4">
     <h1 class="h3 mb-3">Actualizar Partido</h1>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
     <div class="card shadow-sm">
         <div class="card-body">
             <form th:action="@{/admin/parties/update/{id}(id=${party.id})}" th:object="${party}" method="post" class="row g-3">
@@ -25,8 +26,8 @@
                     <input id="representative" type="text" class="form-control" th:field="*{representative}" required>
                 </div>
                 <div class="col-12 col-md-6">
-                    <label for="listPosition" class="form-label">Posicion Lista</label>
-                    <input id="listPosition" type="number" class="form-control" min="1" th:field="*{listPosition}" required>
+                    <label for="listPosition" class="form-label">Orden ONPE (fijo)</label>
+                    <input id="listPosition" type="number" class="form-control" th:field="*{listPosition}" readonly>
                 </div>
                 <div class="col-12 col-md-6">
                     <label for="logoUrl" class="form-label">URL del Logo</label>
