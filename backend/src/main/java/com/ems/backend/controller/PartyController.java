@@ -2,6 +2,7 @@ package com.ems.backend.controller;
 
 import com.ems.backend.entity.Party;
 import com.ems.backend.service.PartyService;
+import com.ems.backend.service.exception.BusinessRuleException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -44,9 +45,15 @@ public class PartyController {
 
     @PostMapping("/register")
     public String registerParty(@ModelAttribute Party party, RedirectAttributes redirectAttributes) {
-        partyService.save(party);
-        redirectAttributes.addFlashAttribute("successMessage", "Partido registrado correctamente.");
-        return "redirect:/admin/parties/list";
+        try {
+            partyService.save(party);
+            redirectAttributes.addFlashAttribute("successMessage", "Partido registrado correctamente.");
+            return "redirect:/admin/parties/list";
+        } catch (BusinessRuleException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("party", party);
+            return "redirect:/admin/parties/register";
+        }
     }
 
     @GetMapping("/update/{id}")
@@ -61,9 +68,14 @@ public class PartyController {
             @ModelAttribute Party party,
             RedirectAttributes redirectAttributes
     ) {
-        partyService.update(id, party);
-        redirectAttributes.addFlashAttribute("successMessage", "Partido actualizado correctamente.");
-        return "redirect:/admin/parties/list";
+        try {
+            partyService.update(id, party);
+            redirectAttributes.addFlashAttribute("successMessage", "Partido actualizado correctamente.");
+            return "redirect:/admin/parties/list";
+        } catch (BusinessRuleException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/admin/parties/update/" + id;
+        }
     }
 
     @GetMapping("/status")
