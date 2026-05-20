@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -44,9 +46,13 @@ public class PartyController {
     }
 
     @PostMapping("/register")
-    public String registerParty(@ModelAttribute Party party, RedirectAttributes redirectAttributes) {
+    public String registerParty(
+            @ModelAttribute Party party,
+            @RequestParam(value = "logoFile", required = false) MultipartFile logoFile,
+            RedirectAttributes redirectAttributes
+    ) {
         try {
-            partyService.save(party);
+            partyService.save(party, logoFile);
             redirectAttributes.addFlashAttribute("successMessage", "Partido registrado correctamente.");
             return "redirect:/admin/parties/list";
         } catch (BusinessRuleException ex) {
@@ -66,10 +72,11 @@ public class PartyController {
     public String updateParty(
             @PathVariable Integer id,
             @ModelAttribute Party party,
+            @RequestParam(value = "logoFile", required = false) MultipartFile logoFile,
             RedirectAttributes redirectAttributes
     ) {
         try {
-            partyService.update(id, party);
+            partyService.update(id, party, logoFile);
             redirectAttributes.addFlashAttribute("successMessage", "Partido actualizado correctamente.");
             return "redirect:/admin/parties/list";
         } catch (BusinessRuleException ex) {
