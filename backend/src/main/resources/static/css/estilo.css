@@ -37,3 +37,8 @@
 .map-placeholder {
     background: linear-gradient(135deg, #e8edf3 0%, #c5d1e0 100%);
 }
+
+/* Alpine.js: ocultar elementos antes de la hidratación */
+[x-cloak] {
+    display: none !important;
+}
