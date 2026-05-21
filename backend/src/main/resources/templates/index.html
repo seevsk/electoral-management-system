@@ -1,53 +1,345 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>EMS - Inicio</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Participación Ciudadana - Sistema Electoral</title>
 </head>
-<body class="bg-light">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-        <a class="navbar-brand" th:href="@{/}">EMS</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+<body class="min-h-screen bg-zinc-50">
 
-        <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/#participacion}">Participacion Ciudadana</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/#votaciones}">Votaciones Presidenciales</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Iniciar Sesion
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" th:href="@{/login/admin}">Administrador</a></li>
-                        <li><a class="dropdown-item" th:href="@{/login/votante}">Votante</a></li>
-                    </ul>
-                </li>
-            </ul>
+<div class="flex min-h-svh">
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='inicio')}"></div>
+
+    <!-- Mobile sidebar toggle -->
+    <button type="button" onclick="document.getElementById('mobile-sidebar').classList.toggle('hidden'); document.getElementById('mobile-overlay').classList.toggle('hidden')"
+            class="fixed left-3 top-3 z-50 inline-flex items-center justify-center rounded-md p-2 text-zinc-500 hover:bg-zinc-100 md:hidden">
+        <i data-lucide="menu" class="h-5 w-5"></i>
+    </button>
+
+    <!-- Mobile sidebar -->
+    <aside id="mobile-sidebar" class="fixed left-0 top-0 z-40 hidden h-svh w-60 flex-col bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 p-4 text-white md:hidden">
+        <div class="mb-8 flex items-center gap-3 px-2">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+                <i data-lucide="vote" class="h-5 w-5"></i>
+            </div>
+            <span class="text-sm font-bold">Sistema Electoral</span>
         </div>
-    </div>
-</nav>
+        <nav class="flex flex-1 flex-col gap-1">
+            <a th:href="@{/}" class="flex items-center gap-3 rounded-lg bg-white/10 px-3 py-2.5 text-sm font-medium text-white">
+                <i data-lucide="home" class="h-4 w-4"></i> Inicio
+            </a>
+            <a th:href="@{/presidencial}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="landmark" class="h-4 w-4"></i> Presidencial
+            </a>
+            <a th:href="@{/senadores}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="building-2" class="h-4 w-4"></i> Senadores
+            </a>
+            <a th:href="@{/diputados}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="book-open" class="h-4 w-4"></i> Diputados
+            </a>
+            <a th:href="@{/parlamento-andino}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="globe" class="h-4 w-4"></i> Parlamento Andino
+            </a>
+        </nav>
+        <div x-data="{ mobileLoginOpen: false }" class="border-t border-white/10 pt-4">
+            <button @click="mobileLoginOpen = !mobileLoginOpen"
+                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
+                <span class="flex-1 text-left">Iniciar Sesión</span>
+                <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
+                   :class="{ 'rotate-180': mobileLoginOpen }"></i>
+            </button>
+            <div x-show="mobileLoginOpen"
+                 class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
+                <a th:href="@{/login/admin}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+                </a>
+                <a th:href="@{/login/votante}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="user" class="h-4 w-4"></i> Votante
+                </a>
+            </div>
+        </div>
+    </aside>
 
-<main class="container py-5">
-    <section id="participacion" class="p-4 p-md-5 bg-white border rounded-3 shadow-sm mb-4">
-        <h1 class="h3 mb-3">Participacion Ciudadana</h1>
-        <p class="text-secondary mb-0">Seccion informativa para visualizacion del estado de participacion ciudadana.</p>
-    </section>
+    <!-- Mobile overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden" onclick="document.getElementById('mobile-sidebar').classList.add('hidden'); this.classList.add('hidden')"></div>
 
-    <section id="votaciones" class="p-4 p-md-5 bg-white border rounded-3 shadow-sm">
-        <h2 class="h4 mb-3">Votaciones Presidenciales</h2>
-        <p class="text-secondary mb-0">Seccion de referencia para el flujo electoral presidencial.</p>
-    </section>
-</main>
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="flex-1 pl-0 md:pl-60">
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Participación Ciudadana</h1>
+                <p class="mt-1 text-sm text-zinc-500">Resumen de la participación en las Elecciones Generales 2026</p>
+            </div>
+
+            <!-- ==================== PROGRESS BAR SECTION ==================== -->
+            <!-- STATIC: Reemplazar datos con ${actasContabilizadas}, ${totalActas}, ${actasJEE}, ${actasPendientes} cuando el backend los proporcione -->
+            <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-zinc-900">Actas contabilizadas</h2>
+                        <p class="text-3xl font-bold text-blue-600">95.232%</p>
+                    </div>
+                    <div class="text-right text-sm text-zinc-500">
+                        <p>Total de actas: <span class="font-semibold text-zinc-900">92,766</span></p>
+                        <p class="text-xs">4.768% de Actas para envío al JEE y 0% de Actas pendientes</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 h-3 w-full overflow-hidden rounded-full bg-zinc-100">
+                    <div class="h-full w-[95.232%] rounded-full bg-blue-500 animate-progress"></div>
+                </div>
+
+                <div class="mt-4 border-t border-zinc-100 pt-4">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
+                            <i data-lucide="clock" class="mr-1 inline-block h-3 w-3"></i>
+                            ACTUALIZADO AL 17/05/2026 A LAS 01:30:02 P. M.
+                        </p>
+                        <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
+                            <span class="flex items-center gap-1.5">
+                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                                Contabilizadas (88,343)
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                                Para envío al JEE (4,423)
+                            </span>
+                            <span class="flex items-center gap-1.5">
+                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
+                                Pendientes (0)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 3-COLUMN GRID ==================== -->
+            <!-- STATIC: Reemplazar 27'325,432, 20'167,745, 7'157,687 con datos del backend -->
+            <div class="mb-8 grid gap-6 lg:grid-cols-5">
+
+                <!-- LEFT COLUMN: 2 stacked cards (col-span-2) -->
+                <div class="flex flex-col gap-6 lg:col-span-2">
+
+                    <!-- Card 1: Asistencia -->
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                            <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
+                            Asistencia
+                        </h3>
+                        <p class="mb-4 text-xs text-zinc-400">Resumen de participación ciudadana</p>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/10">
+                                        <i data-lucide="check-circle" class="h-5 w-5 text-emerald-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-zinc-500">Asistentes</p>
+                                        <p class="text-xl font-bold text-emerald-600">20'167,745</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-semibold text-emerald-600">73.806%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10">
+                                        <i data-lucide="x-circle" class="h-5 w-5 text-red-500"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-zinc-500">Ausentes</p>
+                                        <p class="text-xl font-bold text-red-500">7'157,687</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-semibold text-red-500">26.194%</span>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
+                            * Esta información solo considera las actas contabilizadas.
+                        </p>
+                    </div>
+
+                    <!-- Card 2: Participación Ciudadana (Doughnut Chart) -->
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                            <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
+                            Participación Ciudadana
+                        </h3>
+                        <div class="relative mx-auto max-w-[220px]">
+                            <canvas id="participacionChart"></canvas>
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                                    Ciudadanos asistentes
+                                </span>
+                                <span class="font-semibold text-zinc-900">73.806%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-red-400"></span>
+                                    Ciudadanos ausentes
+                                </span>
+                                <span class="font-semibold text-zinc-900">26.194%</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
+                                    Ciudadanos pendientes
+                                </span>
+                                <span class="font-semibold text-zinc-900">0%</span>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-xs leading-relaxed text-zinc-400">
+                            *Ciudadanos pendientes: Porcentaje de ciudadanos aún no clasificados como asistentes o ausentes. Esta cifra se actualizará y se redistribuirá conforme avance la contabilización de las actas, hasta llegar al 100%.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- MIDDLE COLUMN: Electores Hábiles (col-span-1) -->
+                <div class="lg:col-span-1">
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <div class="flex flex-col items-start">
+                            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
+                                <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
+                            </div>
+                            <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
+                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900">27'325,432</p>
+                            <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN: Mapa (col-span-2) -->
+                <div class="lg:col-span-2">
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Lima Metropolitana
+                            </h3>
+                            <span class="text-xs text-zinc-400">* Vista referencial</span>
+                        </div>
+                        <!-- STATIC: Reemplazar con imagen real del mapa o integración con API de mapas -->
+                        <div class="map-placeholder flex aspect-[4/3] items-center justify-center rounded-lg">
+                            <div class="text-center">
+                                <i data-lucide="map-pin" class="mx-auto h-12 w-12 text-primary-300"></i>
+                                <p class="mt-2 text-sm text-primary-500">Mapa de Lima Metropolitana</p>
+                                <p class="text-xs text-primary-400">(Integrar imagen SVG o API de mapas)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ==================== LISTA DE ÁMBITOS ==================== -->
+            <!-- STATIC: Reemplazar 73.8%, 52.1%, 20'167,745, 27'325,432, etc. con datos del backend -->
+            <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                        <i data-lucide="globe" class="mr-1.5 inline-block h-4 w-4"></i>
+                        Lista de Ámbitos
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <label for="ordenar" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
+                        <select id="ordenar" name="ordenar"
+                                class="h-8 w-48 border border-transparent border-b-zinc-300 bg-transparent px-0 py-1 text-xs outline-none transition-[color,border-color] focus-visible:border-b-zinc-900">
+                            <option value="alfabetico">Alfabéticamente</option>
+                            <option value="mayor">Mayor participación</option>
+                            <option value="menor">Menor participación</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+
+                    <!-- Peru -->
+                    <div>
+                        <div class="mb-2 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">PE</span>
+                                <span class="text-sm font-medium text-zinc-900">Perú</span>
+                            </div>
+                            <span class="text-sm font-bold text-emerald-600">73.8%</span>
+                        </div>
+                        <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100">
+                            <div class="h-full w-[73.8%] rounded-full bg-emerald-500 animate-progress"></div>
+                        </div>
+                        <p class="mt-1.5 text-xs text-zinc-400">Asistieron: 20'167,745 de 27'325,432</p>
+                    </div>
+
+                    <!-- Extranjeros -->
+                    <div>
+                        <div class="mb-2 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">✈</span>
+                                <span class="text-sm font-medium text-zinc-900">Peruanos en el exterior</span>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600">52.1%</span>
+                        </div>
+                        <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100">
+                            <div class="h-full w-[52.1%] rounded-full bg-blue-500 animate-progress"></div>
+                        </div>
+                        <p class="mt-1.5 text-xs text-zinc-400">Asistieron: 630,492 de 1'210,813</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Fuente: ONPE - Datos en tiempo real. Los datos mostrados son referenciales.
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script th:src="@{/js/app.js}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('participacionChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Asistentes', 'Ausentes', 'Pendientes'],
+                    datasets: [{
+                        data: [73.806, 26.194, 0],
+                        backgroundColor: ['#10b981', '#f87171', '#d4d4d8'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+
 </body>
 </html>
