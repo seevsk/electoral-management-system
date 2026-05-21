@@ -83,7 +83,7 @@
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 class="text-lg font-semibold text-zinc-900">Actas contabilizadas</h2>
-                        <p class="text-3xl font-bold text-blue-600">95.232%</p>
+                        <p class="text-3xl font-bold text-primary-600">95.232%</p>
                     </div>
                     <div class="text-right text-sm text-zinc-500">
                         <p>Total de actas: <span class="font-semibold text-zinc-900">92,766</span></p>
@@ -91,8 +91,8 @@
                     </div>
                 </div>
 
-                <div class="mt-4 h-3 w-full overflow-hidden rounded-full bg-zinc-100">
-                    <div class="h-full w-[95.232%] rounded-full bg-blue-500 animate-progress"></div>
+                <div class="mt-4 h-5 w-full overflow-hidden rounded-full bg-zinc-100">
+                    <div class="h-full w-[95.232%] rounded-full bg-primary-600 animate-progress"></div>
                 </div>
 
                 <div class="mt-4 border-t border-zinc-100 pt-4">
@@ -121,12 +121,40 @@
 
             <!-- ==================== 3-COLUMN GRID ==================== -->
             <!-- STATIC: Reemplazar 27'325,432, 20'167,745, 7'157,687 con datos del backend -->
-            <div class="mb-8 grid gap-6 lg:grid-cols-5">
+            <div class="mb-8 grid gap-6 lg:grid-cols-3">
 
-                <!-- LEFT COLUMN: 2 stacked cards (col-span-2) -->
-                <div class="flex flex-col gap-6 lg:col-span-2">
+                <!-- COL 1: Mapa -->
+                <div class="flex flex-col gap-6">
 
-                    <!-- Card 1: Asistencia -->
+                    <!-- Mapa -->
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                            <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
+                            Lima Metropolitana
+                        </h3>
+                        <img th:src="@{/img/mapa-lima.jpg}"
+                             alt="Mapa de Lima Metropolitana"
+                             class="w-full rounded-lg object-contain shadow-sm"
+                             style="max-height: 450px; background: #f4f4f5;">
+                    </div>
+                </div>
+
+                <!-- COL 2: Electores Hábiles + Asistencia apilados -->
+                <div class="flex flex-col gap-6">
+
+                    <!-- Electores Hábiles -->
+                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
+                                <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
+                            </div>
+                            <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
+                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900">27'325,432</p>
+                            <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
+                        </div>
+                    </div>
+
+                    <!-- Card: Asistencia -->
                     <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                         <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
                             <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
@@ -136,27 +164,27 @@
                         <div class="space-y-4">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/10">
-                                        <i data-lucide="check-circle" class="h-5 w-5 text-emerald-600"></i>
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
+                                        <i data-lucide="check-circle" class="h-5 w-5 text-primary-600"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-zinc-500">Asistentes</p>
-                                        <p class="text-xl font-bold text-emerald-600">20'167,745</p>
+                                        <p class="text-xl font-bold text-primary-600">20'167,745</p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-semibold text-emerald-600">73.806%</span>
+                                <span class="text-sm font-semibold text-primary-600">73.806%</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10">
-                                        <i data-lucide="x-circle" class="h-5 w-5 text-red-500"></i>
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10">
+                                        <i data-lucide="x-circle" class="h-5 w-5 text-blue-500"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-zinc-500">Ausentes</p>
-                                        <p class="text-xl font-bold text-red-500">7'157,687</p>
+                                        <p class="text-xl font-bold text-blue-500">7'157,687</p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-semibold text-red-500">26.194%</span>
+                                <span class="text-sm font-semibold text-blue-500">26.194%</span>
                             </div>
                         </div>
                         <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
@@ -164,7 +192,12 @@
                         </p>
                     </div>
 
-                    <!-- Card 2: Participación Ciudadana (Doughnut Chart) -->
+                </div>
+
+                <!-- COL 3: Solo Participación Ciudadana -->
+                <div class="flex flex-col gap-6">
+
+                    <!-- Card: Participación Ciudadana (Doughnut Chart) -->
                     <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                         <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
                             <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
@@ -176,14 +209,14 @@
                         <div class="mt-4 space-y-2">
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
                                     Ciudadanos asistentes
                                 </span>
                                 <span class="font-semibold text-zinc-900">73.806%</span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-red-400"></span>
+                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span>
                                     Ciudadanos ausentes
                                 </span>
                                 <span class="font-semibold text-zinc-900">26.194%</span>
@@ -203,41 +236,6 @@
 
                 </div>
 
-                <!-- MIDDLE COLUMN: Electores Hábiles (col-span-1) -->
-                <div class="lg:col-span-1">
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <div class="flex flex-col items-start">
-                            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
-                                <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
-                            </div>
-                            <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
-                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900">27'325,432</p>
-                            <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RIGHT COLUMN: Mapa (col-span-2) -->
-                <div class="lg:col-span-2">
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <div class="mb-4 flex items-center justify-between">
-                            <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                                <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
-                                Lima Metropolitana
-                            </h3>
-                            <span class="text-xs text-zinc-400">* Vista referencial</span>
-                        </div>
-                        <!-- STATIC: Reemplazar con imagen real del mapa o integración con API de mapas -->
-                        <div class="map-placeholder flex aspect-[4/3] items-center justify-center rounded-lg">
-                            <div class="text-center">
-                                <i data-lucide="map-pin" class="mx-auto h-12 w-12 text-primary-300"></i>
-                                <p class="mt-2 text-sm text-primary-500">Mapa de Lima Metropolitana</p>
-                                <p class="text-xs text-primary-400">(Integrar imagen SVG o API de mapas)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             <!-- ==================== LISTA DE ÁMBITOS ==================== -->
@@ -251,7 +249,7 @@
                     <div class="flex items-center gap-2">
                         <label for="ordenar" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
                         <select id="ordenar" name="ordenar"
-                                class="h-8 w-48 border border-transparent border-b-zinc-300 bg-transparent px-0 py-1 text-xs outline-none transition-[color,border-color] focus-visible:border-b-zinc-900">
+                                class="h-10 w-48 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
                             <option value="alfabetico">Alfabéticamente</option>
                             <option value="mayor">Mayor participación</option>
                             <option value="menor">Menor participación</option>
@@ -265,13 +263,13 @@
                     <div>
                         <div class="mb-2 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">PE</span>
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">PE</span>
                                 <span class="text-sm font-medium text-zinc-900">Perú</span>
                             </div>
-                            <span class="text-sm font-bold text-emerald-600">73.8%</span>
+                            <span class="text-sm font-bold text-primary-600">73.8%</span>
                         </div>
-                        <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100">
-                            <div class="h-full w-[73.8%] rounded-full bg-emerald-500 animate-progress"></div>
+                        <div class="h-5 w-full overflow-hidden rounded-full bg-zinc-100">
+                            <div class="h-full w-[73.8%] rounded-full bg-primary-600 animate-progress"></div>
                         </div>
                         <p class="mt-1.5 text-xs text-zinc-400">Asistieron: 20'167,745 de 27'325,432</p>
                     </div>
@@ -280,13 +278,13 @@
                     <div>
                         <div class="mb-2 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">✈</span>
+                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">✈</span>
                                 <span class="text-sm font-medium text-zinc-900">Peruanos en el exterior</span>
                             </div>
-                            <span class="text-sm font-bold text-blue-600">52.1%</span>
+                            <span class="text-sm font-bold text-primary-600">52.1%</span>
                         </div>
-                        <div class="h-3 w-full overflow-hidden rounded-full bg-zinc-100">
-                            <div class="h-full w-[52.1%] rounded-full bg-blue-500 animate-progress"></div>
+                        <div class="h-5 w-full overflow-hidden rounded-full bg-zinc-100">
+                            <div class="h-full w-[52.1%] rounded-full bg-primary-600 animate-progress"></div>
                         </div>
                         <p class="mt-1.5 text-xs text-zinc-400">Asistieron: 630,492 de 1'210,813</p>
                     </div>
@@ -316,7 +314,7 @@
                     labels: ['Asistentes', 'Ausentes', 'Pendientes'],
                     datasets: [{
                         data: [73.806, 26.194, 0],
-                        backgroundColor: ['#10b981', '#f87171', '#d4d4d8'],
+                        backgroundColor: ['#1e3a5f', '#94a3b8', '#e4e4e7'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                     }]
