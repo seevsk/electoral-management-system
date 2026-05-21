@@ -7,67 +7,11 @@
 
 <div class="flex min-h-svh">
 
-    <!-- ==================== SIDEBAR ==================== -->
-    <div th:replace="~{fragments/sidebar :: sidebar(activePage='inicio')}"></div>
-
-    <!-- Mobile sidebar toggle -->
-    <button type="button" onclick="document.getElementById('mobile-sidebar').classList.toggle('hidden'); document.getElementById('mobile-overlay').classList.toggle('hidden')"
-            class="fixed left-3 top-3 z-50 inline-flex items-center justify-center rounded-md p-2 text-zinc-500 hover:bg-zinc-100 md:hidden">
-        <i data-lucide="menu" class="h-5 w-5"></i>
-    </button>
-
-    <!-- Mobile sidebar -->
-    <aside id="mobile-sidebar" class="fixed left-0 top-0 z-40 hidden h-svh w-60 flex-col bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 p-4 text-white md:hidden">
-        <div class="mb-8 flex items-center gap-3 px-2">
-            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-                <i data-lucide="vote" class="h-5 w-5"></i>
-            </div>
-            <span class="text-sm font-bold">Sistema Electoral</span>
-        </div>
-        <nav class="flex flex-1 flex-col gap-1">
-            <a th:href="@{/}" class="flex items-center gap-3 rounded-lg bg-white/10 px-3 py-2.5 text-sm font-medium text-white">
-                <i data-lucide="home" class="h-4 w-4"></i> Inicio
-            </a>
-            <a th:href="@{/presidencial}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                <i data-lucide="landmark" class="h-4 w-4"></i> Presidencial
-            </a>
-            <a th:href="@{/senadores}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                <i data-lucide="building-2" class="h-4 w-4"></i> Senadores
-            </a>
-            <a th:href="@{/diputados}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                <i data-lucide="book-open" class="h-4 w-4"></i> Diputados
-            </a>
-            <a th:href="@{/parlamento-andino}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                <i data-lucide="globe" class="h-4 w-4"></i> Parlamento Andino
-            </a>
-        </nav>
-        <div x-data="{ mobileLoginOpen: false }" class="border-t border-white/10 pt-4">
-            <button @click="mobileLoginOpen = !mobileLoginOpen"
-                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
-                <span class="flex-1 text-left">Iniciar Sesión</span>
-                <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
-                   :class="{ 'rotate-180': mobileLoginOpen }"></i>
-            </button>
-            <div x-show="mobileLoginOpen"
-                 class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
-                <a th:href="@{/login/admin}"
-                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                    <i data-lucide="shield" class="h-4 w-4"></i> Administrador
-                </a>
-                <a th:href="@{/login/votante}"
-                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                    <i data-lucide="user" class="h-4 w-4"></i> Votante
-                </a>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Mobile overlay -->
-    <div id="mobile-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden" onclick="document.getElementById('mobile-sidebar').classList.add('hidden'); this.classList.add('hidden')"></div>
+    <!-- ==================== NAVBAR ==================== -->
+    <div th:replace="~{fragments/navbar :: navbar(activePage='inicio')}"></div>
 
     <!-- ==================== MAIN CONTENT ==================== -->
-    <main class="flex-1 pl-0 md:pl-60">
+    <main class="flex-1 pt-16 md:pt-16">
 
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
@@ -239,8 +183,23 @@
             </div>
 
             <!-- ==================== LISTA DE ÁMBITOS ==================== -->
-            <!-- STATIC: Reemplazar 73.8%, 52.1%, 20'167,745, 27'325,432, etc. con datos del backend -->
-            <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <!-- STATIC: Reemplazar datos con backend cuando esté disponible -->
+            <div x-data="{
+                    sortBy: 'alfabetico',
+                    items: [
+                        { name: 'PERÚ', pct: 75.654, attended: 20167745, total: 27325432 },
+                        { name: 'EXTRANJERO', pct: 33.950, attended: 630492, total: 1210813 },
+                    ],
+                    format(n) { return n.toLocaleString('es-PE') },
+                    get sortedItems() {
+                        const sorted = [...this.items]
+                        if (this.sortBy === 'alfabetico') sorted.sort((a,b) => a.name.localeCompare(b.name))
+                        if (this.sortBy === 'mayor')    sorted.sort((a,b) => b.pct - a.pct)
+                        if (this.sortBy === 'menor')    sorted.sort((a,b) => a.pct - b.pct)
+                        return sorted
+                    }
+                 }" class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+
                 <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
                         <i data-lucide="globe" class="mr-1.5 inline-block h-4 w-4"></i>
@@ -248,7 +207,7 @@
                     </h3>
                     <div class="flex items-center gap-2">
                         <label for="ordenar" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
-                        <select id="ordenar" name="ordenar"
+                        <select id="ordenar" x-model="sortBy"
                                 class="h-10 w-48 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
                             <option value="alfabetico">Alfabéticamente</option>
                             <option value="mayor">Mayor participación</option>
@@ -258,37 +217,21 @@
                 </div>
 
                 <div class="space-y-6">
-
-                    <!-- Peru -->
-                    <div>
-                        <div class="mb-2 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">PE</span>
-                                <span class="text-sm font-medium text-zinc-900">Perú</span>
+                    <template x-for="(item, index) in sortedItems" :key="item.name">
+                        <div>
+                            <div class="mb-2 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-medium text-zinc-900" x-text="item.name"></span>
+                                </div>
+                                <span class="text-sm font-bold text-primary-600" x-text="item.pct.toFixed(3) + '%'"></span>
                             </div>
-                            <span class="text-sm font-bold text-primary-600">73.8%</span>
-                        </div>
-                        <div class="h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                            <div class="h-full w-[73.8%] rounded-full bg-primary-600 animate-progress"></div>
-                        </div>
-                        <p class="mt-1.5 text-xs text-zinc-400">Asistieron: 20'167,745 de 27'325,432</p>
-                    </div>
-
-                    <!-- Extranjeros -->
-                    <div>
-                        <div class="mb-2 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700">✈</span>
-                                <span class="text-sm font-medium text-zinc-900">Peruanos en el exterior</span>
+                            <div class="h-5 w-full overflow-hidden rounded-full bg-zinc-100">
+                                <div class="h-full rounded-full bg-primary-600 animate-progress"
+                                     :style="'width: ' + item.pct + '%'"></div>
                             </div>
-                            <span class="text-sm font-bold text-primary-600">52.1%</span>
+                            <p class="mt-1.5 text-xs text-zinc-400" x-text="'Asistieron: ' + format(item.attended) + ' de ' + format(item.total)"></p>
                         </div>
-                        <div class="h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                            <div class="h-full w-[52.1%] rounded-full bg-primary-600 animate-progress"></div>
-                        </div>
-                        <p class="mt-1.5 text-xs text-zinc-400">Asistieron: 630,492 de 1'210,813</p>
-                    </div>
-
+                    </template>
                 </div>
             </div>
 
