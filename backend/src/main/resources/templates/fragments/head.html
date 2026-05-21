@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Votación</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    <link th:href="@{/css/estilo.css}" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['"Playfair Display"', 'serif'],
+                        sans: ['"Noto Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#e8edf3',
+                            100: '#c5d1e0',
+                            200: '#9eb3cc',
+                            300: '#7795b8',
+                            400: '#5a7ea8',
+                            500: '#3d6799',
+                            600: '#2d5280',
+                            700: '#1e3a5f',
+                            800: '#152d4a',
+                            900: '#0d1f33',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+</html>

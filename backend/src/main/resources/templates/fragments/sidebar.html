@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:x-transition="http://www.w3.org/1999/xhtml">
+
+<aside th:fragment="sidebar(activePage)" class="fixed left-0 top-0 z-40 hidden h-svh w-60 flex-col bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 p-4 text-white md:flex">
+
+    <!-- Logo -->
+    <div class="mb-8 flex items-center gap-3 px-2">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+            <i data-lucide="vote" class="h-5 w-5"></i>
+        </div>
+        <span class="text-sm font-bold">Sistema Electoral</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex flex-1 flex-col gap-1">
+        <a th:href="@{/}"
+           th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'inicio' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+            <i data-lucide="home" class="h-4 w-4"></i>
+            Inicio
+        </a>
+        <a th:href="@{/presidencial}"
+           th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'presidencial' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+            <i data-lucide="landmark" class="h-4 w-4"></i>
+            Presidencial
+        </a>
+        <a th:href="@{/senadores}"
+           th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'senadores' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+            <i data-lucide="building-2" class="h-4 w-4"></i>
+            Senadores
+        </a>
+        <a th:href="@{/diputados}"
+           th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'diputados' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+            <i data-lucide="book-open" class="h-4 w-4"></i>
+            Diputados
+        </a>
+        <a th:href="@{/parlamento-andino}"
+           th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'parlamento' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+            <i data-lucide="globe" class="h-4 w-4"></i>
+            Parlamento Andino
+        </a>
+    </nav>
+
+    <!-- Login dropdown -->
+    <div class="border-t border-white/10 pt-4">
+        <div x-data="{ loginOpen: false }" class="relative">
+            <button @click="loginOpen = !loginOpen"
+                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
+                <span class="flex-1 text-left">Iniciar Sesión</span>
+                <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
+                   :class="{ 'rotate-180': loginOpen }"></i>
+            </button>
+            <div x-show="loginOpen"
+                 @click.outside="loginOpen = false"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 translate-y-1"
+                 class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5 shadow-xl">
+                <a th:href="@{/login/admin}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="shield" class="h-4 w-4"></i>
+                    Administrador
+                </a>
+                <a th:href="@{/login/votante}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="user" class="h-4 w-4"></i>
+                    Votante
+                </a>
+            </div>
+        </div>
+    </div>
+
+</aside>
+
+</html>
