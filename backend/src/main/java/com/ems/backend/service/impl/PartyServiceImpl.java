@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class PartyServiceImpl implements PartyService {
@@ -97,12 +98,14 @@ public class PartyServiceImpl implements PartyService {
 
     private void normalizePartyFields(Party party) {
         party.setName(normalizeText(party.getName()));
-        party.setAcronym(normalizeText(party.getAcronym()));
+        party.setAcronym(normalizeAcronym(party.getAcronym()));
         party.setRepresentative(normalizeText(party.getRepresentative()));
 
         if (party.getName() == null || party.getAcronym() == null || party.getRepresentative() == null) {
             throw new BusinessRuleException("Nombre, siglas y representante son obligatorios.");
         }
+
+        validateAcronym(party.getAcronym());
     }
 
     private String normalizeText(String value) {
@@ -111,6 +114,20 @@ public class PartyServiceImpl implements PartyService {
         }
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private String normalizeAcronym(String value) {
+        String normalized = normalizeText(value);
+        if (normalized == null) {
+            return null;
+        }
+        return normalized.toUpperCase(Locale.ROOT);
+    }
+
+    private void validateAcronym(String acronym) {
+        if (acronym.length() != 3 || !acronym.matches("^[A-Z]{3}$")) {
+            throw new BusinessRuleException("Las siglas deben tener exactamente 3 letras.");
+        }
     }
 
     private void validateUniquenessForCreate(Party party) {

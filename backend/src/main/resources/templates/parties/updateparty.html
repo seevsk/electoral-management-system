@@ -51,7 +51,10 @@
                                 Siglas
                             </label>
                             <input id="acronym" type="text" th:field="*{acronym}" required
+                                   minlength="3" maxlength="3" pattern="[A-Za-z]{3}" title="Ingrese exactamente 3 letras"
+                                   oninput="this.value = this.value.toUpperCase()"
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                            <p class="text-xs text-zinc-400">Debe tener exactamente 3 letras.</p>
                         </div>
                         <div role="group" class="flex w-full flex-col gap-2 sm:col-span-2">
                             <label for="representative" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
