@@ -18,9 +18,9 @@ document.addEventListener('alpine:init', () => {
             this.user = user
             const base = typeof CTX !== 'undefined' ? CTX : '/'
             if (role === 'admin') {
-                window.location.href = base + 'menuprincipal'
+                window.location.href = base + 'admin/main'
             } else {
-                window.location.href = base
+                window.location.href = base + 'participation'
             }
         },
 
@@ -29,7 +29,7 @@ document.addEventListener('alpine:init', () => {
             this.authenticated = false
             this.user = null
             const base = typeof CTX !== 'undefined' ? CTX : '/'
-            window.location.href = base
+            window.location.href = base + 'participation'
         }
     })
 })

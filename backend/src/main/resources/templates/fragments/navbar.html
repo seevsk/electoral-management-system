@@ -19,7 +19,7 @@
 
         <!-- Nav links -->
         <div class="flex items-center gap-1">
-            <a th:href="@{/}"
+            <a th:href="@{/participation}"
                th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'inicio' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
                 <i data-lucide="home" class="h-4 w-4"></i>
                 Inicio
@@ -60,12 +60,12 @@
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 translate-y-1"
              class="absolute right-0 top-full mt-1 w-48 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5 shadow-xl">
-             <a th:href="@{/login-admin.html}"
+             <a th:href="@{/login/admin}"
                 class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
                  <i data-lucide="shield" class="h-4 w-4"></i>
                  Administrador
              </a>
-             <a th:href="@{/login-votante.html}"
+             <a th:href="@{/login/voter}"
                 class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
                  <i data-lucide="user" class="h-4 w-4"></i>
                  Votante
@@ -96,7 +96,7 @@
         <span class="text-sm font-bold">Sistema Electoral</span>
     </div>
     <nav class="flex flex-1 flex-col gap-1">
-        <a th:href="@{/}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
+        <a th:href="@{/participation}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
             <i data-lucide="home" class="h-4 w-4"></i> Inicio
         </a>
         <span class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
@@ -122,11 +122,11 @@
         </button>
         <div x-show="mobileNavLoginOpen"
              class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
-             <a th:href="@{/login-admin.html}"
+             <a th:href="@{/login/admin}"
                 class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                  <i data-lucide="shield" class="h-4 w-4"></i> Administrador
              </a>
-             <a th:href="@{/login-votante.html}"
+             <a th:href="@{/login/voter}"
                 class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                  <i data-lucide="user" class="h-4 w-4"></i> Votante
              </a>
