@@ -1,50 +1,135 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head th:replace="~{fragments/head :: head}">
     <title>Partidos - Actualizar</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
-<div class="container py-4">
-    <h1 class="h3 mb-3">Actualizar Partido</h1>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <form th:action="@{/admin/parties/update/{id}(id=${party.id})}" th:object="${party}" method="post" enctype="multipart/form-data" class="row g-3">
-                <div class="col-12">
-                    <label for="name" class="form-label">Nombre</label>
-                    <input id="name" type="text" class="form-control" th:field="*{name}" required>
-                </div>
-                <div class="col-12 col-md-4">
-                    <label for="acronym" class="form-label">Siglas</label>
-                    <input id="acronym" type="text" class="form-control" th:field="*{acronym}" required>
-                </div>
-                <div class="col-12 col-md-8">
-                    <label for="representative" class="form-label">Representante</label>
-                    <input id="representative" type="text" class="form-control" th:field="*{representative}" required>
-                </div>
-                <div class="col-12 col-md-6">
-                    <label for="listPosition" class="form-label">Orden ONPE (fijo)</label>
-                    <input id="listPosition" type="number" class="form-control" th:field="*{listPosition}" readonly>
-                </div>
-                <div class="col-12 col-md-6">
-                    <label for="logoFile" class="form-label">Nuevo Logo del Partido</label>
-                    <input id="logoFile" name="logoFile" type="file" class="form-control" accept="image/*">
-                    <small class="text-secondary">Si no subes una imagen, se conserva el logo actual.</small>
-                </div>
-                <div class="col-12" th:if="${party.logoUrl != null and !#strings.isEmpty(party.logoUrl)}">
-                    <small class="d-block text-secondary mb-2">Logo actual:</small>
-                    <img th:src="${party.logoUrl}" alt="Logo actual" style="width: 64px; height: 64px; object-fit: cover; border-radius: 50%;">
-                </div>
-                <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Actualizar</button>
-                    <a th:href="@{/admin/parties/list}" class="btn btn-outline-secondary">Regresar</a>
-                </div>
-            </form>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='parties')}"></div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="flex-1 pl-0 md:pl-60">
+
+        <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Actualizar Partido</h1>
+                <p class="mt-1 text-sm text-zinc-500">Modifique los datos del partido seleccionado</p>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${errorMessage}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-red-600/20 bg-red-500/5 p-4 text-sm text-red-600">
+                <i data-lucide="alert-circle" class="h-5 w-5 shrink-0 text-red-600"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Form Card -->
+            <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+
+                <form th:action="@{/admin/parties/update/{id}(id=${party.id})}" th:object="${party}" method="post" enctype="multipart/form-data" class="flex flex-col gap-6">
+
+                    <!-- Nombre -->
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label for="name" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="building-2" class="h-3.5 w-3.5"></i>
+                            Nombre del Partido
+                        </label>
+                        <input id="name" type="text" th:field="*{name}" required
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                    </div>
+
+                    <!-- Siglas + Representante (2 columnas) -->
+                    <div class="grid gap-6 sm:grid-cols-3">
+                        <div role="group" class="flex w-full flex-col gap-2 sm:col-span-1">
+                            <label for="acronym" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="text-cursor-input" class="h-3.5 w-3.5"></i>
+                                Siglas
+                            </label>
+                            <input id="acronym" type="text" th:field="*{acronym}" required
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                        </div>
+                        <div role="group" class="flex w-full flex-col gap-2 sm:col-span-2">
+                            <label for="representative" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                                Representante
+                            </label>
+                            <input id="representative" type="text" th:field="*{representative}" required
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                        </div>
+                    </div>
+
+                    <!-- Orden ONPE + Logo (2 columnas) -->
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="listPosition" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="list" class="h-3.5 w-3.5"></i>
+                                Orden ONPE
+                            </label>
+                            <input id="listPosition" type="number" th:field="*{listPosition}" readonly
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-zinc-50/50 px-0 text-sm text-zinc-500 outline-none">
+                            <p class="text-xs text-zinc-400">Valor fijo asignado al registro</p>
+                        </div>
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="logoFile" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="image" class="h-3.5 w-3.5"></i>
+                                Nuevo Logo
+                            </label>
+                            <div class="flex items-center gap-3">
+                                <label class="cursor-pointer rounded-lg border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
+                                    <span>Seleccionar archivo</span>
+                                    <input id="logoFile" name="logoFile" type="file" accept="image/*"
+                                           class="hidden"
+                                           onchange="document.getElementById('update-logo-file-name').textContent = this.files[0]?.name || 'Ningún archivo seleccionado'">
+                                </label>
+                                <span id="update-logo-file-name" class="text-xs text-zinc-400">Ningún archivo seleccionado</span>
+                            </div>
+                            <p class="text-xs text-zinc-400">Si no subes una imagen, se conserva el logo actual.</p>
+                        </div>
+                    </div>
+
+                    <!-- Current logo preview -->
+                    <div th:if="${party.logoUrl != null and !#strings.isEmpty(party.logoUrl)}"
+                         class="flex items-center gap-4 rounded-lg border border-zinc-100 bg-zinc-50/50 p-4">
+                        <div class="shrink-0">
+                            <p class="mb-2 text-xs font-medium text-zinc-500">Logo actual:</p>
+                            <img th:src="${party.logoUrl}" alt="Logo actual"
+                                 class="h-16 w-16 rounded-full border border-zinc-200 object-cover shadow-sm">
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-lg bg-primary-700 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            <i data-lucide="save" class="h-4 w-4"></i>
+                            Actualizar
+                        </button>
+                        <a th:href="@{/admin/parties/list}"
+                           class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                            <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                            Regresar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
         </div>
-    </div>
+    </main>
+
 </div>
+
+<script th:src="@{/js/app.js}"></script>
+
 </body>
 </html>
