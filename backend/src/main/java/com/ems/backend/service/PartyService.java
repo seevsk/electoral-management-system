@@ -3,6 +3,7 @@ package com.ems.backend.service;
 import com.ems.backend.entity.Party;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.List;
 
 public interface PartyService {
@@ -10,6 +11,8 @@ public interface PartyService {
     List<Party> findAll();
 
     List<Party> findAllActive();
+
+    Map<Integer, String> findRepresentativesForDisplayElection(List<Party> parties);
 
     Party findById(Integer id);
 
