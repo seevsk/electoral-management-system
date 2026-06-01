@@ -36,7 +36,7 @@ build/
 .opencode/
 .agents/
 skills-lock.json
-scripts/upload_parties_logos.ps1
+scripts/
 
 # Local environment variables
 .env
