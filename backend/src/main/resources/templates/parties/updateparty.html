@@ -43,7 +43,7 @@
                                class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                     </div>
 
-                    <!-- Siglas + Representante (2 columnas) -->
+                    <!-- Siglas -->
                     <div class="grid gap-6 sm:grid-cols-3">
                         <div role="group" class="flex w-full flex-col gap-2 sm:col-span-1">
                             <label for="acronym" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
@@ -56,14 +56,22 @@
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                             <p class="text-xs text-zinc-400">Debe tener exactamente 3 letras.</p>
                         </div>
-                        <div role="group" class="flex w-full flex-col gap-2 sm:col-span-2">
-                            <label for="representative" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
-                                <i data-lucide="user" class="h-3.5 w-3.5"></i>
-                                Representante
-                            </label>
-                            <input id="representative" type="text" th:field="*{representative}" required
-                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                    </div>
+
+                    <div class="rounded-lg border border-blue-600/20 bg-blue-500/5 p-3">
+                        <div class="flex items-start gap-2 text-xs text-blue-700">
+                            <i data-lucide="info" class="mt-0.5 h-4 w-4 shrink-0"></i>
+                            <span>El representante se asigna y modifica desde el modulo de candidatos.</span>
                         </div>
+                    </div>
+
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label for="representativeName" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                            Representante (solo lectura)
+                        </label>
+                        <input id="representativeName" type="text" th:value="${representativeName}" disabled
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-zinc-50/50 px-0 text-sm text-zinc-600 outline-none">
                     </div>
 
                     <!-- Orden ONPE + Logo (2 columnas) -->

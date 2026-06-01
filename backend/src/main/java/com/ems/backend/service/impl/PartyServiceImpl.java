@@ -9,8 +9,13 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class PartyServiceImpl implements PartyService {
@@ -31,6 +36,31 @@ public class PartyServiceImpl implements PartyService {
     @Override
     public List<Party> findAllActive() {
         return partyRepository.findByIsActiveTrueOrderByListPositionAsc();
+    }
+
+    @Override
+    public Map<Integer, String> findRepresentativesForDisplayElection(List<Party> parties) {
+        if (parties == null || parties.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Integer> partyIds = parties.stream()
+                .map(Party::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (partyIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Object[]> rows = partyRepository.findRepresentativeNamesByPartyIdsForPriorityElection(partyIds);
+        Map<Integer, String> representativesByPartyId = new HashMap<>();
+        for (Object[] row : rows) {
+            Integer partyId = (Integer) row[0];
+            String representativeName = (String) row[1];
+            representativesByPartyId.put(partyId, representativeName);
+        }
+        return representativesByPartyId;
     }
 
     @Override
@@ -72,7 +102,6 @@ public class PartyServiceImpl implements PartyService {
 
         existing.setName(party.getName());
         existing.setAcronym(party.getAcronym());
-        existing.setRepresentative(party.getRepresentative());
 
         String uploadedLogoUrl = cloudinaryStorageService.uploadPartyLogo(logoFile, existing.getId());
         if (uploadedLogoUrl != null) {
@@ -99,10 +128,13 @@ public class PartyServiceImpl implements PartyService {
     private void normalizePartyFields(Party party) {
         party.setName(normalizeText(party.getName()));
         party.setAcronym(normalizeAcronym(party.getAcronym()));
-        party.setRepresentative(normalizeText(party.getRepresentative()));
 
-        if (party.getName() == null || party.getAcronym() == null || party.getRepresentative() == null) {
-            throw new BusinessRuleException("Nombre, siglas y representante son obligatorios.");
+        if (party.getRepresentative() == null || party.getRepresentative().trim().isEmpty()) {
+            party.setRepresentative("SIN REPRESENTANTE");
+        }
+
+        if (party.getName() == null || party.getAcronym() == null) {
+            throw new BusinessRuleException("Nombre y siglas son obligatorios.");
         }
 
         validateAcronym(party.getAcronym());

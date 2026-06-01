@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
+
 @Controller
 @RequestMapping("/admin/parties")
 public class PartyController {
@@ -36,7 +38,9 @@ public class PartyController {
 
     @GetMapping("/list")
     public String listParties(Model model) {
-        model.addAttribute("parties", partyService.findAllActive());
+        var parties = partyService.findAllActive();
+        model.addAttribute("parties", parties);
+        model.addAttribute("representativesByPartyId", partyService.findRepresentativesForDisplayElection(parties));
         return "parties/listparty";
     }
 
@@ -64,7 +68,13 @@ public class PartyController {
 
     @GetMapping("/update/{id}")
     public String showUpdateForm(@PathVariable Integer id, Model model) {
-        model.addAttribute("party", partyService.findById(id));
+        Party party = partyService.findById(id);
+        model.addAttribute("party", party);
+
+        String representativeName = partyService.findRepresentativesForDisplayElection(Collections.singletonList(party))
+                .getOrDefault(id, "SIN REPRESENTANTE");
+        model.addAttribute("representativeName", representativeName);
+
         return "parties/updateparty";
     }
 
