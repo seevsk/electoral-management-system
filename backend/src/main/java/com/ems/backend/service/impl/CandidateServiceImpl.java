@@ -102,9 +102,6 @@ public class CandidateServiceImpl implements CandidateService {
         normalizeCandidate(candidate);
         validateUpdate(id, candidate);
 
-        Integer previousPartyId = existing.getPartyId();
-        Integer previousElectionId = existing.getElectionId();
-
         existing.setVoter(resolveVoter(candidate.getVoterId()));
         existing.setParty(resolveParty(candidate.getPartyId()));
         existing.setElection(resolveElection(candidate.getElectionId()));
@@ -119,7 +116,7 @@ public class CandidateServiceImpl implements CandidateService {
         }
 
         Candidate savedCandidate = candidateRepository.save(existing);
-        syncPartyElectionRepresentativeForUpdate(savedCandidate, previousPartyId, previousElectionId);
+        syncPartyElectionRepresentativeForUpdate(savedCandidate);
         return savedCandidate;
     }
 
@@ -158,7 +155,7 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     public List<Election> findAvailableElections() {
-        return electionRepository.findAvailableElectionsForCandidates();
+        return electionRepository.findAvailablePresidentialElectionsForCandidates();
     }
 
     private void validateCreate(Candidate candidate) {
@@ -177,6 +174,8 @@ public class CandidateServiceImpl implements CandidateService {
         if (candidateRepository.existsByListNumberAndPartyIdAndElectionId(candidate.getListNumber(), candidate.getPartyId(), candidate.getElectionId())) {
             throw new BusinessRuleException("Ya existe un candidato con ese número de lista para ese partido y elección.");
         }
+
+        ensurePartyElectionRepresentativeIsAvailable(candidate.getPartyId(), candidate.getElectionId());
     }
 
     private void validateUpdate(Integer id, Candidate candidate) {
@@ -195,6 +194,8 @@ public class CandidateServiceImpl implements CandidateService {
         if (candidateRepository.existsByListNumberAndPartyIdAndElectionIdAndIdNot(candidate.getListNumber(), candidate.getPartyId(), candidate.getElectionId(), id)) {
             throw new BusinessRuleException("Ya existe un candidato con ese número de lista para ese partido y elección.");
         }
+
+        ensurePartyElectionRepresentativeIsAvailableForUpdate(candidate.getPartyId(), candidate.getElectionId(), id);
     }
 
     private void normalizeCandidate(Candidate candidate) {
@@ -242,14 +243,20 @@ public class CandidateServiceImpl implements CandidateService {
     }
 
     private Election resolveElection(Integer electionId) {
-        return electionRepository.findById(electionId)
+        Election election = electionRepository.findById(electionId)
                 .orElseThrow(() -> new BusinessRuleException("No existe la elección seleccionada."));
+
+        if (!PRESIDENTIAL.equalsIgnoreCase(election.getElectionType())) {
+            throw new BusinessRuleException("La elección seleccionada debe ser presidencial.");
+        }
+        if (!"A".equalsIgnoreCase(election.getStatus()) && !"P".equalsIgnoreCase(election.getStatus())) {
+            throw new BusinessRuleException("La elección seleccionada no está disponible para candidatos.");
+        }
+        return election;
     }
 
     private void syncPartyElectionRepresentativeForCreate(Candidate candidate) {
-        PartyElectionRepresentative representative = partyElectionRepresentativeRepository
-                .findByPartyIdAndElectionId(candidate.getPartyId(), candidate.getElectionId())
-                .orElseGet(PartyElectionRepresentative::new);
+        PartyElectionRepresentative representative = new PartyElectionRepresentative();
 
         representative.setCandidate(candidate);
         representative.setCandidateId(candidate.getId());
@@ -261,21 +268,11 @@ public class CandidateServiceImpl implements CandidateService {
         partyElectionRepresentativeRepository.save(representative);
     }
 
-    private void syncPartyElectionRepresentativeForUpdate(Candidate candidate, Integer previousPartyId, Integer previousElectionId) {
+    private void syncPartyElectionRepresentativeForUpdate(Candidate candidate) {
         PartyElectionRepresentative representative = partyElectionRepresentativeRepository
                 .findByCandidateId(candidate.getId())
                 .orElseGet(PartyElectionRepresentative::new);
 
-        PartyElectionRepresentative targetRepresentative = partyElectionRepresentativeRepository
-                .findByPartyIdAndElectionId(candidate.getPartyId(), candidate.getElectionId())
-                .orElse(null);
-
-        if (targetRepresentative != null
-                && !candidate.getId().equals(targetRepresentative.getCandidateId())
-                && (previousPartyId == null || previousElectionId == null || !previousPartyId.equals(candidate.getPartyId()) || !previousElectionId.equals(candidate.getElectionId()))) {
-            throw new BusinessRuleException("Ya existe un representante para ese partido y esa elección.");
-        }
-
         representative.setCandidate(candidate);
         representative.setCandidateId(candidate.getId());
         representative.setParty(candidate.getParty());
@@ -284,6 +281,20 @@ public class CandidateServiceImpl implements CandidateService {
         representative.setElectionId(candidate.getElectionId());
 
         partyElectionRepresentativeRepository.save(representative);
+    }
+
+    private void ensurePartyElectionRepresentativeIsAvailable(Integer partyId, Integer electionId) {
+        if (partyElectionRepresentativeRepository.findByPartyIdAndElectionId(partyId, electionId).isPresent()) {
+            throw new BusinessRuleException("Este partido ya tiene un candidato asignado para esta elección.");
+        }
+    }
+
+    private void ensurePartyElectionRepresentativeIsAvailableForUpdate(Integer partyId, Integer electionId, Integer candidateId) {
+        partyElectionRepresentativeRepository.findByPartyIdAndElectionId(partyId, electionId)
+                .filter(existing -> !candidateId.equals(existing.getCandidateId()))
+                .ifPresent(existing -> {
+                    throw new BusinessRuleException("Este partido ya tiene un candidato asignado para esta elección.");
+                });
     }
 
     private boolean isPresidentialElectionInCourse(Election election) {

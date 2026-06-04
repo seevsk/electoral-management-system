@@ -1,28 +1,82 @@
-Revisa y corrige la actualización de foto en el módulo Candidatos.
+Audita y ajusta el módulo Candidatos ya implementado. NO rehagas el CRUD desde cero.
 
 Contexto:
-Ya puedo registrar candidatos sin foto correctamente.
-El problema ocurre al actualizar candidato con foto.
+El proyecto es Spring Boot + Thymeleaf + SQL Server + Flyway.
+El módulo Candidatos ya existe y funciona parcialmente:
+- /admin/candidates/list
+- /admin/candidates/register
+- /admin/candidates/status
+- /admin/candidates/update/{id}
 
-Necesito revisar:
-- templates/candidates/updatecandidate.html
+Este módulo corresponde al PB-06: Registrar candidatos presidenciales.
+
+Revisa estos documentos antes de tocar código:
+- backend/docs/domain-rules-and-flow.md
+- backend/docs/visibility-rules.md
+- backend/docs/remaining-phases-plan.md
+
+Revisa también:
 - CandidateController
+- CandidateService
 - CandidateServiceImpl
+- CandidateRepository
+- ElectionRepository
+- PartyElectionRepresentativeRepository
+- VoterRepository
+- templates/candidates/
+- CloudinaryStorageService
 - CloudinaryStorageServiceImpl
-- configuración Cloudinary
 
-Validaciones necesarias:
-1. El formulario updatecandidate.html debe tener enctype="multipart/form-data".
-2. El input file debe tener el mismo name que espera el controller.
-3. El controller debe recibir la foto como MultipartFile con required=false.
-4. Si el usuario sube nueva foto, se debe llamar a Cloudinary y actualizar candidates.photo_url.
-5. Si el usuario NO sube nueva foto, debe mantenerse la photo_url anterior.
-6. Si Cloudinary falla, no debe mostrar Whitelabel Error Page; debe volver al formulario con mensaje controlado.
-7. No modificar migraciones Flyway.
-8. No modificar tablas.
-9. No tocar CRUD de partidos.
-10. No tocar login.
-11. No imprimir ni exponer CLOUDINARY_API_SECRET.
+Ajustes necesarios:
 
-Objetivo:
-Que actualizar candidato funcione tanto sin foto como con foto.
+1. Elección presidencial
+El combo de elecciones del formulario de candidatos debe mostrar solo elecciones presidenciales disponibles.
+Si ya existe en ElectionRepository un método como:
+findAvailablePresidentialElectionsForCandidates()
+úsalo en CandidateServiceImpl.
+No debe traer elecciones de otros tipos.
+
+2. Un candidato por partido y elección presidencial
+Además de validar:
+- mismo votante en misma elección
+- mismo número de lista para mismo partido y elección
+
+también debe validar:
+- no se puede registrar más de un candidato para el mismo partido en la misma elección presidencial.
+
+Si ya existe una relación en party_election_representatives con ese party_id y election_id, bloquear el registro con este mensaje:
+"Este partido ya tiene un candidato asignado para esta elección."
+
+3. Foto opcional
+La foto del candidato debe seguir siendo opcional.
+En registro:
+- Si photoFile == null o photoFile.isEmpty(), guardar photo_url como null.
+- No llamar a Cloudinary.
+
+En actualización:
+- Si no se sube nueva foto, mantener la photo_url actual.
+- Si se sube nueva foto, recién llamar a Cloudinary.
+
+4. Manejo de errores Cloudinary
+Si Cloudinary falla, no debe salir Whitelabel Error Page.
+Debe volver al formulario con un mensaje controlado.
+No imprimir ni exponer CLOUDINARY_API_SECRET.
+
+5. party_election_representatives
+Al registrar candidato, debe crear o sincronizar la relación en party_election_representatives.
+Al actualizar candidato, debe mantener coherencia con party_id, election_id y candidate_id.
+No usar parties.representative como fuente principal.
+
+6. Restricciones
+No modificar migraciones Flyway.
+No modificar tablas.
+No tocar el CRUD de partidos.
+No tocar login.
+No usar React ni Angular.
+Mantener Thymeleaf.
+No cambiar rutas existentes.
+
+Al terminar:
+- Compila el proyecto.
+- Indica exactamente qué archivos modificaste.
+- Indica qué validaciones quedaron implementadas.
