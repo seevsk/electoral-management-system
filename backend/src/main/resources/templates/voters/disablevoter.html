@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Votantes - Estado</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='voters')}"></div>
+
+    <main class="flex-1 pl-0 md:pl-60">
+        <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Header -->
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="font-heading text-3xl font-semibold text-zinc-900">Estado de Votantes</h1>
+                    <p class="mt-1 text-sm text-zinc-500">Habilite o deshabilite votantes</p>
+                </div>
+                <a th:href="@{/admin/voters/list}"
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                    <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                    Regresar
+                </a>
+            </div>
+
+            <!-- Success Message -->
+            <div th:if="${successMessage}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-emerald-600/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
+                <i data-lucide="check-circle" class="h-5 w-5 shrink-0 text-emerald-600"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Search + Table -->
+            <div x-data="{ search: '', confirmUrl: null, confirmName: '' }" class="rounded-xl border border-zinc-200 bg-white shadow-sm">
+
+                <!-- Search bar -->
+                <div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
+                    <i data-lucide="search" class="h-4 w-4 shrink-0 text-zinc-400"></i>
+                    <input x-model="search" type="text" placeholder="Buscar por nombre o DNI..."
+                           class="h-8 w-full min-w-0 border-0 bg-transparent px-0 py-1 text-sm outline-none placeholder:text-zinc-400 focus:ring-0">
+                </div>
+
+                <!-- Desktop table -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                        <tr class="border-b border-zinc-100 bg-zinc-50/50">
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Nombre Completo</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">DNI</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Estado</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-zinc-500">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(voters)}">
+                            <td colspan="4" class="px-4 py-12 text-center">
+                                <div class="flex flex-col items-center gap-2">
+                                    <i data-lucide="inbox" class="h-10 w-10 text-zinc-300"></i>
+                                    <p class="text-sm text-zinc-500">No se encontraron votantes.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:each="voter : ${voters}"
+                            x-show="search === '' || $el.textContent.toLowerCase().includes(search.toLowerCase())"
+                            class="border-b border-zinc-50 transition-colors hover:bg-zinc-50">
+                            <td class="px-4 py-4 font-medium text-zinc-900" th:text="${voter.fullName}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.account.dni}"></td>
+                            <td class="px-4 py-4">
+                                <span th:if="${voter.status == 'A'}"
+                                      class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                                    Activo
+                                </span>
+                                <span th:unless="${voter.status == 'A'}"
+                                      class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600">
+                                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    Inactivo
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <button th:if="${voter.status == 'A'}"
+                                        th:data-url="@{/admin/voters/disable/{id}(id=${voter.id})}"
+                                        th:data-name="${voter.fullName}"
+                                        @click="confirmUrl = $el.dataset.url; confirmName = $el.dataset.name"
+                                        class="inline-flex items-center gap-1.5 rounded-lg bg-red-500 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-600">
+                                    <i data-lucide="toggle-left" class="h-3.5 w-3.5"></i>
+                                    Deshabilitar
+                                </button>
+                                <button th:unless="${voter.status == 'A'}"
+                                        th:data-url="@{/admin/voters/enable/{id}(id=${voter.id})}"
+                                        th:data-name="${voter.fullName}"
+                                        @click="confirmUrl = $el.dataset.url; confirmName = $el.dataset.name"
+                                        class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
+                                    <i data-lucide="toggle-right" class="h-3.5 w-3.5"></i>
+                                    Habilitar
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile cards -->
+                <div class="block md:hidden">
+                    <div th:if="${#lists.isEmpty(voters)}" class="p-6 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <i data-lucide="inbox" class="h-10 w-10 text-zinc-300"></i>
+                            <p class="text-sm text-zinc-500">No se encontraron votantes.</p>
+                        </div>
+                    </div>
+                    <div th:each="voter : ${voters}"
+                         x-show="search === '' || $el.textContent.toLowerCase().includes(search.toLowerCase())"
+                         class="border-b border-zinc-100 p-4 last:border-b-0">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-semibold text-zinc-900" th:text="${voter.fullName}"></p>
+                                <p class="mt-0.5 text-xs text-zinc-500">
+                                    DNI: <span th:text="${voter.account.dni}"></span>
+                                </p>
+                                <div class="mt-2">
+                                    <span th:if="${voter.status == 'A'}"
+                                          class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                        <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                                        Activo
+                                    </span>
+                                    <span th:unless="${voter.status == 'A'}"
+                                          class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-600">
+                                        <span class="inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                        Inactivo
+                                    </span>
+                                </div>
+                            </div>
+                            <button th:if="${voter.status == 'A'}"
+                                    th:data-url="@{/admin/voters/disable/{id}(id=${voter.id})}"
+                                    th:data-name="${voter.fullName}"
+                                    @click="confirmUrl = $el.dataset.url; confirmName = $el.dataset.name"
+                                    class="shrink-0 rounded-lg bg-red-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-600">
+                                Deshabilitar
+                            </button>
+                            <button th:unless="${voter.status == 'A'}"
+                                    th:data-url="@{/admin/voters/enable/{id}(id=${voter.id})}"
+                                    th:data-name="${voter.fullName}"
+                                    @click="confirmUrl = $el.dataset.url; confirmName = $el.dataset.name"
+                                    class="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-700">
+                                Habilitar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer count -->
+                <div class="border-t border-zinc-100 px-4 py-3 text-xs text-zinc-400">
+                    Mostrando <span th:text="${#lists.size(voters)}"></span> votante(s) registrado(s)
+                </div>
+
+                <!-- Modal de confirmación -->
+                <div x-show="confirmUrl !== null"
+                     x-cloak
+                     class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+                     @keydown.escape.window="confirmUrl = null">
+                    <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+                         @click.outside="confirmUrl = null">
+                        <div class="flex flex-col items-center gap-3 text-center">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                                <i data-lucide="alert-triangle" class="h-6 w-6 text-amber-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-zinc-900">Confirmar acción</h3>
+                                <p class="mt-1 text-sm text-zinc-500">
+                                    ¿Estás seguro de que deseas cambiar el estado de <strong x-text="confirmName"></strong>?
+                                </p>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex gap-3">
+                            <a :href="confirmUrl"
+                               class="flex-1 rounded-lg bg-primary-700 px-4 py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                                Sí, confirmar
+                            </a>
+                            <button @click="confirmUrl = null"
+                                    class="flex-1 rounded-lg border border-zinc-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

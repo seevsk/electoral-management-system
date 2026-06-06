@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,13 +18,13 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "dni", columnDefinition = "CHAR(8)", nullable = false, unique = true)
+    @Column(name = "dni", nullable = false, length = 8, columnDefinition = "char(8)")
     private String dni;
 
     @Column(name = "password_hash", length = 120)
     private String passwordHash;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "role", nullable = false, length = 20)
     private String role;
 
     @Column(name = "is_active", nullable = false)

@@ -15,6 +15,8 @@ import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 @Entity
 @Table(name = "voters")
 public class Voter {
@@ -39,17 +41,21 @@ public class Voter {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
+
     @Column(name = "gender", columnDefinition = "CHAR(1)", nullable = false)
     private String gender;
 
     @Column(name = "marital_status", columnDefinition = "CHAR(1)", nullable = false)
     private String maritalStatus;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "dni_expiry_date")
     private LocalDate dniExpiryDate;
+
 
     @Column(name = "location_code", columnDefinition = "CHAR(6)", nullable = false)
     private String locationCode;
@@ -72,9 +78,11 @@ public class Voter {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+
         if (this.status == null) {
             this.status = "I";
         }
+
         if (this.hasVoted == null) {
             this.hasVoted = false;
         }

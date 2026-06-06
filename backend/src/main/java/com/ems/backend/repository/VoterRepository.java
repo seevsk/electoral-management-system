@@ -11,6 +11,18 @@ import java.util.Optional;
 
 public interface VoterRepository extends JpaRepository<Voter, Integer> {
 
+    // Verifica si una cuenta ya está asociada a un votante
+    boolean existsByAccount_Id(Integer accountId);
+
+    // Verifica si una cuenta ya está asociada a otro votante (para edición)
+    boolean existsByAccount_IdAndIdNot(Integer accountId, Integer id);
+
+    // Listar todos los votantes ordenados por nombre completo
+    List<Voter> findAllByOrderByFullNameAsc();
+
+    // Listar votantes por estado ordenados por nombre completo
+    List<Voter> findByStatusOrderByFullNameAsc(String status);
+
     @Query("""
             select v
             from Voter v
