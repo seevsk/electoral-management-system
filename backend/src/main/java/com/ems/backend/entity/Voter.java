@@ -1,9 +1,21 @@
 package com.ems.backend.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "voters")
@@ -13,7 +25,10 @@ public class Voter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
+    @Column(name = "account_id", nullable = false, insertable = false, updatable = false)
+    private Integer accountId;
+
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
@@ -26,23 +41,26 @@ public class Voter {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(name = "gender", nullable = false, length = 1, columnDefinition = "char(1)")
+
+    @Column(name = "gender", columnDefinition = "CHAR(1)", nullable = false)
     private String gender;
 
-    @Column(name = "marital_status", nullable = false, length = 1, columnDefinition = "char(1)")
+    @Column(name = "marital_status", columnDefinition = "CHAR(1)", nullable = false)
     private String maritalStatus;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "dni_expiry_date")
     private LocalDate dniExpiryDate;
 
-    @ManyToOne
-    @JoinColumn(name = "location_code", nullable = false)
-    private Location location;
 
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "location_code", columnDefinition = "CHAR(6)", nullable = false)
+    private String locationCode;
+
+    @Column(nullable = false, length = 20)
     private String status;
 
     @Column(name = "has_voted", nullable = false)
@@ -81,6 +99,14 @@ public class Voter {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Integer accountId) {
+        this.accountId = accountId;
     }
 
     public Account getAccount() {
@@ -147,12 +173,12 @@ public class Voter {
         this.dniExpiryDate = dniExpiryDate;
     }
 
-    public Location getLocation() {
-        return location;
+    public String getLocationCode() {
+        return locationCode;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setLocationCode(String locationCode) {
+        this.locationCode = locationCode;
     }
 
     public String getStatus() {

@@ -78,9 +78,9 @@
                             class="border-b border-zinc-50 transition-colors hover:bg-zinc-50">
                             <td class="px-4 py-4 font-medium text-zinc-900" th:text="|${voter.fullName} ${voter.firstSurname}|"></td>
                             <td class="px-4 py-4 text-zinc-600" th:text="${voter.account.dni}"></td>
-                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.location.department}"></td>
-                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.location.province}"></td>
-                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.location.district}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.department}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.province}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.district}"></td>
                             <td class="px-4 py-4">
                                 <span th:if="${voter.status == 'A'}"
                                       class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -123,11 +123,11 @@
                                     DNI: <span th:text="${voter.account.dni}"></span>
                                 </p>
                                 <p class="mt-0.5 text-xs text-zinc-500">
-                                    <span th:text="${voter.location.department}"></span>
+                                    <span th:text="${voter.department}"></span>
                                     <span class="mx-1">·</span>
-                                    <span th:text="${voter.location.province}"></span>
+                                    <span th:text="${voter.province}"></span>
                                     <span class="mx-1">·</span>
-                                    <span th:text="${voter.location.district}"></span>
+                                    <span th:text="${voter.district}"></span>
                                 </p>
                             </div>
                             <span th:if="${voter.status == 'A'}"

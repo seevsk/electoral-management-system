@@ -12,28 +12,23 @@
     <main class="flex-1 pl-0 md:pl-60">
         <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
 
-            <!-- Header -->
             <div class="mb-8">
                 <h1 class="font-heading text-3xl font-semibold text-zinc-900">Actualizar Votante</h1>
                 <p class="mt-1 text-sm text-zinc-500">Modifique los datos del votante seleccionado</p>
             </div>
 
-            <!-- Error Message -->
-            <div th:if="${errorMessage}"
-                 class="mb-6 flex items-center gap-3 rounded-xl border border-red-600/20 bg-red-500/5 p-4 text-sm text-red-600">
+            <div th:if="${errorMessage}" class="mb-6 flex items-center gap-3 rounded-xl border border-red-600/20 bg-red-500/5 p-4 text-sm text-red-600">
                 <i data-lucide="alert-circle" class="h-5 w-5 shrink-0 text-red-600"></i>
                 <span th:text="${errorMessage}"></span>
             </div>
 
-            <!-- Script con datos de ubicaciones y valores actuales -->
             <script th:inline="javascript">
                 const locationsData = /*[[${locationsJson}]]*/ [];
-                const currentDepartment = /*[[${voter.location.department}]]*/ '';
-                const currentProvince = /*[[${voter.location.province}]]*/ '';
-                const currentLocationCode = /*[[${voter.location.locationCode}]]*/ '';
+                const currentDepartment = /*[[${currentDepartment}]]*/ '';
+                const currentProvince = /*[[${currentProvince}]]*/ '';
+                const currentLocationCode = /*[[${currentLocationCode}]]*/ '';
             </script>
 
-            <!-- Form Card -->
             <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
                  x-data="{
                     locations: locationsData,
@@ -41,15 +36,17 @@
                     selectedProvince: currentProvince,
                     selectedLocationCode: currentLocationCode,
                     get departments() {
-                        return [...new Set(this.locations.map(l => l.department))].sort();
+                        let depts = [...new Set(this.locations.map(l => l.department))];
+                        return depts.sort();
                     },
                     get provinces() {
                         if (!this.selectedDepartment) return [];
-                        return [...new Set(
+                        let provs = [...new Set(
                             this.locations
                                 .filter(l => l.department === this.selectedDepartment)
                                 .map(l => l.province)
-                        )].sort();
+                        )];
+                        return provs.sort();
                     },
                     get districts() {
                         if (!this.selectedProvince) return [];
@@ -69,7 +66,7 @@
 
                 <form th:action="@{/admin/voters/update/{id}(id=${voter.id})}" th:object="${voter}" method="post" class="flex flex-col gap-6">
 
-                    <!-- Cuenta (DNI) - solo lectura en update -->
+                    <!-- Cuenta (DNI) -->
                     <div role="group" class="flex w-full flex-col gap-2">
                         <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                             <i data-lucide="id-card" class="h-3.5 w-3.5"></i>
@@ -89,7 +86,7 @@
                                 Primer Apellido
                             </label>
                             <input id="firstSurname" type="text" th:field="*{firstSurname}" required
-                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                         </div>
                         <div role="group" class="flex w-full flex-col gap-2">
                             <label for="secondSurname" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
@@ -97,7 +94,7 @@
                                 Segundo Apellido
                             </label>
                             <input id="secondSurname" type="text" th:field="*{secondSurname}" required
-                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                         </div>
                     </div>
 
@@ -107,7 +104,7 @@
                             Nombre Completo
                         </label>
                         <input id="fullName" type="text" th:field="*{fullName}" required
-                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                     </div>
 
                     <!-- Género y Estado Civil -->
@@ -118,7 +115,7 @@
                                 Género
                             </label>
                             <select id="gender" th:field="*{gender}" required
-                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                                 <option value="">Seleccione</option>
                                 <option value="M">Masculino</option>
                                 <option value="F">Femenino</option>
@@ -130,7 +127,7 @@
                                 Estado Civil
                             </label>
                             <select id="maritalStatus" th:field="*{maritalStatus}" required
-                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                                 <option value="">Seleccione</option>
                                 <option value="S">Soltero/a</option>
                                 <option value="C">Casado/a</option>
@@ -147,20 +144,16 @@
                                 <i data-lucide="calendar" class="h-3.5 w-3.5"></i>
                                 Fecha de Nacimiento
                             </label>
-                            <!-- Reemplazamos th:field por name y th:value para forzar el patrón de texto -->
-                            <input id="birthDate" type="date" name="birthDate" required
-                                   th:value="${voter.birthDate != null ? #temporals.format(voter.birthDate, 'yyyy-MM-dd') : ''}"
-                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                            <input id="birthDate" type="date" th:field="*{birthDate}" required
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                         </div>
                         <div role="group" class="flex w-full flex-col gap-2">
                             <label for="dniExpiryDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                                 <i data-lucide="calendar-x" class="h-3.5 w-3.5"></i>
                                 Vencimiento DNI
                             </label>
-                            <!-- Reemplazamos th:field por name y th:value para forzar el patrón de texto -->
-                            <input id="dniExpiryDate" type="date" name="dniExpiryDate"
-                                   th:value="${voter.dniExpiryDate != null ? #temporals.format(voter.dniExpiryDate, 'yyyy-MM-dd') : ''}"
-                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                            <input id="dniExpiryDate" type="date" th:field="*{dniExpiryDate}"
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                             <p class="text-xs text-zinc-400">Opcional.</p>
                         </div>
                     </div>
@@ -172,42 +165,31 @@
                             Ubigeo
                         </label>
                         <div class="grid gap-4 sm:grid-cols-3">
-
-                            <!-- Departamento -->
                             <select x-model="selectedDepartment" @change="onDepartmentChange()" required
-                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600">
                                 <option value="">Departamento</option>
                                 <template x-for="dept in departments" :key="dept">
-                                    <option :value="dept"
-                                            x-text="dept"
-                                            :selected="dept === selectedDepartment"></option>
+                                    <option :value="dept" x-text="dept" :selected="dept === selectedDepartment"></option>
                                 </template>
                             </select>
 
-                            <!-- Provincia -->
                             <select x-model="selectedProvince" @change="onProvinceChange()" required
                                     :disabled="!selectedDepartment"
-                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600 disabled:opacity-40">
                                 <option value="">Provincia</option>
                                 <template x-for="prov in provinces" :key="prov">
-                                    <option :value="prov"
-                                            x-text="prov"
-                                            :selected="prov === selectedProvince"></option>
+                                    <option :value="prov" x-text="prov" :selected="prov === selectedProvince"></option>
                                 </template>
                             </select>
 
-                            <!-- Distrito -->
-                            <select x-model="selectedLocationCode" name="location.locationCode" required
+                            <select x-model="selectedLocationCode" name="locationCode" required
                                     :disabled="!selectedProvince"
-                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none focus:border-b-primary-600 disabled:opacity-40">
                                 <option value="">Distrito</option>
                                 <template x-for="loc in districts" :key="loc.locationCode">
-                                    <option :value="loc.locationCode"
-                                            x-text="loc.district"
-                                            :selected="loc.locationCode === selectedLocationCode"></option>
+                                    <option :value="loc.locationCode" x-text="loc.district" :selected="loc.locationCode === selectedLocationCode"></option>
                                 </template>
                             </select>
-
                         </div>
                         <p class="text-xs text-zinc-400">Seleccione en orden: departamento → provincia → distrito.</p>
                     </div>
@@ -227,10 +209,6 @@
                     </div>
 
                 </form>
-            </div>
-
-            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc.400">
-                Sistema Electoral - Lima Metropolitana
             </div>
 
         </div>

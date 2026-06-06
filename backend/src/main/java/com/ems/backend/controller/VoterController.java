@@ -6,7 +6,6 @@ import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.LocationRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -37,43 +36,40 @@ public class VoterController {
         this.locationRepository = locationRepository;
     }
 
-    @ModelAttribute("voter")
-    public Voter voter() {return new Voter();}
-
     @GetMapping
     public String redirectToList() {return "redirect:/admin/voters/list";}
 
     @GetMapping("/list")
     public String listVoters(Model model){
-         var voters = voterService.findAllActive();
-         model.addAttribute("voters", voters);
+        List<Voter> voters = voterService.findAllActive();
 
-         return "voters/listvoter";
+        List<Map<String, Object>> enrichedVoters = voters.stream()
+                .map(voter -> {
+                    Map<String, Object> enriched = new HashMap<>();
+                    enriched.put("id", voter.getId());
+                    enriched.put("fullName", voter.getFullName());
+                    enriched.put("firstSurname", voter.getFirstSurname());
+                    enriched.put("status", voter.getStatus());
+                    enriched.put("account", voter.getAccount());
+
+                    Location location = locationRepository.findById(voter.getLocationCode()).orElse(null);
+                    enriched.put("department", location != null ? location.getDepartment() : "N/A");
+                    enriched.put("province", location != null ? location.getProvince() : "N/A");
+                    enriched.put("district", location != null ? location.getDistrict() : "N/A");
+
+                    return enriched;
+                })
+                .collect(Collectors.toList());
+
+        model.addAttribute("voters", enrichedVoters);
+        return "voters/listvoter";
     }
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        List<Location> raw = locationRepository.findAll();
-        System.out.println("RAW SIZE: " + raw.size()); // <-- temporal
-
-        List<Map<String, String>> locationsJson = raw.stream()
-                .map(l -> {
-                    Map<String, String> map = new HashMap<>();
-                    map.put("locationCode", l.getLocationCode());
-                    map.put("department", l.getDepartment());
-                    map.put("province", l.getProvince());
-                    map.put("district", l.getDistrict());
-                    return map;
-                })
-                .collect(Collectors.toList());
-
-        System.out.println("JSON SIZE: " + locationsJson.size()); // <-- temporal
-        if (!locationsJson.isEmpty()) {
-            System.out.println("FIRST: " + locationsJson.get(0)); // <-- temporal
-        }
-
+        model.addAttribute("voter", new Voter());
         model.addAttribute("accounts", accountRepository.findAll());
-        model.addAttribute("locationsJson", locationsJson);
+        model.addAttribute("locationsJson", buildLocationsJson());
         return "voters/registervoter";
     }
 
@@ -96,25 +92,15 @@ public class VoterController {
     @GetMapping("/update/{id}")
     public String showUpdateForm(@PathVariable Integer id, Model model) {
         Voter voter = voterService.findById(id);
+        Location currentLocation = locationRepository.findById(voter.getLocationCode()).orElse(null);
 
-        List<Map<String, String>> locationsJson = locationRepository.findAll()
-                .stream()
-                .map(l -> {
-                    Map<String, String> map = new HashMap<>();
-                    map.put("locationCode", l.getLocationCode());
-                    map.put("department", l.getDepartment());
-                    map.put("province", l.getProvince());
-                    map.put("district", l.getDistrict());
-                    return map;
-                })
-                .collect(Collectors.toList());
-
-        // Forzamos explícitamente el reemplazo del 'voter' vacío que crea el @ModelAttribute
-        model.asMap().put("voter", voter);
-
-        //model.addAttribute("voter", voter);
+        model.addAttribute("currentDepartment", currentLocation != null ? currentLocation.getDepartment() : "");
+        model.addAttribute("currentProvince", currentLocation != null ? currentLocation.getProvince() : "");
+        model.addAttribute("currentLocationCode", voter.getLocationCode());
+        model.addAttribute("voter", voter);
         model.addAttribute("accounts", accountRepository.findAll());
-        model.addAttribute("locationsJson", locationsJson);
+        model.addAttribute("locationsJson", buildLocationsJson());
+
         return "voters/updatevoter";
     }
 
@@ -154,4 +140,17 @@ public class VoterController {
         return "redirect:/admin/voters/status";
     }
 
+    /** Construye la lista de ubicaciones en formato JSON para los selectores anidados del formulario */
+    private List<Map<String, String>> buildLocationsJson() {
+        return locationRepository.findAll().stream()
+                .map(l -> {
+                    Map<String, String> map = new HashMap<>();
+                    map.put("locationCode", l.getLocationCode());
+                    map.put("department", l.getDepartment());
+                    map.put("province", l.getProvince());
+                    map.put("district", l.getDistrict());
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
 }

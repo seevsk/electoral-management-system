@@ -74,7 +74,7 @@ public class VoterServiceImpl implements VoterService {
         existing.setMaritalStatus(voter.getMaritalStatus());
         existing.setBirthDate(voter.getBirthDate());
         existing.setDniExpiryDate(voter.getDniExpiryDate());
-        existing.setLocation(voter.getLocation());
+        existing.setLocationCode(voter.getLocationCode());
 
         return voterRepository.save(existing);
     }

@@ -49,7 +49,6 @@ public class Account {
         this.updatedAt = LocalDateTime.now();
     }
 
-
     public Integer getId() {
         return id;
     }
@@ -82,12 +81,12 @@ public class Account {
         this.role = role;
     }
 
-    public Boolean getActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setIsActive(Boolean active) {
+        isActive = active;
     }
 
     public LocalDateTime getCreatedAt() {
