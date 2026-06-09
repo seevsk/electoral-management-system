@@ -11,6 +11,8 @@ import java.util.Optional;
 
 public interface VoterRepository extends JpaRepository<Voter, Integer> {
 
+    Optional<Voter> findByAccount_Id(Integer accountId);
+
     // Verifica si una cuenta ya está asociada a un votante
     boolean existsByAccount_Id(Integer accountId);
 
