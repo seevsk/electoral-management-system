@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <div th:fragment="sidebar(activePage)" x-data>
 
@@ -14,84 +15,84 @@
             <span class="text-sm font-bold">Sistema Electoral</span>
         </div>
 
-        <!-- NOT authenticated: show login -->
-        <template x-if="!$store.auth.authenticated">
-            <div class="flex flex-1 flex-col justify-end">
-                <div x-data="{ loginOpen: false }" class="border-t border-white/10 pt-4">
-                    <button @click="loginOpen = !loginOpen"
-                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                        <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
-                        <span class="flex-1 text-left">Iniciar Sesión</span>
-                        <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
-                           :class="{ 'rotate-180': loginOpen }"></i>
-                    </button>
-                    <div x-show="loginOpen"
-                         @click.outside="loginOpen = false"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 translate-y-0"
-                         x-transition:leave-end="opacity-0 translate-y-1"
-                         class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5 shadow-xl">
-                        <a th:href="@{/login/admin}"
-                           class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                            <i data-lucide="shield" class="h-4 w-4"></i>
-                            Administrador
-                        </a>
-                        <a th:href="@{/login/voter}"
-                           class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                            <i data-lucide="user" class="h-4 w-4"></i>
-                            Votante
-                        </a>
-                    </div>
+        <!-- NOT authenticated: show login dropdown (UX handled by Alpine) -->
+        <div th:if="${!#authorization.expression('isAuthenticated()')}"
+             class="flex flex-1 flex-col justify-end">
+            <div x-data="{ loginOpen: false }" class="border-t border-white/10 pt-4">
+                <button @click="loginOpen = !loginOpen"
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                    <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
+                    <span class="flex-1 text-left">Iniciar Sesión</span>
+                    <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
+                       :class="{ 'rotate-180': loginOpen }"></i>
+                </button>
+                <div x-show="loginOpen"
+                     @click.outside="loginOpen = false"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-1"
+                     class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5 shadow-xl">
+                    <a th:href="@{/login/admin}"
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="shield" class="h-4 w-4"></i>
+                        Administrador
+                    </a>
+                    <a th:href="@{/login/voter}"
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="user" class="h-4 w-4"></i>
+                        Votante
+                    </a>
                 </div>
             </div>
-        </template>
+        </div>
 
-        <!-- Authenticated as admin: show admin links -->
-        <template x-if="$store.auth.authenticated">
-            <div class="flex flex-1 flex-col">
-                <!-- User info -->
-                <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
-                        <i data-lucide="shield" class="h-4 w-4 text-white"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-white" x-text="$store.auth.user.name"></p>
-                        <p class="text-xs text-zinc-400">Administrador</p>
-                    </div>
+        <!-- Authenticated as admin: show navigation and real logout -->
+        <div sec:authorize="hasRole('ADMIN')" class="flex flex-1 flex-col">
+            <!-- User info -->
+            <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+                    <i data-lucide="shield" class="h-4 w-4 text-white"></i>
                 </div>
+                <div class="flex-1 min-w-0">
+                    <p class="truncate text-sm font-medium text-white"
+                       th:text="${#authentication.name}">Admin</p>
+                    <p class="text-xs text-zinc-400">Administrador</p>
+                </div>
+            </div>
 
-                <!-- Admin navigation -->
-                <nav class="flex flex-1 flex-col gap-1">
-                    <a th:href="@{/admin/parties}"
-                       th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'parties' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                        <i data-lucide="vote" class="h-4 w-4"></i>
-                        Partidos Políticos
-                    </a>
-                    <a th:href="@{/admin/candidates/list}"
-                       th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'candidates' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                        <i data-lucide="users" class="h-4 w-4"></i>
-                        Candidatos
-                    </a>
-                    <a th:href="@{/admin/voters}"
-                       th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white'">
-                        <i data-lucide="badge-check" class="h-4 w-4"></i>
-                        Votantes
-                    </a>
-                </nav>
+            <!-- Admin navigation -->
+            <nav class="flex flex-1 flex-col gap-1">
+                <a th:href="@{/admin/parties}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'parties' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="vote" class="h-4 w-4"></i>
+                    Partidos Políticos
+                </a>
+                <a th:href="@{/admin/candidates/list}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'candidates' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="users" class="h-4 w-4"></i>
+                    Candidatos
+                </a>
+                <a th:href="@{/admin/voters}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'voters' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="badge-check" class="h-4 w-4"></i>
+                    Votantes
+                </a>
+            </nav>
 
-                <!-- Logout -->
-                <div class="border-t border-white/10 pt-4">
-                    <button @click="$store.auth.logout()"
+            <!-- Logout: real POST to Spring Security logout endpoint -->
+            <div class="border-t border-white/10 pt-4">
+                <form th:action="@{/auth/logout}" method="post">
+                    <button type="submit"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                         <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
                         <span class="flex-1 text-left">Cerrar sesión</span>
                     </button>
-                </div>
+                </form>
             </div>
-        </template>
+        </div>
 
     </aside>
 
@@ -113,63 +114,66 @@
         </div>
 
         <!-- NOT authenticated (mobile) -->
-        <template x-if="!$store.auth.authenticated">
-            <div class="flex flex-1 flex-col justify-end">
-                <div x-data="{ mobileLoginOpen: false }" class="border-t border-white/10 pt-4">
-                    <button @click="mobileLoginOpen = !mobileLoginOpen"
-                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                        <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
-                        <span class="flex-1 text-left">Iniciar Sesión</span>
-                        <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
-                           :class="{ 'rotate-180': mobileLoginOpen }"></i>
-                    </button>
-                    <div x-show="mobileLoginOpen"
-                         class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
-                        <a th:href="@{/login/admin}"
-                            class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                            <i data-lucide="shield" class="h-4 w-4"></i> Administrador
-                        </a>
-                        <a th:href="@{/login/voter}"
-                            class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                            <i data-lucide="user" class="h-4 w-4"></i> Votante
-                        </a>
-                    </div>
+        <div th:if="${!#authorization.expression('isAuthenticated()')}"
+             class="flex flex-1 flex-col justify-end">
+            <div x-data="{ mobileLoginOpen: false }" class="border-t border-white/10 pt-4">
+                <button @click="mobileLoginOpen = !mobileLoginOpen"
+                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                    <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
+                    <span class="flex-1 text-left">Iniciar Sesión</span>
+                    <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
+                       :class="{ 'rotate-180': mobileLoginOpen }"></i>
+                </button>
+                <div x-show="mobileLoginOpen"
+                     class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
+                    <a th:href="@{/login/admin}"
+                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+                    </a>
+                    <a th:href="@{/login/voter}"
+                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="user" class="h-4 w-4"></i> Votante
+                    </a>
                 </div>
             </div>
-        </template>
+        </div>
 
         <!-- Authenticated as admin (mobile) -->
-        <template x-if="$store.auth.authenticated">
-            <div class="flex flex-1 flex-col">
-                <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
-                        <i data-lucide="shield" class="h-4 w-4 text-white"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-white" x-text="$store.auth.user.name"></p>
-                        <p class="text-xs text-zinc-400">Administrador</p>
-                    </div>
+        <div sec:authorize="hasRole('ADMIN')" class="flex flex-1 flex-col">
+            <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+                    <i data-lucide="shield" class="h-4 w-4 text-white"></i>
                 </div>
-                <nav class="flex flex-1 flex-col gap-1">
-                    <a th:href="@{/admin/parties}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
-                        <i data-lucide="vote" class="h-4 w-4"></i> Partidos Políticos
-                    </a>
-                    <a th:href="@{/admin/candidates/list}" th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'candidates' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                        <i data-lucide="users" class="h-4 w-4"></i> Candidatos
-                    </a>
-                    <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
-                        <i data-lucide="badge-check" class="h-4 w-4"></i> Votantes
-                    </a>
-                </nav>
-                <div class="border-t border-white/10 pt-4">
-                    <button @click="$store.auth.logout()"
+                <div class="flex-1 min-w-0">
+                    <p class="truncate text-sm font-medium text-white"
+                       th:text="${#authentication.name}">Admin</p>
+                    <p class="text-xs text-zinc-400">Administrador</p>
+                </div>
+            </div>
+            <nav class="flex flex-1 flex-col gap-1">
+                <a th:href="@{/admin/parties}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'parties' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="vote" class="h-4 w-4"></i> Partidos Políticos
+                </a>
+                <a th:href="@{/admin/candidates/list}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'candidates' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="users" class="h-4 w-4"></i> Candidatos
+                </a>
+                <a th:href="@{/admin/voters}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'voters' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="badge-check" class="h-4 w-4"></i> Votantes
+                </a>
+            </nav>
+            <div class="border-t border-white/10 pt-4">
+                <form th:action="@{/auth/logout}" method="post">
+                    <button type="submit"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                         <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
                         <span class="flex-1 text-left">Cerrar sesión</span>
                     </button>
-                </div>
+                </form>
             </div>
-        </template>
+        </div>
 
     </aside>
 
