@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 
 @Service
@@ -91,6 +94,42 @@ public class VoterServiceImpl implements VoterService {
         Voter voter = findById(id);
         voter.setStatus(STATUS_ACTIVE);
         voterRepository.save(voter);
+    }
+
+    // =========================================================================
+    // IMPLEMENTACIÓN DE MÉTODOS DE PARTICIPACIÓN CIUDADANA
+    // =========================================================================
+
+    @Override
+    public long getElectoresHabilitados() {
+        return voterRepository.countByStatus(STATUS_ACTIVE);
+    }
+
+    @Override
+    public long getVotantesAsistentes() {
+        return voterRepository.countByStatusAndHasVotedTrue(STATUS_ACTIVE);
+    }
+
+    @Override
+    public List<Map<String, Object>> getParticipationByScope() {
+        List<Object[]> queryResult = voterRepository.getParticipationByScope();
+        List<Map<String, Object>> participationList = new ArrayList<>();
+
+        for (Object[] row : queryResult) {
+            String name = (String) row[0];
+            long total = (Long) row[1];
+            long attended = (Long) row[2];
+            double pct = total > 0 ? (attended * 100.0) / total : 0.0;
+
+            Map<String, Object> scopeData = new HashMap<>();
+            scopeData.put("name", name);
+            scopeData.put("total", total);
+            scopeData.put("attended", attended);
+            scopeData.put("pct", pct);
+
+            participationList.add(scopeData);
+        }
+        return participationList;
     }
 
     // Metodos privados

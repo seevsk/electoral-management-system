@@ -62,4 +62,34 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
             order by v.fullName asc, v.firstSurname asc, v.secondSurname asc, a.dni asc, v.id asc
             """)
     List<Voter> searchEligibleUserVotersForCandidates(@Param("term") String term);
+
+    // =========================================================================
+    // CONSULTAS PARA PARTICIPACIÓN CIUDADANA
+    // =========================================================================
+
+    /**
+     * Cuenta todos los votantes habilitados filtrando por su estado ('A' = Activo).
+     */
+    long countByStatus(String status);
+
+    /**
+     * Cuenta todos los votantes habilitados ('A') que ya han emitido su voto (hasVoted = true).
+     */
+    long countByStatusAndHasVotedTrue(String status);
+
+    /**
+     * Agrupa los votantes activos por departamento y cuenta el total de electores
+     * y cuántos de ellos asistieron a votar.
+     */
+    @Query("""
+            select l.department,
+                   count(v),
+                   sum(case when v.hasVoted = true then 1L else 0L end)
+            from Voter v
+            join Location l on v.locationCode = l.locationCode
+            where v.status = 'A'
+            group by l.department
+            """)
+    List<Object[]> getParticipationByScope();
 }
+

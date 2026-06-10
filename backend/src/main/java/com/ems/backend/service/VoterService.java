@@ -22,6 +22,24 @@ public interface VoterService {
     // Cambia el estado a Activo (A)
     void enable(Integer id);
 
+    // =========================================================================
+    // MÉTODOS PARA OBTENER ESTADÍSTICAS DE PARTICIPACIÓN CIUDADANA
+    // =========================================================================
 
+    /**
+     * Obtiene la cantidad total de electores con estado Activo (A).
+     */
+    long getElectoresHabilitados();
 
+    /**
+     * Obtiene la cantidad de electores activos que ya han votado (hasVoted = true).
+     */
+    long getVotantesAsistentes();
+
+    /**
+     * Obtiene el listado de ámbitos de votación (departamentos) con su total de
+     * electores, asistentes y porcentaje de participación.
+     */
+    List<java.util.Map<String, Object>> getParticipationByScope();
 }
+

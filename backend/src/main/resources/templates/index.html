@@ -22,41 +22,39 @@
             </div>
 
             <!-- ==================== PROGRESS BAR SECTION ==================== -->
-            <!-- STATIC: Reemplazar datos con ${actasContabilizadas}, ${totalActas}, ${actasJEE}, ${actasPendientes} cuando el backend los proporcione -->
+            <!-- DINÁMICO: Carga de avance de actas proporcional a la participacion calculada desde el backend -->
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h2 class="text-lg font-semibold text-zinc-900">Actas contabilizadas</h2>
-                        <p class="text-3xl font-bold text-primary-600">95.232%</p>
+                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeActas, 1, 3, 'POINT')} + '%'"></p>
                     </div>
                     <div class="text-right text-sm text-zinc-500">
-                        <p>Total de actas: <span class="font-semibold text-zinc-900">92,766</span></p>
-                        <p class="text-xs">4.768% de Actas para envío al JEE y 0% de Actas pendientes</p>
+                        <p>Total de actas: <span class="font-semibold text-zinc-900" th:text="${#numbers.formatInteger(totalActas, 3, 'POINT')}"></span></p>
+                        <p class="text-xs">
+                            <span th:text="${#numbers.formatDecimal(100.0 - porcentajeActas, 1, 3, 'POINT')} + '%'"></span> de Actas pendientes de procesar
+                        </p>
                     </div>
                 </div>
 
                 <div class="mt-4 h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                    <div class="h-full w-[95.232%] rounded-full bg-primary-600 animate-progress"></div>
+                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeActas} + '%'"></div>
                 </div>
 
                 <div class="mt-4 border-t border-zinc-100 pt-4">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
                             <i data-lucide="clock" class="mr-1 inline-block h-3 w-3"></i>
-                            ACTUALIZADO AL 17/05/2026 A LAS 01:30:02 P. M.
+                            ACTUALIZADO AL <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span> A LAS <span th:text="${#temporals.format(#temporals.createNow(), 'hh:mm:ss a')}"></span>
                         </p>
                         <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                                Contabilizadas (88,343)
-                            </span>
-                            <span class="flex items-center gap-1.5">
-                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>
-                                Para envío al JEE (4,423)
+                                Contabilizadas (<span th:text="${#numbers.formatInteger(actasContabilizadas, 3, 'POINT')}"></span>)
                             </span>
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                Pendientes (0)
+                                Pendientes (<span th:text="${#numbers.formatInteger(totalActas - actasContabilizadas, 3, 'POINT')}"></span>)
                             </span>
                         </div>
                     </div>
@@ -64,17 +62,15 @@
             </div>
 
             <!-- ==================== 3-COLUMN GRID ==================== -->
-            <!-- STATIC: Reemplazar 27'325,432, 20'167,745, 7'157,687 con datos del backend -->
             <div class="mb-8 grid gap-6 lg:grid-cols-3">
 
                 <!-- COL 1: Mapa -->
                 <div class="flex flex-col gap-6">
-
                     <!-- Mapa -->
                     <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                         <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
                             <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Lima Metropolitana
+                            Ámbito Geográfico
                         </h3>
                         <img th:src="@{/img/mapa-lima.jpg}"
                              alt="Mapa de Lima Metropolitana"
@@ -93,7 +89,7 @@
                                 <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
                             </div>
                             <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
-                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900">27'325,432</p>
+                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" th:text="${#numbers.formatInteger(electoresHabilitados, 3, 'POINT')}"></p>
                             <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
                         </div>
                     </div>
@@ -113,10 +109,10 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-zinc-500">Asistentes</p>
-                                        <p class="text-xl font-bold text-primary-600">20'167,745</p>
+                                        <p class="text-xl font-bold text-primary-600" th:text="${#numbers.formatInteger(asistentes, 3, 'POINT')}"></p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-semibold text-primary-600">73.806%</span>
+                                <span class="text-sm font-semibold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')} + '%'"></span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3">
@@ -125,10 +121,10 @@
                                     </div>
                                     <div>
                                         <p class="text-sm font-medium text-zinc-500">Ausentes</p>
-                                        <p class="text-xl font-bold text-blue-500">7'157,687</p>
+                                        <p class="text-xl font-bold text-blue-500" th:text="${#numbers.formatInteger(ausentes, 3, 'POINT')}"></p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-semibold text-blue-500">26.194%</span>
+                                <span class="text-sm font-semibold text-blue-500" th:text="${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')} + '%'"></span>
                             </div>
                         </div>
                         <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
@@ -142,13 +138,16 @@
                 <div class="flex flex-col gap-6">
 
                     <!-- Card: Participación Ciudadana (Doughnut Chart) -->
+                    <!-- DINÁMICO: data-asistencia y data-ausencia para inicializar Chart.js dinámicamente -->
                     <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                         <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
                             <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
                             Participación Ciudadana
                         </h3>
                         <div class="relative mx-auto max-w-[220px]">
-                            <canvas id="participacionChart"></canvas>
+                            <canvas id="participacionChart" 
+                                    th:data-asistencia="${porcentajeAsistencia}" 
+                                    th:data-ausencia="${porcentajeAusencia}"></canvas>
                         </div>
                         <div class="mt-4 space-y-2">
                             <div class="flex items-center justify-between text-xs">
@@ -156,25 +155,25 @@
                                     <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
                                     Ciudadanos asistentes
                                 </span>
-                                <span class="font-semibold text-zinc-900">73.806%</span>
+                                <span class="font-semibold text-zinc-900" th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')} + '%'"></span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5">
                                     <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span>
                                     Ciudadanos ausentes
                                 </span>
-                                <span class="font-semibold text-zinc-900">26.194%</span>
+                                <span class="font-semibold text-zinc-900" th:text="${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')} + '%'"></span>
                             </div>
                             <div class="flex items-center justify-between text-xs">
                                 <span class="flex items-center gap-1.5">
                                     <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
                                     Ciudadanos pendientes
                                 </span>
-                                <span class="font-semibold text-zinc-900">0%</span>
+                                <span class="font-semibold text-zinc-900">0.000%</span>
                             </div>
                         </div>
                         <p class="mt-3 text-xs leading-relaxed text-zinc-400">
-                            *Ciudadanos pendientes: Porcentaje de ciudadanos aún no clasificados como asistentes o ausentes. Esta cifra se actualizará y se redistribuirá conforme avance la contabilización de las actas, hasta llegar al 100%.
+                            *Ciudadanos pendientes: Porcentaje de ciudadanos aún no clasificados como asistentes o ausentes. Esta cifra se actualizará conforme avance la contabilización de las actas.
                         </p>
                     </div>
 
@@ -183,13 +182,10 @@
             </div>
 
             <!-- ==================== LISTA DE ÁMBITOS ==================== -->
-            <!-- STATIC: Reemplazar datos con backend cuando esté disponible -->
+            <!-- DINÁMICO: Inicialización de la variable items de AlpineJS con el JSON enviado desde el controlador -->
             <div x-data="{
                     sortBy: 'alfabetico',
-                    items: [
-                        { name: 'PERÚ', pct: 75.654, attended: 20167745, total: 27325432 },
-                        { name: 'EXTRANJERO', pct: 33.950, attended: 630492, total: 1210813 },
-                    ],
+                    items: [(${ambitosJson})],
                     format(n) { return n.toLocaleString('es-PE') },
                     get sortedItems() {
                         const sorted = [...this.items]
@@ -203,7 +199,7 @@
                 <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
                         <i data-lucide="globe" class="mr-1.5 inline-block h-4 w-4"></i>
-                        Lista de Ámbitos
+                        Lista de Ámbitos (Departamentos)
                     </h3>
                     <div class="flex items-center gap-2">
                         <label for="ordenar" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
@@ -251,12 +247,17 @@
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('participacionChart');
         if (ctx) {
+            // DINÁMICO: Obtener los porcentajes reales desde los atributos del canvas
+            const asistencia = parseFloat(ctx.getAttribute('data-asistencia')) || 0;
+            const ausencia = parseFloat(ctx.getAttribute('data-ausencia')) || 0;
+            const pendiente = 0;
+
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: ['Asistentes', 'Ausentes', 'Pendientes'],
                     datasets: [{
-                        data: [73.806, 26.194, 0],
+                        data: [asistencia, ausencia, pendiente],
                         backgroundColor: ['#1e3a5f', '#94a3b8', '#e4e4e7'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
@@ -271,7 +272,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function (context) {
-                                    return context.label + ': ' + context.parsed + '%';
+                                    return context.label + ': ' + context.parsed.toFixed(3) + '%';
                                 }
                             }
                         }
