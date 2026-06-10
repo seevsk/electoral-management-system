@@ -50,20 +50,16 @@ public class AuthServiceImpl implements AuthService {
         if (!"user".equals(account.getRole()))
             throw new BusinessRuleException("Credenciales incorrectas");
 
-        if (account.getPasswordHash() == null)
-            throw new BusinessRuleException("Tu cuenta no ha sido activada. Usa el formulario de activación.");
-
-        if (!account.getIsActive())
-            throw new BusinessRuleException("Tu cuenta no está activa.");
-
-        if (!passwordEncoder.matches(password, account.getPasswordHash()))
+        if (account.getPasswordHash() == null
+                || !account.getIsActive()
+                || !passwordEncoder.matches(password, account.getPasswordHash()))
             throw new BusinessRuleException("Credenciales incorrectas");
 
         Voter voter = voterRepository.findByAccount_Id(account.getId())
-                .orElseThrow(() -> new BusinessRuleException("Perfil de votante no encontrado"));
+                .orElseThrow(() -> new BusinessRuleException("Credenciales incorrectas"));
 
         if (!"A".equals(voter.getStatus()))
-            throw new BusinessRuleException("Tu perfil de votante no está activo.");
+            throw new BusinessRuleException("Credenciales incorrectas");
 
         return account;
     }
