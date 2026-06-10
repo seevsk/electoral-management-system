@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Error interno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#e8edf3', 100: '#c5d1e0', 200: '#9eb3cc',
+                            300: '#7795b8', 400: '#5a7ea8', 500: '#3d6799',
+                            600: '#2d5280', 700: '#1e3a5f', 800: '#152d4a', 900: '#0d1f33',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>body { font-family: 'Poppins', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 flex items-center justify-center p-4">
+
+<div class="w-full max-w-md text-center">
+    <div class="rounded-2xl bg-white px-8 py-12 shadow-2xl">
+
+        <!-- Icon -->
+        <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-orange-50">
+            <i data-lucide="alert-triangle" class="h-10 w-10 text-orange-400"></i>
+        </div>
+
+        <!-- Error code -->
+        <p class="text-6xl font-bold text-zinc-200 mb-2">500</p>
+
+        <!-- Message -->
+        <h1 class="text-lg font-bold text-zinc-900 mb-2">Error interno del servidor</h1>
+        <p class="text-sm text-zinc-500 mb-8">
+            Ocurrió un error inesperado. El equipo técnico ha sido notificado.
+            Por favor intenta de nuevo en unos minutos.
+        </p>
+
+        <!-- Actions -->
+        <div class="flex flex-col gap-3">
+            <a th:href="@{/}"
+               class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-800">
+                <i data-lucide="home" class="h-4 w-4"></i>
+                Ir al inicio
+            </a>
+            <button onclick="window.location.reload()"
+                    class="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-50">
+                <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                Reintentar
+            </button>
+        </div>
+    </div>
+
+    <p class="mt-6 text-xs text-white/50">Sistema Electoral - Lima Metropolitana</p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+</body>
+</html>
