@@ -72,6 +72,12 @@
             </h2>
         </div>
 
+        <div th:if="${loginSuccess}"
+             class="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+            <i data-lucide="check-circle" class="h-3.5 w-3.5 shrink-0"></i>
+            <span th:text="${loginSuccess}"></span>
+        </div>
+
         <div th:if="${loginError}"
              class="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
             <i data-lucide="alert-circle" class="h-3.5 w-3.5 shrink-0"></i>
@@ -117,7 +123,17 @@
                 Ingresar
             </button>
 
-            <div class="text-center">
+            <div class="flex flex-col items-center gap-2 text-center">
+                <a th:href="@{/activation}"
+                   class="inline-flex items-center gap-1 text-xs text-primary-600 transition-colors hover:text-primary-800 font-medium">
+                    <i data-lucide="user-plus" class="h-3 w-3"></i>
+                    Primera vez? Activa tu cuenta
+                </a>
+                <a th:href="@{/recovery}"
+                   class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
+                    <i data-lucide="key-round" class="h-3 w-3"></i>
+                    Olvide mi contrasena
+                </a>
                 <a th:href="@{/participation}"
                    class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
                     <i data-lucide="arrow-left" class="h-3 w-3"></i>
