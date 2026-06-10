@@ -41,7 +41,6 @@
 <body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 flex items-center justify-center p-4">
 
 <div x-data="{
-        role: 'votante',
         form: { dni: '', password: '' },
         errors: {},
         validate() {
@@ -52,8 +51,7 @@
             return Object.keys(this.errors).length === 0
         },
         submit() {
-            if (!this.validate()) return
-            $store.auth.login('votante')
+            if (this.validate()) this.$refs.loginForm.submit()
         }
      }" class="w-full max-w-md">
 
@@ -67,21 +65,34 @@
             <p class="mt-1 text-xs text-zinc-400">Elecciones Generales 2026</p>
         </div>
 
-        <div class="mb-8 border-b border-zinc-200 pb-4">
+        <div class="mb-6 border-b border-zinc-200 pb-4">
             <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
                 <i data-lucide="user" class="mr-1.5 inline-block h-4 w-4"></i>
                 Inicio de Sesion - Votante
             </h2>
         </div>
 
-        <form @submit.prevent="submit()" class="flex flex-col gap-6" novalidate>
+        <div th:if="${loginSuccess}"
+             class="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+            <i data-lucide="check-circle" class="h-3.5 w-3.5 shrink-0"></i>
+            <span th:text="${loginSuccess}"></span>
+        </div>
+
+        <div th:if="${loginError}"
+             class="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+            <i data-lucide="alert-circle" class="h-3.5 w-3.5 shrink-0"></i>
+            <span th:text="${loginError}"></span>
+        </div>
+
+        <form x-ref="loginForm" th:action="@{/auth/voter/login}" method="post"
+              class="flex flex-col gap-6" novalidate>
 
             <div role="group" class="flex flex-col gap-2">
                 <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="credit-card" class="h-3.5 w-3.5"></i>
                     DNI
                 </label>
-                <input id="dni" type="text" x-model="form.dni" maxlength="8"
+                <input id="dni" type="text" name="dni" x-model="form.dni" maxlength="8"
                        :class="errors.dni ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
                        placeholder="Ingresa tu DNI (8 digitos)">
@@ -96,7 +107,7 @@
                     <i data-lucide="lock" class="h-3.5 w-3.5"></i>
                     Contrasena
                 </label>
-                <input id="password" type="password" x-model="form.password"
+                <input id="password" type="password" name="password" x-model="form.password"
                        :class="errors.password ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
                        placeholder="Ingresa tu contrasena">
@@ -106,13 +117,23 @@
                 </p>
             </div>
 
-            <button type="submit"
+            <button type="button" @click="submit()"
                     class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
                 <i data-lucide="log-in" class="h-4 w-4"></i>
                 Ingresar
             </button>
 
-            <div class="text-center">
+            <div class="flex flex-col items-center gap-2 text-center">
+                <a th:href="@{/activation}"
+                   class="inline-flex items-center gap-1 text-xs text-primary-600 transition-colors hover:text-primary-800 font-medium">
+                    <i data-lucide="user-plus" class="h-3 w-3"></i>
+                    Primera vez? Activa tu cuenta
+                </a>
+                <a th:href="@{/recovery}"
+                   class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
+                    <i data-lucide="key-round" class="h-3 w-3"></i>
+                    Olvide mi contrasena
+                </a>
                 <a th:href="@{/participation}"
                    class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
                     <i data-lucide="arrow-left" class="h-3 w-3"></i>
@@ -128,7 +149,6 @@
     </p>
 </div>
 
-<script th:src="@{/js/app.js}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof lucide !== 'undefined') lucide.createIcons();
