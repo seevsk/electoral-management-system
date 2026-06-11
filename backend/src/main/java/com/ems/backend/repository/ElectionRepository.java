@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
+
+
 public interface ElectionRepository extends JpaRepository<Election, Integer> {
 
     @Query("""
@@ -66,4 +68,10 @@ public interface ElectionRepository extends JpaRepository<Election, Integer> {
             e.id desc
             """)
     Optional<Election> findBestPresidentialElection();
+
+    @Query("select e from Election e where e.status = 'A'")
+    Optional<Election> findActiveElection();
+
+    @Query("select count(e) > 0 from Election e where e.status = 'A'")
+    boolean existsActiveElection();
 }
