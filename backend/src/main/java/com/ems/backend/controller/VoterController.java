@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam; // import para
 
 import java.util.HashMap;
 import java.util.List;
@@ -68,27 +69,26 @@ public class VoterController {
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("voter", new Voter());
-        model.addAttribute("accounts", accountRepository.findAll());
         model.addAttribute("locationsJson", buildLocationsJson());
+        // Ya se neceista el accounts en el modelo
         return "voters/registervoter";
     }
 
     @PostMapping("/register")
     public String registerVoter(
             @ModelAttribute Voter voter,
+            @RequestParam("dni") String dni,
             RedirectAttributes redirectAttributes
-    ){
+    ) {
         try {
-            voterService.save(voter);
+            voterService.save(voter, dni);
             redirectAttributes.addFlashAttribute("successMessage", "Votante registrado correctamente.");
             return "redirect:/admin/voters/list";
         } catch (BusinessRuleException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            redirectAttributes.addFlashAttribute("voter", voter);
             return "redirect:/admin/voters/register";
         }
     }
-
     @GetMapping("/update/{id}")
     public String showUpdateForm(@PathVariable Integer id, Model model) {
         Voter voter = voterService.findById(id);

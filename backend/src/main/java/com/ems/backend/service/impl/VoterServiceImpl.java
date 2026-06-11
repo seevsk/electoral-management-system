@@ -1,6 +1,8 @@
 package com.ems.backend.service.impl;
 
+import com.ems.backend.entity.Account;
 import com.ems.backend.entity.Voter;
+import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.VoterRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
@@ -18,9 +20,11 @@ public class VoterServiceImpl implements VoterService {
     private static final String STATUS_INACTIVE = "I";
 
     private final VoterRepository voterRepository;
+    private final AccountRepository accountRepository;
 
-    public VoterServiceImpl(VoterRepository voterRepository) {
+    public VoterServiceImpl(VoterRepository voterRepository, AccountRepository accountRepository) {
         this.voterRepository = voterRepository;
+        this.accountRepository = accountRepository;
     }
 
     @Override
@@ -41,14 +45,30 @@ public class VoterServiceImpl implements VoterService {
     }
 
     @Override
-    public Voter save(Voter voter) {
-        normalizeVoterFields(voter);
-
-        if (voterRepository.existsByAccount_Id(voter.getAccount().getId())) {
-            throw new BusinessRuleException("La cuenta ya está asociada a otro votante.");
+    public Voter save(Voter voter, String dni) {
+        // Validar formato DNI
+        if (dni == null || !dni.matches("^[0-9]{8}$")) {
+            throw new BusinessRuleException("El DNI debe tener exactamente 8 dígitos numéricos.");
         }
 
-        // No se setea status aquí — el @PrePersist del entity lo maneja (default "I")
+        // Buscar account existente o crear una nueva
+        Account account = accountRepository.findByDni(dni)
+                .orElseGet(() -> {
+                    Account newAccount = new Account();
+                    newAccount.setDni(dni);
+                    newAccount.setRole("user");
+                    newAccount.setPasswordHash(null);
+                    // isActive y createdAt los maneja el @PrePersist
+                    return accountRepository.save(newAccount);
+                });
+
+        // Validar que esa account no esté ya asociada a otro votante
+        if (voterRepository.existsByAccount_Id(account.getId())) {
+            throw new BusinessRuleException("El DNI ya está asociado a un votante registrado.");
+        }
+
+        voter.setAccount(account);
+        normalizeVoterFields(voter);
         return voterRepository.save(voter);
     }
 
