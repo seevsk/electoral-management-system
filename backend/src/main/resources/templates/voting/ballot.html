@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/head :: head}">
+    <title>Cédula de Votación</title>
+</head>
+<body class="min-h-screen bg-zinc-100">
+
+<div class="flex min-h-screen flex-col" x-data="ballotApp()">
+
+    <!-- ── Sticky Header ── -->
+    <header class="sticky top-0 z-30 flex items-center justify-between bg-gradient-to-r from-primary-700 to-primary-900 px-6 py-4 text-white shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+                <i data-lucide="vote" class="h-5 w-5"></i>
+            </div>
+            <div>
+                <p class="text-xs text-white/60 uppercase tracking-wider">Cédula de Votación</p>
+                <p class="text-sm font-bold leading-tight" th:text="${election.name}">Elecciones Generales</p>
+            </div>
+        </div>
+        <!-- Timer -->
+        <div class="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2" x-data="votingTimer()">
+            <i data-lucide="timer" class="h-4 w-4 text-amber-300"></i>
+            <span class="font-mono text-lg font-bold tabular-nums"
+                  :class="remaining <= 60 ? 'text-red-300' : 'text-white'"
+                  x-text="formatted">5:00</span>
+        </div>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main class="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+
+        <!-- Instruction -->
+        <div class="mb-4 flex items-center gap-3 rounded-xl border border-primary-200 bg-primary-50 px-4 py-3">
+            <i data-lucide="hand-pointer" class="h-5 w-5 shrink-0 text-primary-500"></i>
+            <p class="text-sm text-primary-800">Haga clic sobre el partido de su preferencia para seleccionarlo, luego presione <strong>Siguiente</strong>.</p>
+        </div>
+
+        <!-- Ballot table -->
+        <div class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+
+            <!-- Header row -->
+            <div class="grid grid-cols-[1fr_1fr_100px] border-b border-zinc-200 bg-zinc-50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                <span>Partido Político</span>
+                <span>Candidato</span>
+                <span class="text-center">Selección</span>
+            </div>
+
+            <!-- Party rows -->
+            <div th:each="entry : ${ballotEntries}"
+                 th:attr="data-cid=${entry.candidateId}"
+                 @click="select($el.dataset.cid * 1)"
+                 :class="selectedId == $el.dataset.cid ? 'bg-primary-50 ring-2 ring-inset ring-primary-400' : 'hover:bg-zinc-50'"
+                 class="grid cursor-pointer grid-cols-[1fr_1fr_100px] items-center gap-2 border-b border-zinc-100 px-4 py-3 transition-colors last:border-0">
+
+                <!-- Party -->
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50">
+                        <img th:if="${entry.partyLogoUrl != null}"
+                             th:src="${entry.partyLogoUrl}"
+                             th:alt="${entry.partyAcronym}"
+                             class="h-full w-full object-contain p-0.5"
+                             onerror="this.style.display='none'">
+                        <i th:if="${entry.partyLogoUrl == null}" data-lucide="flag" class="h-5 w-5 text-zinc-400"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-semibold text-zinc-900" th:text="${entry.partyName}">Partido</p>
+                        <p class="text-xs text-zinc-400" th:text="${entry.partyAcronym}">ACR</p>
+                    </div>
+                </div>
+
+                <!-- Candidate -->
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-zinc-200 bg-zinc-100">
+                        <img th:if="${entry.candidatePhotoUrl != null}"
+                             th:src="${entry.candidatePhotoUrl}"
+                             th:alt="${entry.candidateFullName}"
+                             class="h-full w-full object-cover"
+                             onerror="this.style.display='none'">
+                        <i th:if="${entry.candidatePhotoUrl == null}" data-lucide="user" class="absolute inset-0 m-auto h-5 w-5 text-zinc-400"></i>
+                        <!-- Red X overlay when selected -->
+                        <div th:attr="data-cid=${entry.candidateId}"
+                             x-show="selectedId == $el.dataset.cid"
+                             class="absolute inset-0 flex items-center justify-center bg-primary-600/70">
+                            <i data-lucide="x" class="h-5 w-5 text-white"></i>
+                        </div>
+                    </div>
+                    <p class="truncate text-sm text-zinc-700" th:text="${entry.candidateFullName}">Nombre Candidato</p>
+                </div>
+
+                <!-- Selection indicator -->
+                <div class="flex justify-center">
+                    <div th:attr="data-cid=${entry.candidateId}"
+                         x-show="selectedId == $el.dataset.cid"
+                         class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-600">
+                        <i data-lucide="check" class="h-4 w-4 text-white"></i>
+                    </div>
+                    <div th:attr="data-cid=${entry.candidateId}"
+                         x-show="selectedId != $el.dataset.cid"
+                         class="h-7 w-7 rounded-full border-2 border-zinc-300"></div>
+                </div>
+            </div>
+
+            <!-- Blank vote row -->
+            <div @click="select(0)"
+                 :class="selectedId === 0 ? 'bg-zinc-100 ring-2 ring-inset ring-zinc-400' : 'hover:bg-zinc-50'"
+                 class="grid cursor-pointer grid-cols-[1fr_1fr_100px] items-center gap-2 border-t-2 border-dashed border-zinc-200 px-4 py-3 transition-colors">
+                <div class="col-span-2 flex items-center gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200">
+                        <i data-lucide="square-slash" class="h-5 w-5 text-zinc-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-zinc-600">VOTO EN BLANCO</p>
+                        <p class="text-xs text-zinc-400">Sin preferencia por ningún candidato</p>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <div x-show="selectedId === 0"
+                         class="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-500">
+                        <i data-lucide="check" class="h-4 w-4 text-white"></i>
+                    </div>
+                    <div x-show="selectedId !== 0"
+                         class="h-7 w-7 rounded-full border-2 border-zinc-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No entries fallback -->
+        <div th:if="${#lists.isEmpty(ballotEntries)}"
+             class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-700">
+            <i data-lucide="triangle-alert" class="mr-2 inline-block h-4 w-4 align-text-bottom"></i>
+            No hay candidatos registrados para esta elección.
+        </div>
+
+        <!-- Action bar -->
+        <div class="mt-6 flex items-center justify-between">
+            <a th:href="@{/voter/vote/conditions}"
+               class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                Regresar
+            </a>
+
+            <!-- Hidden form for submission -->
+            <form id="ballot-form" method="post" th:action="@{/voter/vote/select}"
+                  @submit.prevent="submitBallot()">
+                <input type="hidden" name="candidateId" x-bind:value="selectedId ?? ''">
+                <button type="submit"
+                        :disabled="selectedId === null"
+                        :class="selectedId === null
+                            ? 'cursor-not-allowed bg-zinc-300 text-zinc-500'
+                            : 'bg-primary-600 text-white hover:bg-primary-700'"
+                        class="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    Siguiente
+                    <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+function ballotApp() {
+    return {
+        selectedId: null,
+        select(id) { this.selectedId = id; },
+        submitBallot() {
+            if (this.selectedId === null) return;
+            document.getElementById('ballot-form').submit();
+        }
+    };
+}
+
+function votingTimer() {
+    return {
+        remaining: 300,
+        formatted: '5:00',
+        init() {
+            this.tick();
+            setInterval(() => this.tick(), 1_000);
+        },
+        tick() {
+            const deadline = parseInt(sessionStorage.getItem('votingDeadline') || '0');
+            this.remaining = Math.max(0, Math.round((deadline - Date.now()) / 1_000));
+            const m = Math.floor(this.remaining / 60);
+            const s = this.remaining % 60;
+            this.formatted = m + ':' + String(s).padStart(2, '0');
+            if (this.remaining === 0) {
+                sessionStorage.removeItem('votingDeadline');
+                window.location.href = '/ems/voter/vote/conditions';
+            }
+        }
+    };
+}
+
+if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+</body>
+</html>
