@@ -80,8 +80,8 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     long countByStatusAndHasVotedTrue(String status);
 
     /**
-     * Agrupa los votantes activos por departamento y cuenta el total de electores
-     * y cuántos de ellos asistieron a votar.
+     * Comentario descriptivo: Obtiene la participación agrupada por departamentos
+     * filtrando solo por votantes con estado Activo ('A') para producción.
      */
     @Query("""
             select l.department,
@@ -93,5 +93,21 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
             group by l.department
             """)
     List<Object[]> getParticipationByScope();
+
+    /**
+     * Comentario descriptivo: Consulta para obtener la participación agrupada por distrito 
+     * enfocado exclusivamente en Lima Metropolitana, filtrando solo votantes activos ('A').
+     */
+    @Query("""
+            select l.locationCode, l.district,
+                   count(v),
+                   sum(case when v.hasVoted = true then 1L else 0L end)
+            from Voter v
+            join Location l on v.locationCode = l.locationCode
+            where v.status = 'A' and l.department = 'LIMA'
+            group by l.locationCode, l.district
+            order by l.district asc
+            """)
+    List<Object[]> getParticipationByDistrict();
 }
 

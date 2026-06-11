@@ -102,11 +102,13 @@ public class VoterServiceImpl implements VoterService {
 
     @Override
     public long getElectoresHabilitados() {
+        // Comentario descriptivo: Obtiene el total de electores habilitados filtrando solo por estado Activo (A)
         return voterRepository.countByStatus(STATUS_ACTIVE);
     }
 
     @Override
     public long getVotantesAsistentes() {
+        // Comentario descriptivo: Obtiene el total de asistentes activos que ya emitieron su voto (hasVoted = true)
         return voterRepository.countByStatusAndHasVotedTrue(STATUS_ACTIVE);
     }
 
@@ -128,6 +130,31 @@ public class VoterServiceImpl implements VoterService {
             scopeData.put("pct", pct);
 
             participationList.add(scopeData);
+        }
+        return participationList;
+    }
+
+    @Override
+    public List<Map<String, Object>> getParticipationByDistrict() {
+        // Comentario descriptivo: Obtener los resultados agrupados por distrito desde el repositorio
+        List<Object[]> queryResult = voterRepository.getParticipationByDistrict();
+        List<Map<String, Object>> participationList = new ArrayList<>();
+
+        for (Object[] row : queryResult) {
+            String code = (String) row[0];
+            String name = (String) row[1];
+            long total = (Long) row[2];
+            long attended = (Long) row[3];
+            double pct = total > 0 ? (attended * 100.0) / total : 0.0;
+
+            Map<String, Object> districtData = new HashMap<>();
+            districtData.put("code", code);
+            districtData.put("name", name);
+            districtData.put("total", total);
+            districtData.put("attended", attended);
+            districtData.put("pct", pct);
+
+            participationList.add(districtData);
         }
         return participationList;
     }

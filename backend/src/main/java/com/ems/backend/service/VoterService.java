@@ -41,5 +41,11 @@ public interface VoterService {
      * electores, asistentes y porcentaje de participación.
      */
     List<java.util.Map<String, Object>> getParticipationByScope();
+
+    /**
+     * Comentario descriptivo: Obtiene el listado consolidado de participación ciudadana
+     * para cada uno de los distritos de Lima Metropolitana.
+     */
+    List<java.util.Map<String, Object>> getParticipationByDistrict();
 }
 

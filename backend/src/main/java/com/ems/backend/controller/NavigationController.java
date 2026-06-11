@@ -52,7 +52,7 @@ public class NavigationController
         model.addAttribute("actasContabilizadas", actasContabilizadas);
         model.addAttribute("porcentajeActas", porcentajeActas);
 
-        // Obtener ámbitos (departamentos) y serializarlos a JSON para Alpine.js
+        // Comentario descriptivo: Obtener ámbitos (departamentos) y serializarlos a JSON para Alpine.js
         List<Map<String, Object>> ambitosList = voterService.getParticipationByScope();
         String ambitosJson = "[]";
         try {
@@ -61,6 +61,16 @@ public class NavigationController
             e.printStackTrace();
         }
         model.addAttribute("ambitosJson", ambitosJson);
+
+        // Comentario descriptivo: Obtener los distritos de Lima Metropolitana con sus estadísticas y serializarlos a JSON
+        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
+        String distritosJson = "[]";
+        try {
+            distritosJson = new ObjectMapper().writeValueAsString(distritosList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        model.addAttribute("distritosJson", distritosJson);
 
         return "index";
     }

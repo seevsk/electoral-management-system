@@ -61,131 +61,224 @@
                 </div>
             </div>
 
-            <!-- ==================== 3-COLUMN GRID ==================== -->
-            <div class="mb-8 grid gap-6 lg:grid-cols-3">
+            <!-- ==================== FILTERS & GRID WRAPPER (ALPINE.JS) ==================== -->
+            <!-- Comentario descriptivo: Contenedor global AlpineJS que consume th:data-* de forma segura, evitando errores de parseo inline -->
+            <div id="filters-grid-wrapper"
+                 th:data-distritos="${distritosJson}"
+                 th:data-habilitados="${electoresHabilitados}"
+                 th:data-asistentes="${asistentes}"
+                 x-data="{
+                    distritoSeleccionado: '',
+                    distritos: [],
+                    totalLimaHabilitados: 0,
+                    totalLimaAsistentes: 0,
+                    init() {
+                        // Comentario descriptivo: Parsear de forma segura los valores inyectados por el backend en atributos data-*
+                        this.distritos = JSON.parse(this.$el.getAttribute('data-distritos') || '[]');
+                        this.totalLimaHabilitados = parseInt(this.$el.getAttribute('data-habilitados') || '0');
+                        this.totalLimaAsistentes = parseInt(this.$el.getAttribute('data-asistentes') || '0');
+                    },
+                    get electoresHabiles() {
+                        if (!this.distritoSeleccionado) return this.totalLimaHabilitados;
+                        const dist = this.distritos.find(d => d.code === this.distritoSeleccionado);
+                        return dist ? dist.total : 0;
+                    },
+                    get asistentes() {
+                        if (!this.distritoSeleccionado) return this.totalLimaAsistentes;
+                        const dist = this.distritos.find(d => d.code === this.distritoSeleccionado);
+                        return dist ? dist.attended : 0;
+                    },
+                    get ausentes() {
+                        return this.electoresHabiles - this.asistentes;
+                    },
+                    get pctAsistencia() {
+                        return this.electoresHabiles > 0 ? (this.asistentes * 100.0) / this.electoresHabiles : 0.0;
+                    },
+                    get pctAusencia() {
+                        return this.electoresHabiles > 0 ? (this.ausentes * 100.0) / this.electoresHabiles : 0.0;
+                    },
+                    limpiar() {
+                        this.distritoSeleccionado = '';
+                        this.updateChart();
+                    },
+                    updateChart() {
+                        const chart = Chart.getChart('participacionChart');
+                        if (chart) {
+                            chart.data.datasets[0].data = [this.pctAsistencia, this.pctAusencia];
+                            chart.update();
+                        }
+                    }
+                 }">
 
-                <!-- COL 1: Mapa -->
-                <div class="flex flex-col gap-6">
-                    <!-- Mapa -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                            <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Ámbito Geográfico
-                        </h3>
-                        <img th:src="@{/img/mapa-lima.jpg}"
-                             alt="Mapa de Lima Metropolitana"
-                             class="w-full rounded-lg object-contain shadow-sm"
-                             style="max-height: 450px; background: #f4f4f5;">
+                <!-- ==================== FILTROS DE UBICACIÓN ==================== -->
+                <!-- Comentario descriptivo: Barra de filtros alineada en una sola fila. Campos de nivel superior bloqueados para hacer enfasis en Lima Metropolitana -->
+                <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center">
+                        <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
+                            <i data-lucide="filter" class="h-4 w-4"></i>
+                            Filtrar Ámbito:
+                        </div>
+                        <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
+                            <!-- País -->
+                            <div>
+                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option>PERÚ</option>
+                                </select>
+                            </div>
+                            <!-- Departamento -->
+                            <div>
+                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option>LIMA</option>
+                                </select>
+                            </div>
+                            <!-- Provincia -->
+                            <div>
+                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option>LIMA</option>
+                                </select>
+                            </div>
+                            <!-- Distrito (Seleccionable dinámicamente) -->
+                            <div>
+                                <select id="select-distrito" x-model="distritoSeleccionado" @change="updateChart()"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
+                                    <option value="">[ Selecciona un Distrito ]</option>
+                                    <template x-for="d in distritos" :key="d.code">
+                                        <option :value="d.code" x-text="d.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Botón Limpiar para regresar al consolidado general de Lima -->
+                        <button type="button" @click="limpiar()"
+                                class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
+                            <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                            Limpiar
+                        </button>
                     </div>
                 </div>
 
-                <!-- COL 2: Electores Hábiles + Asistencia apilados -->
-                <div class="flex flex-col gap-6">
+                <!-- ==================== 3-COLUMN GRID ==================== -->
+                <div class="mb-8 grid gap-6 lg:grid-cols-3">
 
-                    <!-- Electores Hábiles -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <div class="flex flex-col items-center text-center">
-                            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
-                                <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
-                            </div>
-                            <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
-                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" th:text="${#numbers.formatInteger(electoresHabilitados, 3, 'POINT')}"></p>
-                            <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
+                    <!-- COL 1: Mapa -->
+                    <div class="flex flex-col gap-6">
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Ámbito Geográfico
+                            </h3>
+                            <img th:src="@{/img/mapa-lima.jpg}"
+                                 alt="Mapa de Lima Metropolitana"
+                                 class="w-full rounded-lg object-contain shadow-sm"
+                                 style="max-height: 450px; background: #f4f4f5;">
                         </div>
                     </div>
 
-                    <!-- Card: Asistencia -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                            <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Asistencia
-                        </h3>
-                        <p class="mb-4 text-xs text-zinc-400">Resumen de participación ciudadana</p>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
-                                        <i data-lucide="check-circle" class="h-5 w-5 text-primary-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-zinc-500">Asistentes</p>
-                                        <p class="text-xl font-bold text-primary-600" th:text="${#numbers.formatInteger(asistentes, 3, 'POINT')}"></p>
-                                    </div>
+                    <!-- COL 2: Electores Hábiles + Asistencia apilados -->
+                    <!-- Comentario descriptivo: Las tarjetas de electores, asistentes y ausentes actualizan sus cifras en caliente mediante AlpineJS -->
+                    <div class="flex flex-col gap-6">
+
+                        <!-- Electores Hábiles -->
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
+                                    <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
                                 </div>
-                                <span class="text-sm font-semibold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')} + '%'"></span>
+                                <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
+                                <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" x-text="electoresHabiles.toLocaleString('es-PE')">[[${#numbers.formatInteger(electoresHabilitados, 3, 'POINT')}]]</p>
+                                <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10">
-                                        <i data-lucide="x-circle" class="h-5 w-5 text-blue-500"></i>
+                        </div>
+
+                        <!-- Card: Asistencia -->
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Asistencia
+                            </h3>
+                            <p class="mb-4 text-xs text-zinc-400">Resumen de participación ciudadana</p>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
+                                            <i data-lucide="check-circle" class="h-5 w-5 text-primary-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-zinc-500">Asistentes</p>
+                                            <p class="text-xl font-bold text-primary-600" x-text="asistentes.toLocaleString('es-PE')">[[${#numbers.formatInteger(asistentes, 3, 'POINT')}]]</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-zinc-500">Ausentes</p>
-                                        <p class="text-xl font-bold text-blue-500" th:text="${#numbers.formatInteger(ausentes, 3, 'POINT')}"></p>
-                                    </div>
+                                    <span class="text-sm font-semibold text-primary-600" x-text="pctAsistencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')}]]%</span>
                                 </div>
-                                <span class="text-sm font-semibold text-blue-500" th:text="${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')} + '%'"></span>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10">
+                                            <i data-lucide="x-circle" class="h-5 w-5 text-blue-500"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-zinc-500">Ausentes</p>
+                                            <p class="text-xl font-bold text-blue-500" x-text="ausentes.toLocaleString('es-PE')">[[${#numbers.formatInteger(ausentes, 3, 'POINT')}]]</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-blue-500" x-text="pctAusencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
+                                </div>
                             </div>
+                            <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
+                                * Esta información solo considera las actas contabilizadas.
+                            </p>
                         </div>
-                        <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
-                            * Esta información solo considera las actas contabilizadas.
-                        </p>
+
+                    </div>
+
+                    <!-- COL 3: Participación Ciudadana (Gráfico de Dona) -->
+                    <!-- Comentario descriptivo: Se eliminó ciudadanos pendientes del gráfico y su leyenda, mostrando exclusivamente Asistentes y Ausentes -->
+                    <div class="flex flex-col gap-6">
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Participación Ciudadana
+                            </h3>
+                            <div class="relative mx-auto max-w-[220px]">
+                                <canvas id="participacionChart" 
+                                        th:data-asistencia="${porcentajeAsistencia}" 
+                                        th:data-ausencia="${porcentajeAusencia}"></canvas>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
+                                        Ciudadanos asistentes
+                                    </span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctAsistencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')}]]%</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span>
+                                        Ciudadanos ausentes
+                                    </span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctAusencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
+                                </div>
+                            </div>
+                            <p class="mt-6 text-xs leading-relaxed text-zinc-400">
+                                * Gráfico dinámico: Los porcentajes sumados reflejan el 100% de la participación (Asistentes vs Ausentes) para el ámbito consultado.
+                            </p>
+                        </div>
                     </div>
 
                 </div>
 
-                <!-- COL 3: Solo Participación Ciudadana -->
-                <div class="flex flex-col gap-6">
-
-                    <!-- Card: Participación Ciudadana (Doughnut Chart) -->
-                    <!-- DINÁMICO: data-asistencia y data-ausencia para inicializar Chart.js dinámicamente -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                            <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Participación Ciudadana
-                        </h3>
-                        <div class="relative mx-auto max-w-[220px]">
-                            <canvas id="participacionChart" 
-                                    th:data-asistencia="${porcentajeAsistencia}" 
-                                    th:data-ausencia="${porcentajeAusencia}"></canvas>
-                        </div>
-                        <div class="mt-4 space-y-2">
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
-                                    Ciudadanos asistentes
-                                </span>
-                                <span class="font-semibold text-zinc-900" th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')} + '%'"></span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span>
-                                    Ciudadanos ausentes
-                                </span>
-                                <span class="font-semibold text-zinc-900" th:text="${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')} + '%'"></span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                    Ciudadanos pendientes
-                                </span>
-                                <span class="font-semibold text-zinc-900">0.000%</span>
-                            </div>
-                        </div>
-                        <p class="mt-3 text-xs leading-relaxed text-zinc-400">
-                            *Ciudadanos pendientes: Porcentaje de ciudadanos aún no clasificados como asistentes o ausentes. Esta cifra se actualizará conforme avance la contabilización de las actas.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
+            </div> <!-- FIN FILTERS & GRID WRAPPER -->
 
             <!-- ==================== LISTA DE ÁMBITOS ==================== -->
-            <!-- DINÁMICO: Inicialización de la variable items de AlpineJS con el JSON enviado desde el controlador -->
-            <div x-data="{
+            <!-- DINÁMICO: Carga segura del listado de ámbitos inyectados por el backend en th:data-ambitos -->
+            <div th:data-ambitos="${ambitosJson}"
+                 x-data="{
                     sortBy: 'alfabetico',
-                    items: [(${ambitosJson})],
+                    items: [],
+                    init() {
+                        // Comentario descriptivo: Parsear de forma segura los ámbitos para evitar fallos de sintaxis en el navegador
+                        this.items = JSON.parse(this.$el.getAttribute('data-ambitos') || '[]');
+                    },
                     format(n) { return n.toLocaleString('es-PE') },
                     get sortedItems() {
                         const sorted = [...this.items]
@@ -247,18 +340,17 @@
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('participacionChart');
         if (ctx) {
-            // DINÁMICO: Obtener los porcentajes reales desde los atributos del canvas
+            // DINÁMICO: Obtener los porcentajes iniciales desde los atributos del canvas
             const asistencia = parseFloat(ctx.getAttribute('data-asistencia')) || 0;
             const ausencia = parseFloat(ctx.getAttribute('data-ausencia')) || 0;
-            const pendiente = 0;
 
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Asistentes', 'Ausentes', 'Pendientes'],
+                    labels: ['Asistentes', 'Ausentes'],
                     datasets: [{
-                        data: [asistencia, ausencia, pendiente],
-                        backgroundColor: ['#1e3a5f', '#94a3b8', '#e4e4e7'],
+                        data: [asistencia, ausencia],
+                        backgroundColor: ['#1e3a5f', '#94a3b8'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                     }]
