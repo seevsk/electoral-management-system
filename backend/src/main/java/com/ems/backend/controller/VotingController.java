@@ -94,12 +94,13 @@ public class VotingController {
             return "redirect:/voter/vote/conditions";
 
         Election election = electionOpt.get();
+        boolean isBlankVote = candidateId == 0;
+
         model.addAttribute("election", election);
         model.addAttribute("selectedCandidateId", candidateId);
+        model.addAttribute("isBlankVote", isBlankVote);
 
-        if (candidateId == 0) {
-            model.addAttribute("isBlankVote", true);
-        } else {
+        if (!isBlankVote) {
             votingService.getBallotEntry(election.getId(), candidateId)
                     .ifPresent(e -> model.addAttribute("selectedEntry", e));
         }

@@ -49,7 +49,7 @@
         </div>
 
         <!-- ── VOTO CON CANDIDATO ── -->
-        <div th:if="${!isBlankVote and selectedEntry != null}"
+        <div th:if="${isBlankVote == false and selectedEntry != null}"
              class="overflow-hidden rounded-2xl border-2 border-primary-300 bg-white shadow-md">
 
             <!-- Party header band -->
