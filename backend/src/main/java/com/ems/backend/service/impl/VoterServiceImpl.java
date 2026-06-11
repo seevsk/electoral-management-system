@@ -51,6 +51,13 @@ public class VoterServiceImpl implements VoterService {
             throw new BusinessRuleException("El DNI debe tener exactamente 8 dígitos numéricos.");
         }
 
+        if (voter.getBirthDate() == null) {
+            throw new BusinessRuleException("La fecha de nacimiento es obligatoria.");
+        }
+        if (voter.getDniExpiryDate() == null) {
+            throw new BusinessRuleException("La fecha de vencimiento del DNI es obligatoria.");
+        }
+
         // Buscar account existente o crear una nueva
         Account account = accountRepository.findByDni(dni)
                 .orElseGet(() -> {

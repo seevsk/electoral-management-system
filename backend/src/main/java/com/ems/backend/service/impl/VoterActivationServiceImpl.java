@@ -57,7 +57,7 @@ public class VoterActivationServiceImpl implements VoterActivationService {
     }
 
     private void validateBiometrics(Voter voter, VoterActivationDto dto) {
-        if (!voter.getBirthDate().equals(dto.getBirthDate()))
+        if (voter.getBirthDate() == null || !voter.getBirthDate().equals(dto.getBirthDate()))
             throw new BusinessRuleException("Fecha de nacimiento no coincide con el padrón");
 
         if (voter.getDniExpiryDate() == null || !voter.getDniExpiryDate().equals(dto.getDniExpiryDate()))
