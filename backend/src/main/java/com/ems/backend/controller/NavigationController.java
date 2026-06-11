@@ -2,6 +2,7 @@ package com.ems.backend.controller;
 
 import com.ems.backend.service.VoterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,6 @@ public class NavigationController
 {
     private final VoterService voterService;
 
-    // Inyección del servicio de votantes para acceder a estadísticas reales
     public NavigationController(VoterService voterService) {
         this.voterService = voterService;
     }
@@ -26,9 +26,14 @@ public class NavigationController
     }
 
     @GetMapping("/participation")
-    public String participation(Model model)
+    public String participation(Authentication authentication, Model model)
     {
-        // Obtención de datos dinámicos directos de la base de datos
+        // Authenticated voters go to their dedicated portal
+        if (authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
+            return "redirect:/voter/portal";
+        }
+
         long electoresHabilitados = voterService.getElectoresHabilitados();
         long asistentes = voterService.getVotantesAsistentes();
         long ausentes = electoresHabilitados - asistentes;
@@ -36,12 +41,10 @@ public class NavigationController
         double porcentajeAsistencia = electoresHabilitados > 0 ? (asistentes * 100.0) / electoresHabilitados : 0.0;
         double porcentajeAusencia = electoresHabilitados > 0 ? (ausentes * 100.0) / electoresHabilitados : 0.0;
 
-        // Simulación de actas en proporción al avance de participación
-        long totalActas = 92766; // Total estático del padrón nacional real
+        long totalActas = 92766;
         long actasContabilizadas = (long) (totalActas * (porcentajeAsistencia / 100.0));
         double porcentajeActas = porcentajeAsistencia;
 
-        // Añadir atributos de forma directa al modelo de Thymeleaf
         model.addAttribute("electoresHabilitados", electoresHabilitados);
         model.addAttribute("asistentes", asistentes);
         model.addAttribute("ausentes", ausentes);
@@ -52,7 +55,6 @@ public class NavigationController
         model.addAttribute("actasContabilizadas", actasContabilizadas);
         model.addAttribute("porcentajeActas", porcentajeActas);
 
-        // Obtener ámbitos (departamentos) y serializarlos a JSON para Alpine.js
         List<Map<String, Object>> ambitosList = voterService.getParticipationByScope();
         String ambitosJson = "[]";
         try {
