@@ -52,6 +52,7 @@ public class VoterController {
                     enriched.put("id", voter.getId());
                     enriched.put("fullName", voter.getFullName());
                     enriched.put("firstSurname", voter.getFirstSurname());
+                    enriched.put("secondSurname", voter.getSecondSurname());
                     enriched.put("status", voter.getStatus());
                     enriched.put("account", voter.getAccount());
 
