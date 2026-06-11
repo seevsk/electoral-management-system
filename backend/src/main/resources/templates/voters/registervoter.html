@@ -61,6 +61,14 @@
                     },
                     onProvinceChange() {
                         this.selectedLocationCode = '';
+                    },
+                    firstSurname: '',
+                    secondSurname: '',
+                    nombres: '',
+                    fullName: '',
+                    updateFullName() {
+                        this.fullName = [this.firstSurname.trim(), this.secondSurname.trim(), this.nombres.trim()]
+                            .filter(v => v).join(' ');
                     }
                  }">
 
@@ -68,18 +76,14 @@
 
                     <!-- Cuenta (DNI) -->
                     <div role="group" class="flex w-full flex-col gap-2">
-                        <label for="account" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                        <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                             <i data-lucide="id-card" class="h-3.5 w-3.5"></i>
-                            Cuenta (DNI)
+                            DNI
                         </label>
-                        <select id="account" name="account.id" required
-                                class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
-                            <option value="">Seleccione un DNI</option>
-                            <option th:each="account : ${accounts}"
-                                    th:value="${account.id}"
-                                    th:text="${account.dni}">
-                            </option>
-                        </select>
+                        <input id="dni" type="text" name="dni" required
+                               minlength="8" maxlength="8" pattern="[0-9]{8}" title="Ingrese exactamente 8 dígitos"
+                               placeholder="Ingrese el DNI del votante"
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                     </div>
 
                     <!-- Nombres y Apellidos -->
@@ -90,6 +94,7 @@
                                 Primer Apellido
                             </label>
                             <input id="firstSurname" type="text" th:field="*{firstSurname}" required
+                                   x-model="firstSurname" @input="updateFullName()"
                                    placeholder="Primer apellido"
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                         </div>
@@ -99,9 +104,21 @@
                                 Segundo Apellido
                             </label>
                             <input id="secondSurname" type="text" th:field="*{secondSurname}" required
+                                   x-model="secondSurname" @input="updateFullName()"
                                    placeholder="Segundo apellido"
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                         </div>
+                    </div>
+
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label for="nombresInput" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                            Nombres
+                        </label>
+                        <input id="nombresInput" type="text" required
+                               x-model="nombres" @input="updateFullName()"
+                               placeholder="Nombres del votante"
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                     </div>
 
                     <div role="group" class="flex w-full flex-col gap-2">
@@ -110,7 +127,8 @@
                             Nombre Completo
                         </label>
                         <input id="fullName" type="text" th:field="*{fullName}" required
-                               placeholder="Nombre completo"
+                               x-model="fullName"
+                               placeholder="Se genera automáticamente"
                                class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                     </div>
 
@@ -159,9 +177,8 @@
                                 <i data-lucide="calendar-x" class="h-3.5 w-3.5"></i>
                                 Vencimiento DNI
                             </label>
-                            <input id="dniExpiryDate" type="date" th:field="*{dniExpiryDate}"
+                            <input id="dniExpiryDate" type="date" th:field="*{dniExpiryDate}" required
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
-                            <p class="text-xs text-zinc-400">Opcional.</p>
                         </div>
                     </div>
 
@@ -203,7 +220,6 @@
                             </select>
 
                         </div>
-                        <p class="text-xs text-zinc-400">Seleccione en orden: departamento → provincia → distrito.</p>
                     </div>
 
                     <!-- Buttons -->
