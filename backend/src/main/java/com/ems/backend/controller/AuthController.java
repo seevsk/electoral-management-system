@@ -49,7 +49,7 @@ public class AuthController {
             Account account = authService.authenticateVoter(dni, password);
             String token = jwtService.generateToken(account);
             response.addHeader(HttpHeaders.SET_COOKIE, jwtService.createAuthCookie(token).toString());
-            return "redirect:/participation";
+            return "redirect:/voter/portal";
         } catch (BusinessRuleException e) {
             redirectAttrs.addFlashAttribute("loginError", e.getMessage());
             return "redirect:/login/voter";

@@ -74,4 +74,12 @@ public interface ElectionRepository extends JpaRepository<Election, Integer> {
 
     @Query("select count(e) > 0 from Election e where e.status = 'A'")
     boolean existsActiveElection();
+
+    @Query("""
+            select e from Election e
+            where e.electionType = 'PRESIDENCIAL'
+              and e.status in ('P', 'A')
+            order by e.startDate asc
+            """)
+    Optional<Election> findNextUpcomingPresidentialElection();
 }

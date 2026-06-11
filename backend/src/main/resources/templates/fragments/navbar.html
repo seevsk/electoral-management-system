@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:x-transition="http://www.w3.org/1999/xhtml">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:x-transition="http://www.w3.org/1999/xhtml">
 
 <nav th:fragment="navbar(activePage)" class="fixed left-0 top-0 z-40 flex h-16 w-full items-center bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 px-4 text-white shadow-lg">
 
@@ -42,36 +44,52 @@
             </span>
         </div>
 
-        <!-- Login dropdown -->
-        <div x-data="{ loginOpen: false }" class="relative">
-        <button @click="loginOpen = !loginOpen"
-                class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/5 hover:text-white">
-            <i data-lucide="log-in" class="h-4 w-4"></i>
-            <span>Iniciar Sesión</span>
-            <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
-               :class="{ 'rotate-180': loginOpen }"></i>
-        </button>
-        <div x-show="loginOpen"
-             @click.outside="loginOpen = false"
-             x-transition:enter="transition ease-out duration-150"
-             x-transition:enter-start="opacity-0 translate-y-1"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-100"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 translate-y-1"
-             class="absolute right-0 top-full mt-1 w-48 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5 shadow-xl">
-             <a th:href="@{/login/admin}"
-                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
-                 <i data-lucide="shield" class="h-4 w-4"></i>
-                 Administrador
-             </a>
-             <a th:href="@{/login/voter}"
-                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
-                 <i data-lucide="user" class="h-4 w-4"></i>
-                 Votante
-             </a>
+        <!-- Voter authenticated: show name + logout -->
+        <div sec:authorize="hasRole('USER')" class="flex items-center gap-3">
+            <div class="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
+                <i data-lucide="user-check" class="h-4 w-4 text-white/70"></i>
+                <span class="text-sm font-medium text-white" th:text="${#authentication.name}">Votante</span>
+            </div>
+            <form th:action="@{/auth/logout}" method="post">
+                <button type="submit"
+                        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="log-out" class="h-4 w-4"></i>
+                    Salir
+                </button>
+            </form>
         </div>
-    </div>
+
+        <!-- Login dropdown: only when not authenticated -->
+        <div th:if="${!#authorization.expression('isAuthenticated()')}"
+             x-data="{ loginOpen: false }" class="relative">
+            <button @click="loginOpen = !loginOpen"
+                    class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="log-in" class="h-4 w-4"></i>
+                <span>Iniciar Sesión</span>
+                <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
+                   :class="{ 'rotate-180': loginOpen }"></i>
+            </button>
+            <div x-show="loginOpen"
+                 @click.outside="loginOpen = false"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0 translate-y-1"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 translate-y-1"
+                 class="absolute right-0 top-full mt-1 w-48 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5 shadow-xl">
+                <a th:href="@{/login/admin}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="shield" class="h-4 w-4"></i>
+                    Administrador
+                </a>
+                <a th:href="@{/login/voter}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="user" class="h-4 w-4"></i>
+                    Votante
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Mobile hamburger -->
@@ -112,7 +130,24 @@
             <i data-lucide="globe" class="h-4 w-4"></i> Parlamento Andino
         </span>
     </nav>
-    <div x-data="{ mobileNavLoginOpen: false }" class="border-t border-white/10 pt-4">
+    <!-- Mobile: voter authenticated -->
+    <div sec:authorize="hasRole('USER')" class="border-t border-white/10 pt-4">
+        <div class="mb-2 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+            <i data-lucide="user-check" class="h-4 w-4 text-white/70 shrink-0"></i>
+            <span class="text-sm font-medium text-white" th:text="${#authentication.name}">Votante</span>
+        </div>
+        <form th:action="@{/auth/logout}" method="post">
+            <button type="submit"
+                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
+                <span class="flex-1 text-left">Cerrar sesión</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Mobile: login dropdown (not authenticated) -->
+    <div th:if="${!#authorization.expression('isAuthenticated()')}"
+         x-data="{ mobileNavLoginOpen: false }" class="border-t border-white/10 pt-4">
         <button @click="mobileNavLoginOpen = !mobileNavLoginOpen"
                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
             <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
@@ -122,14 +157,14 @@
         </button>
         <div x-show="mobileNavLoginOpen"
              class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
-             <a th:href="@{/login/admin}"
-                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                 <i data-lucide="shield" class="h-4 w-4"></i> Administrador
-             </a>
-             <a th:href="@{/login/voter}"
-                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                 <i data-lucide="user" class="h-4 w-4"></i> Votante
-             </a>
+            <a th:href="@{/login/admin}"
+               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+            </a>
+            <a th:href="@{/login/voter}"
+               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                <i data-lucide="user" class="h-4 w-4"></i> Votante
+            </a>
         </div>
     </div>
 </aside>
