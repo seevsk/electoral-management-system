@@ -208,7 +208,7 @@
                                 <select x-model="selectedLocationCode" @change="onDistrictChange()"
                                         :disabled="!selectedProvince"
                                         class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
-                                    <option value="">Distrito</option>
+                                    <option value="">Todos los Distritos</option>
                                     <template x-for="loc in districts" :key="loc.locationCode">
                                         <option :value="loc.locationCode" x-text="loc.district"></option>
                                     </template>
