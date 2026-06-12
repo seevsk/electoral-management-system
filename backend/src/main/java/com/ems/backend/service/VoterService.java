@@ -12,7 +12,7 @@ public interface VoterService {
 
     Voter findById(Integer id);
 
-    Voter save(Voter voter);
+    Voter save(Voter voter, String dni); // recibe el dni en lugar del account
 
     Voter update(Integer id, Voter voter);
 

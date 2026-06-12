@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/head :: head}">
+    <title>Resumen de Voto</title>
+</head>
+<body class="min-h-screen bg-zinc-100">
+
+<div class="flex min-h-screen flex-col">
+
+    <!-- ── Sticky Header ── -->
+    <header class="sticky top-0 z-30 flex items-center justify-between bg-gradient-to-r from-primary-700 to-primary-900 px-6 py-4 text-white shadow-lg">
+        <div class="flex items-center gap-3">
+            <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+                <i data-lucide="vote" class="h-5 w-5"></i>
+            </div>
+            <div>
+                <p class="text-xs text-white/60 uppercase tracking-wider">Resumen de Voto</p>
+                <p class="text-sm font-bold leading-tight" th:text="${election.name}">Elecciones Generales</p>
+            </div>
+        </div>
+        <!-- Timer -->
+        <div class="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2" x-data="votingTimer()">
+            <i data-lucide="timer" class="h-4 w-4 text-amber-300"></i>
+            <span class="font-mono text-lg font-bold tabular-nums"
+                  :class="remaining <= 60 ? 'text-red-300' : 'text-white'"
+                  x-text="formatted">5:00</span>
+        </div>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main class="mx-auto w-full max-w-2xl flex-1 px-4 py-8">
+
+        <!-- Instruction -->
+        <div class="mb-6 text-center">
+            <h2 class="font-heading text-2xl font-bold text-zinc-900">Confirme su voto</h2>
+            <p class="mt-1 text-sm text-zinc-500">Verifique su selección. Una vez confirmado, no se puede cambiar.</p>
+        </div>
+
+        <!-- ── VOTO EN BLANCO ── -->
+        <div th:if="${isBlankVote}"
+             class="overflow-hidden rounded-2xl border-2 border-zinc-300 bg-white shadow-sm">
+            <div class="flex flex-col items-center justify-center py-10 text-center">
+                <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100">
+                    <i data-lucide="square-slash" class="h-10 w-10 text-zinc-400"></i>
+                </div>
+                <h3 class="font-heading text-xl font-bold text-zinc-700">VOTO EN BLANCO</h3>
+                <p class="mt-2 text-sm text-zinc-400">Su voto no expresará preferencia por ningún candidato.</p>
+            </div>
+        </div>
+
+        <!-- ── VOTO CON CANDIDATO ── -->
+        <div th:if="${isBlankVote == false and selectedEntry != null}"
+             class="overflow-hidden rounded-2xl border-2 border-primary-300 bg-white shadow-md">
+
+            <!-- Party header band -->
+            <div class="border-b border-primary-100 bg-primary-50 px-6 py-4">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-primary-100 bg-white">
+                        <img th:if="${selectedEntry.partyLogoUrl != null}"
+                             th:src="${selectedEntry.partyLogoUrl}"
+                             th:alt="${selectedEntry.partyAcronym}"
+                             class="h-full w-full object-contain p-1"
+                             onerror="this.style.display='none'">
+                        <i th:if="${selectedEntry.partyLogoUrl == null}" data-lucide="flag" class="h-6 w-6 text-zinc-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-primary-400">Partido Político</p>
+                        <p class="text-base font-bold text-zinc-900" th:text="${selectedEntry.partyName}">Partido</p>
+                        <p class="text-xs text-zinc-500" th:text="${selectedEntry.partyAcronym}">ACR</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candidate detail -->
+            <div class="flex items-center gap-6 px-6 py-6">
+                <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 shadow-sm">
+                    <img th:if="${selectedEntry.candidatePhotoUrl != null}"
+                         th:src="${selectedEntry.candidatePhotoUrl}"
+                         th:alt="${selectedEntry.candidateFullName}"
+                         class="h-full w-full object-cover"
+                         onerror="this.style.display='none'">
+                    <i th:if="${selectedEntry.candidatePhotoUrl == null}"
+                       data-lucide="user"
+                       class="absolute inset-0 m-auto h-10 w-10 text-zinc-400"></i>
+                    <!-- Red X overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center bg-primary-600/60">
+                        <i data-lucide="x" class="h-8 w-8 text-white drop-shadow"></i>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Candidato</p>
+                    <p class="mt-1 font-heading text-xl font-bold text-zinc-900"
+                       th:text="${selectedEntry.candidateFullName}">Nombre Completo</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning banner -->
+        <div class="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <i data-lucide="triangle-alert" class="mt-0.5 h-4 w-4 shrink-0 text-amber-500"></i>
+            <p class="text-xs text-amber-700">Esta acción es irreversible. Una vez confirmado el voto, no podrá ser modificado ni anulado.</p>
+        </div>
+
+        <!-- Action bar -->
+        <div class="mt-6 flex items-center justify-between">
+            <a th:href="@{/voter/vote/ballot}"
+               class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                Cambiar selección
+            </a>
+
+            <form method="post" th:action="@{/voter/vote/confirm}">
+                <input type="hidden" name="candidateId" th:value="${selectedCandidateId}">
+                <input type="hidden" name="electionId" th:value="${election.id}">
+                <button type="submit"
+                        class="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    <i data-lucide="check-circle" class="h-4 w-4"></i>
+                    Confirmar Voto
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+function votingTimer() {
+    return {
+        remaining: 300,
+        formatted: '5:00',
+        init() {
+            this.tick();
+            setInterval(() => this.tick(), 1_000);
+        },
+        tick() {
+            const deadline = parseInt(sessionStorage.getItem('votingDeadline') || '0');
+            this.remaining = Math.max(0, Math.round((deadline - Date.now()) / 1_000));
+            const m = Math.floor(this.remaining / 60);
+            const s = this.remaining % 60;
+            this.formatted = m + ':' + String(s).padStart(2, '0');
+            if (this.remaining === 0) {
+                sessionStorage.removeItem('votingDeadline');
+                window.location.href = '/ems/voter/vote/conditions';
+            }
+        }
+    };
+}
+
+if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+</body>
+</html>

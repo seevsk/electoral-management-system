@@ -13,6 +13,9 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
 
     Optional<Voter> findByAccount_Id(Integer accountId);
 
+    @Query("select v from Voter v join fetch v.account a where a.dni = :dni")
+    Optional<Voter> findByAccountDni(@Param("dni") String dni);
+
     // Verifica si una cuenta ya está asociada a un votante
     boolean existsByAccount_Id(Integer accountId);
 

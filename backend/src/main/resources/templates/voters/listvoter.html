@@ -76,7 +76,8 @@
                         <tr th:each="voter : ${voters}"
                             x-show="search === '' || $el.textContent.toLowerCase().includes(search.toLowerCase())"
                             class="border-b border-zinc-50 transition-colors hover:bg-zinc-50">
-                            <td class="px-4 py-4 font-medium text-zinc-900" th:text="|${voter.fullName} ${voter.firstSurname}|"></td>
+                            <td class="px-4 py-4 font-medium text-zinc-900"
+                                th:text="|${voter.firstSurname} ${voter.secondSurname} ${voter.fullName}|"></td>
                             <td class="px-4 py-4 text-zinc-600" th:text="${voter.account.dni}"></td>
                             <td class="px-4 py-4 text-zinc-600" th:text="${voter.department}"></td>
                             <td class="px-4 py-4 text-zinc-600" th:text="${voter.province}"></td>
@@ -118,7 +119,8 @@
                          class="border-b border-zinc-100 p-4 last:border-b-0">
                         <div class="flex items-start justify-between gap-2">
                             <div>
-                                <p class="text-sm font-semibold text-zinc-900" th:text="${voter.fullName}"></p>
+                                <p class="text-sm font-semibold text-zinc-900"
+                                   th:text="|${voter.firstSurname} ${voter.secondSurname} ${voter.fullName}|"></p>
                                 <p class="mt-0.5 text-xs text-zinc-500">
                                     DNI: <span th:text="${voter.account.dni}"></span>
                                 </p>

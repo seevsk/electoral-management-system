@@ -11,6 +11,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,10 +49,12 @@ public class Voter {
     @Column(name = "marital_status", columnDefinition = "CHAR(1)", nullable = false)
     private String maritalStatus;
 
+    @NotNull(message = "La fecha de nacimiento es obligatoria.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
+    @NotNull(message = "La fecha de vencimiento del DNI es obligatoria.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "dni_expiry_date")
     private LocalDate dniExpiryDate;

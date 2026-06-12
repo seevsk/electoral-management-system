@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/head :: head}">
+    <title>Voto Confirmado</title>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900">
+
+<div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+    <div class="w-full max-w-lg">
+
+        <div class="overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-emerald-600 to-emerald-800 px-8 py-6 text-center text-white">
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+                    <i data-lucide="shield-check" class="h-7 w-7"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">República del Perú</p>
+                <h1 class="mt-1 font-heading text-xl font-bold">Sistema Electoral</h1>
+            </div>
+
+            <!-- Body -->
+            <div class="px-8 py-8 text-center">
+
+                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 ring-4 ring-emerald-100">
+                    <i data-lucide="check-circle-2" class="h-10 w-10 text-emerald-600"></i>
+                </div>
+
+                <h2 class="font-heading text-2xl font-bold text-zinc-900">¡Voto emitido exitosamente!</h2>
+
+                <p class="mt-4 text-sm leading-relaxed text-zinc-600">
+                    Estimado(a) Elector(a), queremos informarle que su voto ha sido registrado
+                    satisfactoriamente en el sistema electoral.
+                </p>
+
+                <div class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+                    <div class="flex items-center justify-center gap-2 text-sm font-semibold text-emerald-700">
+                        <i data-lucide="lock" class="h-4 w-4"></i>
+                        Su voto es secreto e irrepetible
+                    </div>
+                    <p class="mt-1.5 text-xs text-emerald-600">
+                        Ninguna persona o entidad puede conocer el sentido de su voto. Gracias por ejercer su derecho democrático.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-zinc-100 bg-zinc-50 px-8 py-5 text-center">
+                <a th:href="@{/voter/portal}"
+                   class="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    <i data-lucide="log-out" class="h-4 w-4"></i>
+                    Salir del proceso
+                </a>
+            </div>
+        </div>
+
+        <p class="mt-6 text-center text-xs text-white/40">
+            Oficina Nacional de Procesos Electorales &copy; 2026
+        </p>
+    </div>
+</div>
+
+<script>
+    // Clean up timer from sessionStorage after vote is done
+    sessionStorage.removeItem('votingDeadline');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+</body>
+</html>

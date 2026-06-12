@@ -6,14 +6,17 @@ import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.LocationRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +52,7 @@ public class VoterController {
                     enriched.put("id", voter.getId());
                     enriched.put("fullName", voter.getFullName());
                     enriched.put("firstSurname", voter.getFirstSurname());
+                    enriched.put("secondSurname", voter.getSecondSurname());
                     enriched.put("status", voter.getStatus());
                     enriched.put("account", voter.getAccount());
 
@@ -68,27 +72,34 @@ public class VoterController {
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("voter", new Voter());
-        model.addAttribute("accounts", accountRepository.findAll());
         model.addAttribute("locationsJson", buildLocationsJson());
+        // Ya se neceista el accounts en el modelo
         return "voters/registervoter";
     }
 
     @PostMapping("/register")
     public String registerVoter(
-            @ModelAttribute Voter voter,
+            @Valid @ModelAttribute Voter voter,
+            BindingResult bindingResult,
+            @RequestParam("dni") String dni,
             RedirectAttributes redirectAttributes
-    ){
+    ) {
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.hasFieldErrors()
+                    ? bindingResult.getFieldErrors().get(0).getDefaultMessage()
+                    : bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("errorMessage", msg);
+            return "redirect:/admin/voters/register";
+        }
         try {
-            voterService.save(voter);
+            voterService.save(voter, dni);
             redirectAttributes.addFlashAttribute("successMessage", "Votante registrado correctamente.");
             return "redirect:/admin/voters/list";
         } catch (BusinessRuleException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            redirectAttributes.addFlashAttribute("voter", voter);
             return "redirect:/admin/voters/register";
         }
     }
-
     @GetMapping("/update/{id}")
     public String showUpdateForm(@PathVariable Integer id, Model model) {
         Voter voter = voterService.findById(id);
@@ -107,9 +118,17 @@ public class VoterController {
     @PostMapping("/update/{id}")
     public String updateVoter(
             @PathVariable Integer id,
-            @ModelAttribute Voter voter,
+            @Valid @ModelAttribute Voter voter,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes
     ) {
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.hasFieldErrors()
+                    ? bindingResult.getFieldErrors().get(0).getDefaultMessage()
+                    : bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("errorMessage", msg);
+            return "redirect:/admin/voters/update/" + id;
+        }
         try {
             voterService.update(id, voter);
             redirectAttributes.addFlashAttribute("successMessage", "Votante actualizado correctamente.");
