@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head th:replace="~{fragments/head :: head}">
+    <title>Portal del Votante — Sistema Electoral</title>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900">
+
+<div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+
+    <!-- ============================================================
+         ESCENARIO: PENDIENTE o ACTIVA (fuera de ventana)
+         Muestra el flyer con fecha y hora de la próxima elección
+    ============================================================ -->
+    <div th:if="${scenario == 'PENDING'}" class="w-full max-w-lg">
+
+        <!-- Card flyer -->
+        <div class="overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+            <!-- Header con gradiente -->
+            <div class="bg-gradient-to-r from-primary-700 to-primary-900 px-8 py-6 text-center text-white">
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+                    <i data-lucide="vote" class="h-7 w-7"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">República del Perú</p>
+                <h1 class="mt-1 font-heading text-xl font-bold">Sistema Electoral</h1>
+            </div>
+
+            <!-- Cuerpo del flyer -->
+            <div class="px-8 py-8 text-center">
+
+                <!-- Badge de estado -->
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Próximas Elecciones
+                </span>
+
+                <!-- Nombre de la elección -->
+                <h2 class="mt-4 font-heading text-2xl font-bold text-zinc-900"
+                    th:text="${nextElection.name}">Elecciones Generales</h2>
+
+                <!-- Separador decorativo -->
+                <div class="mx-auto my-6 flex items-center gap-3">
+                    <div class="h-px flex-1 bg-zinc-200"></div>
+                    <i data-lucide="calendar-clock" class="h-5 w-5 text-primary-500"></i>
+                    <div class="h-px flex-1 bg-zinc-200"></div>
+                </div>
+
+                <!-- Fecha prominente -->
+                <div class="rounded-xl border border-primary-100 bg-primary-50 px-6 py-5">
+                    <p class="text-xs font-semibold uppercase tracking-widest text-primary-400">Inicio de votación</p>
+                    <p class="mt-2 font-heading text-4xl font-bold tracking-tight text-primary-700"
+                       th:text="${#temporals.format(nextElection.startDate, 'dd')}">01</p>
+                    <p class="text-lg font-semibold text-primary-600"
+                       th:text="${#temporals.format(nextElection.startDate, 'MM/yyyy')}">01/2026</p>
+                    <p class="mt-2 text-sm text-zinc-500">
+                        <i data-lucide="clock" class="mr-1 inline-block h-4 w-4 align-text-bottom text-primary-400"></i>
+                        Apertura:
+                        <strong class="text-zinc-700"
+                                th:text="${#temporals.format(nextElection.startDate, 'HH:mm')} + ' hrs'">08:00 hrs</strong>
+                    </p>
+                    <p class="mt-1 text-sm text-zinc-500">
+                        <i data-lucide="clock" class="mr-1 inline-block h-4 w-4 align-text-bottom text-zinc-400"></i>
+                        Cierre:
+                        <strong class="text-zinc-700"
+                                th:text="${#temporals.format(nextElection.endDate, 'HH:mm')} + ' hrs'">18:00 hrs</strong>
+                    </p>
+                </div>
+
+                <!-- Instrucción -->
+                <p class="mt-6 text-sm leading-relaxed text-zinc-500">
+                    Regresa en esa fecha y horario para ejercer tu derecho al voto. Tu participación es fundamental para la democracia.
+                </p>
+
+            </div>
+
+            <!-- Footer con logout -->
+            <div class="border-t border-zinc-100 bg-zinc-50 px-8 py-4">
+                <form th:action="@{/auth/logout}" method="post" class="flex items-center justify-between">
+                    <p class="text-xs text-zinc-400">
+                        Sesión activa como
+                        <span class="font-medium text-zinc-600" th:text="${#authentication.name}">DNI</span>
+                    </p>
+                    <button type="submit"
+                            class="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
+                        <i data-lucide="log-out" class="h-3.5 w-3.5"></i>
+                        Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <p class="mt-6 text-center text-xs text-white/40">
+            Oficina Nacional de Procesos Electorales &copy; 2026
+        </p>
+    </div>
+
+
+    <!-- ============================================================
+         ESCENARIO: VOTED — Ya emitió su voto
+    ============================================================ -->
+    <div th:if="${scenario == 'VOTED'}" class="w-full max-w-lg">
+
+        <div class="overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+            <div class="bg-gradient-to-r from-emerald-600 to-emerald-800 px-8 py-6 text-center text-white">
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+                    <i data-lucide="check-circle-2" class="h-7 w-7"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">República del Perú</p>
+                <h1 class="mt-1 font-heading text-xl font-bold">Sistema Electoral</h1>
+            </div>
+
+            <div class="px-8 py-8 text-center">
+
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    Voto registrado
+                </span>
+
+                <h2 class="mt-4 font-heading text-2xl font-bold text-zinc-900"
+                    th:text="${election.name}">Elecciones Generales</h2>
+
+                <div class="mx-auto my-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50">
+                    <i data-lucide="check-circle-2" class="h-10 w-10 text-emerald-600"></i>
+                </div>
+
+                <p class="text-base font-semibold text-zinc-800">Tu participación ha sido registrada</p>
+                <p class="mt-2 text-sm leading-relaxed text-zinc-500">
+                    Estimado(a) elector(a), queremos informarle que su voto ha sido emitido
+                    satisfactoriamente. Gracias por ejercer su derecho democrático.
+                </p>
+
+            </div>
+
+            <div class="border-t border-zinc-100 bg-zinc-50 px-8 py-4">
+                <form th:action="@{/auth/logout}" method="post" class="flex items-center justify-between">
+                    <p class="text-xs text-zinc-400">
+                        Sesión activa como
+                        <span class="font-medium text-zinc-600" th:text="${#authentication.name}">DNI</span>
+                    </p>
+                    <button type="submit"
+                            class="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
+                        <i data-lucide="log-out" class="h-3.5 w-3.5"></i>
+                        Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <p class="mt-6 text-center text-xs text-white/40">
+            Oficina Nacional de Procesos Electorales &copy; 2026
+        </p>
+    </div>
+
+
+    <!-- ============================================================
+         ESCENARIO: COMPLETED — Sin elecciones próximas
+    ============================================================ -->
+    <div th:if="${scenario == 'COMPLETED'}" class="w-full max-w-lg">
+
+        <div class="overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+            <div class="bg-gradient-to-r from-zinc-600 to-zinc-800 px-8 py-6 text-center text-white">
+                <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
+                    <i data-lucide="vote" class="h-7 w-7"></i>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">República del Perú</p>
+                <h1 class="mt-1 font-heading text-xl font-bold">Sistema Electoral</h1>
+            </div>
+
+            <div class="px-8 py-8 text-center">
+
+                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100">
+                    <i data-lucide="calendar-x-2" class="h-10 w-10 text-zinc-400"></i>
+                </div>
+
+                <h2 class="font-heading text-2xl font-bold text-zinc-900">Sin elecciones próximas</h2>
+
+                <p class="mt-4 text-sm leading-relaxed text-zinc-500">
+                    No existen por el momento elecciones próximas programadas.
+                    Estate atento a las comunicaciones oficiales para más información.
+                </p>
+
+                <div class="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
+                    <p class="text-xs text-zinc-400">
+                        <i data-lucide="info" class="mr-1 inline-block h-3.5 w-3.5 align-text-bottom"></i>
+                        Cuando se programe un nuevo proceso electoral, encontrarás la información aquí al iniciar sesión.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="border-t border-zinc-100 bg-zinc-50 px-8 py-4">
+                <form th:action="@{/auth/logout}" method="post" class="flex items-center justify-between">
+                    <p class="text-xs text-zinc-400">
+                        Sesión activa como
+                        <span class="font-medium text-zinc-600" th:text="${#authentication.name}">DNI</span>
+                    </p>
+                    <button type="submit"
+                            class="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
+                        <i data-lucide="log-out" class="h-3.5 w-3.5"></i>
+                        Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <p class="mt-6 text-center text-xs text-white/40">
+            Oficina Nacional de Procesos Electorales &copy; 2026
+        </p>
+    </div>
+
+</div>
+
+<script>
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+</body>
+</html>
