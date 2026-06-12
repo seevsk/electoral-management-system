@@ -146,16 +146,20 @@ public class VoterServiceImpl implements VoterService {
         List<Map<String, Object>> participationList = new ArrayList<>();
 
         for (Object[] row : queryResult) {
-            String name = (String) row[0];
-            long total = (Long) row[1];
-            long attended = (Long) row[2];
+            String name     = (String) row[0];
+            long total      = (Long)   row[1];
+            long attended   = (Long)   row[2];
+            long pending    = (Long)   row[3];
+            long inactive   = (Long)   row[4];
             double pct = total > 0 ? (attended * 100.0) / total : 0.0;
 
             Map<String, Object> scopeData = new HashMap<>();
-            scopeData.put("name", name);
-            scopeData.put("total", total);
+            scopeData.put("name",     name);
+            scopeData.put("total",    total);
             scopeData.put("attended", attended);
-            scopeData.put("pct", pct);
+            scopeData.put("pending",  pending);
+            scopeData.put("inactive", inactive);
+            scopeData.put("pct",      pct);
 
             participationList.add(scopeData);
         }
@@ -164,32 +168,31 @@ public class VoterServiceImpl implements VoterService {
 
     @Override
     public List<Map<String, Object>> getParticipationByDistrict() {
-        // Comentario descriptivo: Obtener los resultados agrupados por distrito desde el repositorio
         List<Object[]> queryResult = voterRepository.getParticipationByDistrict();
         List<Map<String, Object>> participationList = new ArrayList<>();
 
         for (Object[] row : queryResult) {
-            String code = (String) row[0];
-            String name = (String) row[1];
-            long total = (Long) row[2];
-            long attended = (Long) row[3];
+            String code   = (String) row[0];
+            String name   = (String) row[1];
+            long total    = (Long)   row[2];
+            long attended = (Long)   row[3];
+            long pending  = (Long)   row[4];
+            long inactive = (Long)   row[5];
             double pct = total > 0 ? (attended * 100.0) / total : 0.0;
 
             Map<String, Object> districtData = new HashMap<>();
-            districtData.put("code", code);
-            districtData.put("name", name);
-            districtData.put("total", total);
+            districtData.put("code",     code);
+            districtData.put("name",     name);
+            districtData.put("total",    total);
             districtData.put("attended", attended);
-            districtData.put("pct", pct);
+            districtData.put("pending",  pending);
+            districtData.put("inactive", inactive);
+            districtData.put("pct",      pct);
 
             participationList.add(districtData);
         }
         return participationList;
     }
-
-    // =========================================================================
-    // NUEVO MÉTODO: OBTENER TODOS LOS UBIGEOS PARA FILTROS EN CASCADA
-    // =========================================================================
 
     @Override
     public List<Map<String, Object>> getAllUbigeos() {
@@ -198,12 +201,14 @@ public class VoterServiceImpl implements VoterService {
 
         for (Object[] row : queryResult) {
             Map<String, Object> ubigeo = new HashMap<>();
-            ubigeo.put("department", row[0]);      // department
-            ubigeo.put("province", row[1]);        // province
-            ubigeo.put("district", row[2]);        // district
-            ubigeo.put("locationCode", row[3]);    // locationCode
-            ubigeo.put("total", row[4]);           // total - NUEVO
-            ubigeo.put("attended", row[5]);        // attended - NUEVO
+            ubigeo.put("department",  row[0]);
+            ubigeo.put("province",    row[1]);
+            ubigeo.put("district",    row[2]);
+            ubigeo.put("locationCode",row[3]);
+            ubigeo.put("total",       row[4]);
+            ubigeo.put("attended",    row[5]);
+            ubigeo.put("pending",     row[6]);
+            ubigeo.put("inactive",    row[7]);
             ubigeosList.add(ubigeo);
         }
         return ubigeosList;

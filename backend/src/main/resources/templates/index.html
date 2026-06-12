@@ -25,19 +25,19 @@
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-zinc-900">Actas contabilizadas</h2>
-                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeActas, 1, 3, 'POINT')} + '%'"></p>
+                        <h2 class="text-lg font-semibold text-zinc-900">Votos Contabilizados</h2>
+                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')} + '%'"></p>
                     </div>
                     <div class="text-right text-sm text-zinc-500">
-                        <p>Total de actas: <span class="font-semibold text-zinc-900" th:text="${#numbers.formatInteger(totalActas, 3, 'POINT')}"></span></p>
+                        <p>Total de Electores: <span class="font-semibold text-zinc-900" th:text="${#numbers.formatInteger(totalPadron, 3, 'POINT')}"></span></p>
                         <p class="text-xs">
-                            <span th:text="${#numbers.formatDecimal(100.0 - porcentajeActas, 1, 3, 'POINT')} + '%'"></span> de Actas pendientes de procesar
+                            <span th:text="${#numbers.formatDecimal(100.0 - porcentajeVotos, 1, 3, 'POINT')} + '%'"></span> de votos pendientes de emitir
                         </p>
                     </div>
                 </div>
 
                 <div class="mt-4 h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeActas} + '%'"></div>
+                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeVotos} + '%'"></div>
                 </div>
 
                 <div class="mt-4 border-t border-zinc-100 pt-4">
@@ -48,12 +48,12 @@
                         </p>
                         <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
                             <span class="flex items-center gap-1.5">
-                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                                Contabilizadas (<span th:text="${#numbers.formatInteger(actasContabilizadas, 3, 'POINT')}"></span>)
+                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
+                                Votos Emitidos (<span th:text="${#numbers.formatInteger(votosEmitidos, 3, 'POINT')}"></span>)
                             </span>
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                Pendientes (<span th:text="${#numbers.formatInteger(totalActas - actasContabilizadas, 3, 'POINT')}"></span>)
+                                Votos Pendientes (<span th:text="${#numbers.formatInteger(totalPadron - votosEmitidos, 3, 'POINT')}"></span>)
                             </span>
                         </div>
                     </div>
@@ -63,29 +63,32 @@
             <!-- ==================== FILTERS & GRID WRAPPER (ALPINE.JS) ==================== -->
             <div id="filters-grid-wrapper"
                  th:data-locations="${locationsJson}"
-                 th:data-habilitados="${electoresHabilitados}"
-                 th:data-asistentes="${asistentes}"
+                 th:data-total="${totalPadron}"
+                 th:data-attended="${votosEmitidos}"
+                 th:data-pending="${cuentasActivasSinVoto}"
+                 th:data-inactive="${cuentasInactivas}"
                  x-data="{
                     locations: [],
                     selectedDepartment: '',
                     selectedProvince: '',
                     selectedLocationCode: '',
-                    totalLimaHabilitados: 0,
-                    totalLimaAsistentes: 0,
+                    totNacional: 0,
+                    attNacional: 0,
+                    pendNacional: 0,
+                    inacNacional: 0,
 
                     init() {
-                        this.locations = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
-                        this.totalLimaHabilitados = parseInt(this.$el.getAttribute('data-habilitados') || '0');
-                        this.totalLimaAsistentes = parseInt(this.$el.getAttribute('data-asistentes') || '0');
-                        console.log('Ubigeos cargados:', this.locations.length);
+                        this.locations   = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
+                        this.totNacional  = parseInt(this.$el.getAttribute('data-total')    || '0');
+                        this.attNacional  = parseInt(this.$el.getAttribute('data-attended') || '0');
+                        this.pendNacional = parseInt(this.$el.getAttribute('data-pending')  || '0');
+                        this.inacNacional = parseInt(this.$el.getAttribute('data-inactive') || '0');
                     },
 
-                    // Obtener departamentos únicos (sin necesidad de País porque Perú es fijo)
                     get departments() {
                         return [...new Set(this.locations.map(l => l.department))].sort();
                     },
 
-                    // Obtener provincias según departamento seleccionado
                     get provinces() {
                         if (!this.selectedDepartment) return [];
                         return [...new Set(
@@ -95,7 +98,6 @@
                         )].sort();
                     },
 
-                    // Obtener distritos según departamento y provincia seleccionados
                     get districts() {
                         if (!this.selectedProvince) return [];
                         return this.locations.filter(l =>
@@ -104,32 +106,41 @@
                         );
                     },
 
-                    get electoresHabiles() {
-                        if (!this.selectedLocationCode) {
-                            return this.totalLimaHabilitados;
-                        }
-                        const loc = this.districts.find(d => d.locationCode === this.selectedLocationCode);
-                        return loc ? loc.total : this.totalLimaHabilitados;
+                    _loc() {
+                        if (!this.selectedLocationCode) return null;
+                        return this.districts.find(d => d.locationCode === this.selectedLocationCode) || null;
                     },
 
-                    get asistentes() {
-                        if (!this.selectedLocationCode) {
-                            return this.totalLimaAsistentes;
-                        }
-                        const loc = this.districts.find(d => d.locationCode === this.selectedLocationCode);
-                        return loc ? loc.attended : this.totalLimaAsistentes;
+                    get totalPadron() {
+                        const l = this._loc();
+                        return l ? l.total : this.totNacional;
                     },
 
-                    get pendientes() {
-                        return this.electoresHabiles - this.asistentes;
+                    get votosEmitidos() {
+                        const l = this._loc();
+                        return l ? l.attended : this.attNacional;
                     },
 
-                    get pctAsistencia() {
-                        return this.electoresHabiles > 0 ? (this.asistentes * 100.0) / this.electoresHabiles : 0.0;
+                    get activosSinVoto() {
+                        const l = this._loc();
+                        return l ? l.pending : this.pendNacional;
                     },
 
-                    get pctPendientes() {
-                        return this.electoresHabiles > 0 ? (this.pendientes * 100.0) / this.electoresHabiles : 0.0;
+                    get cuentasInactivas() {
+                        const l = this._loc();
+                        return l ? l.inactive : this.inacNacional;
+                    },
+
+                    get pctVotos() {
+                        return this.totalPadron > 0 ? (this.votosEmitidos  * 100.0) / this.totalPadron : 0.0;
+                    },
+
+                    get pctActivosSinVoto() {
+                        return this.totalPadron > 0 ? (this.activosSinVoto * 100.0) / this.totalPadron : 0.0;
+                    },
+
+                    get pctInactivas() {
+                        return this.totalPadron > 0 ? (this.cuentasInactivas * 100.0) / this.totalPadron : 0.0;
                     },
 
                     onDepartmentChange() {
@@ -157,7 +168,7 @@
                     updateChart() {
                         const chart = Chart.getChart('participacionChart');
                         if (chart) {
-                            chart.data.datasets[0].data = [this.pctAsistencia, this.pctPendientes];
+                            chart.data.datasets[0].data = [this.pctVotos, this.pctActivosSinVoto];
                             chart.update();
                         }
                     }
@@ -251,47 +262,49 @@
                                 <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
                                     <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
                                 </div>
-                                <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
-                                <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" x-text="electoresHabiles.toLocaleString('es-PE')">[[${#numbers.formatInteger(electoresHabilitados, 3, 'POINT')}]]</p>
-                                <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
+                                <p class="text-sm font-medium text-zinc-500">Total de ciudadanos</p>
+                                <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" x-text="totalPadron.toLocaleString('es-PE')">[[${#numbers.formatInteger(totalPadron, 3, 'POINT')}]]</p>
+                                <p class="mt-1 text-xs text-zinc-400">Registrados en el padrón electoral</p>
                             </div>
                         </div>
 
-                        <!-- Card: Asistencia -->
+                        <!-- Card: Estado del padrón -->
                         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
                                 <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
-                                Asistencia
+                                Estado del padrón
                             </h3>
-                            <p class="mb-4 text-xs text-zinc-400">Resumen de participación ciudadana</p>
+                            <p class="mb-4 text-xs text-zinc-400">Distribución de ciudadanos por estado</p>
                             <div class="space-y-4">
+                                <!-- Cuentas activas con voto emitido -->
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
                                             <i data-lucide="check-circle" class="h-5 w-5 text-primary-600"></i>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-medium text-zinc-500">Asistentes</p>
-                                            <p class="text-xl font-bold text-primary-600" x-text="asistentes.toLocaleString('es-PE')">[[${#numbers.formatInteger(asistentes, 3, 'POINT')}]]</p>
+                                            <p class="text-sm font-medium text-zinc-500">Votos emitidos</p>
+                                            <p class="text-xl font-bold text-primary-600" x-text="votosEmitidos.toLocaleString('es-PE')">[[${#numbers.formatInteger(votosEmitidos, 3, 'POINT')}]]</p>
                                         </div>
                                     </div>
-                                    <span class="text-sm font-semibold text-primary-600" x-text="pctAsistencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')}]]%</span>
+                                    <span class="text-sm font-semibold text-primary-600" x-text="pctVotos.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')}]]%</span>
                                 </div>
+                                <!-- Cuentas activas sin voto emitido -->
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-400/10">
-                                            <i data-lucide="clock" class="h-5 w-5 text-zinc-500"></i>
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400/10">
+                                            <i data-lucide="clock" class="h-5 w-5 text-amber-500"></i>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-medium text-zinc-500">Pendientes</p>
-                                            <p class="text-xl font-bold text-zinc-500" x-text="pendientes.toLocaleString('es-PE')">[[${#numbers.formatInteger(ausentes, 3, 'POINT')}]]</p>
+                                            <p class="text-sm font-medium text-zinc-500">Votos Pendientes</p>
+                                            <p class="text-xl font-bold text-amber-500" x-text="activosSinVoto.toLocaleString('es-PE')">[[${#numbers.formatInteger(cuentasActivasSinVoto, 3, 'POINT')}]]</p>
                                         </div>
                                     </div>
-                                    <span class="text-sm font-semibold text-zinc-500" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
+                                    <span class="text-sm font-semibold text-amber-500" x-text="pctActivosSinVoto.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeActivosSinVoto, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
                             <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
-                                * Los datos de asistencia se actualizarán a medida que los ciudadanos emitan su voto durante el proceso electoral.
+                                Los datos se actualizarán a medida que los ciudadanos activen su cuenta y emitan su voto durante el proceso electoral.
                             </p>
                         </div>
 
@@ -306,27 +319,28 @@
                             </h3>
                             <div class="relative mx-auto max-w-[220px]">
                                 <canvas id="participacionChart"
-                                        th:data-asistencia="${porcentajeAsistencia}"
-                                        th:data-ausencia="${porcentajeAusencia}"></canvas>
+                                        th:data-votos="${porcentajeVotos}"
+                                        th:data-activos-sin-voto="${porcentajeActivosSinVoto}"
+                                        th:data-inactivas="${porcentajeInactivas}"></canvas>
                             </div>
                             <div class="mt-4 space-y-2">
                                 <div class="flex items-center justify-between text-xs">
                                     <span class="flex items-center gap-1.5">
                                         <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
-                                        Ciudadanos asistentes
+                                        Votos emitidos
                                     </span>
-                                    <span class="font-semibold text-zinc-900" x-text="pctAsistencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')}]]%</span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctVotos.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')}]]%</span>
                                 </div>
                                 <div class="flex items-center justify-between text-xs">
                                     <span class="flex items-center gap-1.5">
-                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-400"></span>
-                                        Ciudadanos pendientes
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                                        Votos Pendientes
                                     </span>
-                                    <span class="font-semibold text-zinc-900" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctActivosSinVoto.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeActivosSinVoto, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
                             <p class="mt-6 text-xs leading-relaxed text-zinc-400">
-                                * Los porcentajes reflejan la participación registrada hasta el momento y se actualizarán en tiempo real durante el proceso electoral.
+                                Los porcentajes reflejan la participación registrada hasta el momento y se actualizarán en tiempo real durante el proceso electoral.
                             </p>
                         </div>
                     </div>
@@ -382,7 +396,6 @@
                                 <div class="h-full rounded-full bg-primary-600 animate-progress"
                                      :style="'width: ' + item.pct + '%'"></div>
                             </div>
-                            <p class="mt-1.5 text-xs text-zinc-400" x-text="'Asistieron: ' + format(item.attended) + ' de ' + format(item.total)"></p>
                         </div>
                     </template>
                 </div>
@@ -404,16 +417,16 @@
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('participacionChart');
         if (ctx) {
-            const asistencia = parseFloat(ctx.getAttribute('data-asistencia')) || 0;
-            const pendientes = parseFloat(ctx.getAttribute('data-ausencia')) || 0;
+            const pctVotos       = parseFloat(ctx.getAttribute('data-votos'))           || 0;
+            const pctActivosSinV = parseFloat(ctx.getAttribute('data-activos-sin-voto')) || 0;
 
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Asistentes', 'Pendientes'],
+                    labels: ['Votos emitidos', 'Votos Pendientes'],
                     datasets: [{
-                        data: [asistencia, pendientes],
-                        backgroundColor: ['#1e3a5f', '#a1a1aa'],
+                        data: [pctVotos, pctActivosSinV],
+                        backgroundColor: ['#1e3a5f', '#f59e0b'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                     }]
