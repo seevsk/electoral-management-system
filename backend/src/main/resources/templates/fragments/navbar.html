@@ -45,7 +45,7 @@
         </div>
 
         <!-- Voter authenticated: show name + logout -->
-        <div sec:authorize="hasRole('USER')" class="flex items-center gap-3">
+        <div sec:authorize="isAuthenticated()" class="flex items-center gap-3">
             <div class="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
                 <i data-lucide="user-check" class="h-4 w-4 text-white/70"></i>
                 <span class="text-sm font-medium text-white" th:text="${#authentication.name}">Votante</span>
@@ -60,7 +60,7 @@
         </div>
 
         <!-- Login dropdown: only when not authenticated -->
-        <div th:if="${!#authorization.expression('isAuthenticated()')}"
+        <div sec:authorize="!isAuthenticated()"
              x-data="{ loginOpen: false }" class="relative">
             <button @click="loginOpen = !loginOpen"
                     class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/5 hover:text-white">
@@ -131,7 +131,7 @@
         </span>
     </nav>
     <!-- Mobile: voter authenticated -->
-    <div sec:authorize="hasRole('USER')" class="border-t border-white/10 pt-4">
+    <div sec:authorize="isAuthenticated()" class="border-t border-white/10 pt-4">
         <div class="mb-2 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
             <i data-lucide="user-check" class="h-4 w-4 text-white/70 shrink-0"></i>
             <span class="text-sm font-medium text-white" th:text="${#authentication.name}">Votante</span>
@@ -146,7 +146,7 @@
     </div>
 
     <!-- Mobile: login dropdown (not authenticated) -->
-    <div th:if="${!#authorization.expression('isAuthenticated()')}"
+    <div sec:authorize="!isAuthenticated()"
          x-data="{ mobileNavLoginOpen: false }" class="border-t border-white/10 pt-4">
         <button @click="mobileNavLoginOpen = !mobileNavLoginOpen"
                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">

@@ -34,8 +34,14 @@ public class NavigationController
             return "redirect:/voter/portal";
         }
 
-        long electoresHabilitados = voterService.getElectoresHabilitados();
-        long asistentes = voterService.getVotantesAsistentes();
+        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
+
+        long electoresHabilitados = 0;
+        long asistentes = 0;
+        for (Map<String, Object> dist : distritosList) {
+            electoresHabilitados += (Long) dist.get("total");
+            asistentes += (Long) dist.get("attended");
+        }
         long ausentes = electoresHabilitados - asistentes;
 
         double porcentajeAsistencia = electoresHabilitados > 0 ? (asistentes * 100.0) / electoresHabilitados : 0.0;
@@ -63,6 +69,16 @@ public class NavigationController
             e.printStackTrace();
         }
         model.addAttribute("ambitosJson", ambitosJson);
+
+        // Obtener todos los ubigeos para los filtros en cascada
+        List<Map<String, Object>> ubicacionesList = voterService.getAllUbigeos();
+        String locationsJson = "[]";
+        try {
+            locationsJson = new ObjectMapper().writeValueAsString(ubicacionesList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        model.addAttribute("locationsJson", locationsJson);
 
         return "index";
     }

@@ -73,18 +73,8 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     // =========================================================================
 
     /**
-     * Cuenta todos los votantes habilitados filtrando por su estado ('A' = Activo).
-     */
-    long countByStatus(String status);
-
-    /**
-     * Cuenta todos los votantes habilitados ('A') que ya han emitido su voto (hasVoted = true).
-     */
-    long countByStatusAndHasVotedTrue(String status);
-
-    /**
-     * Agrupa los votantes activos por departamento y cuenta el total de electores
-     * y cuántos de ellos asistieron a votar.
+     * Comentario descriptivo: Obtiene la participación agrupada por departamentos
+     * filtrando solo por votantes con estado Activo ('A') para producción.
      */
     @Query("""
             select l.department,
@@ -96,5 +86,52 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
             group by l.department
             """)
     List<Object[]> getParticipationByScope();
+
+    /**
+     * Comentario descriptivo: Consulta para obtener la participación agrupada por distrito 
+     * enfocado exclusivamente en Lima Metropolitana, filtrando solo votantes activos ('A').
+     */
+    @Query("""
+            select l.locationCode, l.district,
+                   count(v),
+                   sum(case when v.hasVoted = true then 1L else 0L end)
+            from Voter v
+            join Location l on v.locationCode = l.locationCode
+            where v.status = 'A' and l.department = 'LIMA'
+            group by l.locationCode, l.district
+            order by l.district asc
+            """)
+    List<Object[]> getParticipationByDistrict();
+
+    /**
+     * NUEVO: Consulta para obtener todos los ubigeos (departamentos, provincias, distritos)
+     * para los filtros de ubicación en cascada.
+     */
+    @Query("""
+        SELECT DISTINCT 
+            l.department AS department,
+            l.province AS province,
+            l.district AS district,
+            l.locationCode AS locationCode,
+            COALESCE((
+                SELECT COUNT(v) 
+                FROM Voter v 
+                WHERE v.locationCode = l.locationCode 
+                  AND v.status = 'A'
+            ), 0) AS total,
+            COALESCE((
+                SELECT COUNT(v) 
+                FROM Voter v 
+                WHERE v.locationCode = l.locationCode 
+                  AND v.status = 'A' 
+                  AND v.hasVoted = true
+            ), 0) AS attended
+        FROM Location l
+        WHERE l.department IS NOT NULL 
+          AND l.province IS NOT NULL 
+          AND l.district IS NOT NULL
+        ORDER BY l.department, l.province, l.district
+        """)
+    List<Object[]> findAllUbigeos();
 }
 
