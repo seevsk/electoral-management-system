@@ -1,6 +1,8 @@
 package com.ems.backend.repository;
 
 import com.ems.backend.entity.Voter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -67,6 +69,39 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
             order by v.fullName asc, v.firstSurname asc, v.secondSurname asc, a.dni asc, v.id asc
             """)
     List<Voter> searchEligibleUserVotersForCandidates(@Param("term") String term);
+
+    // =========================================================================
+    // PAGINACIÓN SERVIDOR — PÁGINA DE ESTADO DE VOTANTES
+    // =========================================================================
+
+    @Query(
+        value = """
+            select v from Voter v
+            join fetch v.account a
+            where (:statusFilter is null or v.status = :statusFilter)
+              and (:search is null
+                   or lower(v.fullName)      like lower(concat('%', :search, '%'))
+                   or lower(v.firstSurname)  like lower(concat('%', :search, '%'))
+                   or lower(v.secondSurname) like lower(concat('%', :search, '%'))
+                   or a.dni                   like concat('%', :search, '%'))
+            order by v.firstSurname asc, v.secondSurname asc
+            """,
+        countQuery = """
+            select count(v) from Voter v
+            join v.account a
+            where (:statusFilter is null or v.status = :statusFilter)
+              and (:search is null
+                   or lower(v.fullName)      like lower(concat('%', :search, '%'))
+                   or lower(v.firstSurname)  like lower(concat('%', :search, '%'))
+                   or lower(v.secondSurname) like lower(concat('%', :search, '%'))
+                   or a.dni                   like concat('%', :search, '%'))
+            """
+    )
+    Page<Voter> findPaginatedForStatusPage(
+        @Param("search") String search,
+        @Param("statusFilter") String statusFilter,
+        Pageable pageable
+    );
 
     // =========================================================================
     // CONSULTAS PARA PARTICIPACIÓN CIUDADANA

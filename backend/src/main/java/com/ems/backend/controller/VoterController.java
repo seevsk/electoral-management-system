@@ -7,6 +7,7 @@ import com.ems.backend.repository.LocationRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -140,9 +143,48 @@ public class VoterController {
     }
 
     @GetMapping("/status")
-    public String showStatusPanel(Model model) {
-        model.addAttribute("voters", voterService.findAll());
+    public String showStatusPanel(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "")   String search,
+            @RequestParam(defaultValue = "")   String statusFilter,
+            Model model) {
+
+        int safeSize = (size < 1 || size > 100) ? 50 : size;
+        Page<Voter> voterPage = voterService.findPaginated(page, safeSize, search, statusFilter);
+
+        long totalItems  = voterPage.getTotalElements();
+        int  currentPage = voterPage.getNumber();
+        int  itemsFrom   = totalItems == 0 ? 0 : currentPage * safeSize + 1;
+        long itemsTo     = Math.min((long)(currentPage + 1) * safeSize, totalItems);
+
+        model.addAttribute("voters",       voterPage.getContent());
+        model.addAttribute("currentPage",  currentPage);
+        model.addAttribute("totalPages",   voterPage.getTotalPages());
+        model.addAttribute("totalItems",   totalItems);
+        model.addAttribute("itemsFrom",    itemsFrom);
+        model.addAttribute("itemsTo",      itemsTo);
+        model.addAttribute("pageSize",     safeSize);
+        model.addAttribute("search",       search);
+        model.addAttribute("statusFilter", statusFilter);
+        model.addAttribute("pageNumbers",  buildPageWindow(currentPage, voterPage.getTotalPages()));
         return "voters/disablevoter";
+    }
+
+    private List<Integer> buildPageWindow(int current, int total) {
+        if (total <= 1) return List.of();
+        var pages = new LinkedHashSet<Integer>();
+        pages.add(0);
+        for (int i = Math.max(0, current - 2); i <= Math.min(total - 1, current + 2); i++) pages.add(i);
+        pages.add(total - 1);
+        var result = new ArrayList<Integer>();
+        int prev = -2;
+        for (int p : pages) {
+            if (prev >= 0 && p - prev > 1) result.add(-1);
+            result.add(p);
+            prev = p;
+        }
+        return result;
     }
 
     @GetMapping("/disable/{id}")
