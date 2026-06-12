@@ -7,6 +7,8 @@ import com.ems.backend.repository.VoterRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 
@@ -107,6 +109,17 @@ public class VoterServiceImpl implements VoterService {
         existing.setLocationCode(voter.getLocationCode());
 
         return voterRepository.save(existing);
+    }
+
+    @Override
+    public Page<Voter> findPaginated(int page, int size, String search, String statusFilter) {
+        String resolvedSearch = (search == null || search.isBlank()) ? null : search.trim();
+        String resolvedStatus = (statusFilter == null || statusFilter.isBlank()) ? null : statusFilter.trim();
+        return voterRepository.findPaginatedForStatusPage(
+            resolvedSearch,
+            resolvedStatus,
+            PageRequest.of(Math.max(0, page), size)
+        );
     }
 
     @Override
