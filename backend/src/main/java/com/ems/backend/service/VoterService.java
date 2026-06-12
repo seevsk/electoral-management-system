@@ -27,16 +27,6 @@ public interface VoterService {
     // =========================================================================
 
     /**
-     * Obtiene la cantidad total de electores con estado Activo (A).
-     */
-    long getElectoresHabilitados();
-
-    /**
-     * Obtiene la cantidad de electores activos que ya han votado (hasVoted = true).
-     */
-    long getVotantesAsistentes();
-
-    /**
      * Obtiene el listado de ámbitos de votación (departamentos) con su total de
      * electores, asistentes y porcentaje de participación.
      */
@@ -47,5 +37,11 @@ public interface VoterService {
      * para cada uno de los distritos de Lima Metropolitana.
      */
     List<java.util.Map<String, Object>> getParticipationByDistrict();
+
+    /**
+     * NUEVO: Obtiene todos los ubigeos (departamentos, provincias, distritos)
+     * para los filtros de ubicación en cascada.
+     */
+    List<java.util.Map<String, Object>> getAllUbigeos();
 }
 

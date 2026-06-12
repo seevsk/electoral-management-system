@@ -70,16 +70,6 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     // =========================================================================
 
     /**
-     * Cuenta todos los votantes habilitados filtrando por su estado ('A' = Activo).
-     */
-    long countByStatus(String status);
-
-    /**
-     * Cuenta todos los votantes habilitados ('A') que ya han emitido su voto (hasVoted = true).
-     */
-    long countByStatusAndHasVotedTrue(String status);
-
-    /**
      * Comentario descriptivo: Obtiene la participación agrupada por departamentos
      * filtrando solo por votantes con estado Activo ('A') para producción.
      */
@@ -109,5 +99,36 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
             order by l.district asc
             """)
     List<Object[]> getParticipationByDistrict();
+
+    /**
+     * NUEVO: Consulta para obtener todos los ubigeos (departamentos, provincias, distritos)
+     * para los filtros de ubicación en cascada.
+     */
+    @Query("""
+        SELECT DISTINCT 
+            l.department AS department,
+            l.province AS province,
+            l.district AS district,
+            l.locationCode AS locationCode,
+            COALESCE((
+                SELECT COUNT(v) 
+                FROM Voter v 
+                WHERE v.locationCode = l.locationCode 
+                  AND v.status = 'A'
+            ), 0) AS total,
+            COALESCE((
+                SELECT COUNT(v) 
+                FROM Voter v 
+                WHERE v.locationCode = l.locationCode 
+                  AND v.status = 'A' 
+                  AND v.hasVoted = true
+            ), 0) AS attended
+        FROM Location l
+        WHERE l.department IS NOT NULL 
+          AND l.province IS NOT NULL 
+          AND l.district IS NOT NULL
+        ORDER BY l.department, l.province, l.district
+        """)
+    List<Object[]> findAllUbigeos();
 }
 

@@ -22,7 +22,6 @@
             </div>
 
             <!-- ==================== PROGRESS BAR SECTION ==================== -->
-            <!-- DINÁMICO: Carga de avance de actas proporcional a la participacion calculada desde el backend -->
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -62,56 +61,109 @@
             </div>
 
             <!-- ==================== FILTERS & GRID WRAPPER (ALPINE.JS) ==================== -->
-            <!-- Comentario descriptivo: Contenedor global AlpineJS que consume th:data-* de forma segura, evitando errores de parseo inline -->
             <div id="filters-grid-wrapper"
-                 th:data-distritos="${distritosJson}"
+                 th:data-locations="${locationsJson}"
                  th:data-habilitados="${electoresHabilitados}"
                  th:data-asistentes="${asistentes}"
                  x-data="{
-                    distritoSeleccionado: '',
-                    distritos: [],
+                    locations: [],
+                    selectedDepartment: '',
+                    selectedProvince: '',
+                    selectedLocationCode: '',
                     totalLimaHabilitados: 0,
                     totalLimaAsistentes: 0,
+
                     init() {
-                        // Comentario descriptivo: Parsear de forma segura los valores inyectados por el backend en atributos data-*
-                        this.distritos = JSON.parse(this.$el.getAttribute('data-distritos') || '[]');
+                        this.locations = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
                         this.totalLimaHabilitados = parseInt(this.$el.getAttribute('data-habilitados') || '0');
                         this.totalLimaAsistentes = parseInt(this.$el.getAttribute('data-asistentes') || '0');
+                        console.log('Ubigeos cargados:', this.locations.length);
                     },
+
+                    // Obtener departamentos únicos (sin necesidad de País porque Perú es fijo)
+                    get departments() {
+                        return [...new Set(this.locations.map(l => l.department))].sort();
+                    },
+
+                    // Obtener provincias según departamento seleccionado
+                    get provinces() {
+                        if (!this.selectedDepartment) return [];
+                        return [...new Set(
+                            this.locations
+                                .filter(l => l.department === this.selectedDepartment)
+                                .map(l => l.province)
+                        )].sort();
+                    },
+
+                    // Obtener distritos según departamento y provincia seleccionados
+                    get districts() {
+                        if (!this.selectedProvince) return [];
+                        return this.locations.filter(l =>
+                            l.department === this.selectedDepartment &&
+                            l.province === this.selectedProvince
+                        );
+                    },
+
                     get electoresHabiles() {
-                        if (!this.distritoSeleccionado) return this.totalLimaHabilitados;
-                        const dist = this.distritos.find(d => d.code === this.distritoSeleccionado);
-                        return dist ? dist.total : 0;
+                        if (!this.selectedLocationCode) {
+                            return this.totalLimaHabilitados;
+                        }
+                        const loc = this.districts.find(d => d.locationCode === this.selectedLocationCode);
+                        return loc ? loc.total : this.totalLimaHabilitados;
                     },
+
                     get asistentes() {
-                        if (!this.distritoSeleccionado) return this.totalLimaAsistentes;
-                        const dist = this.distritos.find(d => d.code === this.distritoSeleccionado);
-                        return dist ? dist.attended : 0;
+                        if (!this.selectedLocationCode) {
+                            return this.totalLimaAsistentes;
+                        }
+                        const loc = this.districts.find(d => d.locationCode === this.selectedLocationCode);
+                        return loc ? loc.attended : this.totalLimaAsistentes;
                     },
-                    get ausentes() {
+
+                    get pendientes() {
                         return this.electoresHabiles - this.asistentes;
                     },
+
                     get pctAsistencia() {
                         return this.electoresHabiles > 0 ? (this.asistentes * 100.0) / this.electoresHabiles : 0.0;
                     },
-                    get pctAusencia() {
-                        return this.electoresHabiles > 0 ? (this.ausentes * 100.0) / this.electoresHabiles : 0.0;
+
+                    get pctPendientes() {
+                        return this.electoresHabiles > 0 ? (this.pendientes * 100.0) / this.electoresHabiles : 0.0;
                     },
-                    limpiar() {
-                        this.distritoSeleccionado = '';
+
+                    onDepartmentChange() {
+                        this.selectedProvince = '';
+                        this.selectedLocationCode = '';
                         this.updateChart();
                     },
+
+                    onProvinceChange() {
+                        this.selectedLocationCode = '';
+                        this.updateChart();
+                    },
+
+                    onDistrictChange() {
+                        this.updateChart();
+                    },
+
+                    limpiar() {
+                        this.selectedDepartment = '';
+                        this.selectedProvince = '';
+                        this.selectedLocationCode = '';
+                        this.updateChart();
+                    },
+
                     updateChart() {
                         const chart = Chart.getChart('participacionChart');
                         if (chart) {
-                            chart.data.datasets[0].data = [this.pctAsistencia, this.pctAusencia];
+                            chart.data.datasets[0].data = [this.pctAsistencia, this.pctPendientes];
                             chart.update();
                         }
                     }
                  }">
 
-                <!-- ==================== FILTROS DE UBICACIÓN ==================== -->
-                <!-- Comentario descriptivo: Barra de filtros alineada en una sola fila. Campos de nivel superior bloqueados para hacer enfasis en Lima Metropolitana -->
+                <!-- ==================== FILTROS DE UBICACIÓN (IGUAL QUE REGISTRAR VOTANTE) ==================== -->
                 <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col gap-4 md:flex-row md:items-center">
                         <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
@@ -119,36 +171,52 @@
                             Filtrar Ámbito:
                         </div>
                         <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
-                            <!-- País -->
+
+                            <!-- País (FIJO - PERÚ por defecto) -->
                             <div>
-                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                <select disabled
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
                                     <option>PERÚ</option>
                                 </select>
                             </div>
-                            <!-- Departamento -->
+
+                            <!-- Departamento (igual que Registrar Votante) -->
                             <div>
-                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
-                                    <option>LIMA</option>
-                                </select>
-                            </div>
-                            <!-- Provincia -->
-                            <div>
-                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
-                                    <option>LIMA</option>
-                                </select>
-                            </div>
-                            <!-- Distrito (Seleccionable dinámicamente) -->
-                            <div>
-                                <select id="select-distrito" x-model="distritoSeleccionado" @change="updateChart()"
+                                <select x-model="selectedDepartment" @change="onDepartmentChange()"
                                         class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
-                                    <option value="">[ Selecciona un Distrito ]</option>
-                                    <template x-for="d in distritos" :key="d.code">
-                                        <option :value="d.code" x-text="d.name"></option>
+                                    <option value="">Departamento</option>
+                                    <template x-for="dept in departments" :key="dept">
+                                        <option :value="dept" x-text="dept"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Provincia (igual que Registrar Votante) -->
+                            <div>
+                                <select x-model="selectedProvince" @change="onProvinceChange()"
+                                        :disabled="!selectedDepartment"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Provincia</option>
+                                    <template x-for="prov in provinces" :key="prov">
+                                        <option :value="prov" x-text="prov"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Distrito (igual que Registrar Votante) -->
+                            <div>
+                                <select x-model="selectedLocationCode" @change="onDistrictChange()"
+                                        :disabled="!selectedProvince"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Distrito</option>
+                                    <template x-for="loc in districts" :key="loc.locationCode">
+                                        <option :value="loc.locationCode" x-text="loc.district"></option>
                                     </template>
                                 </select>
                             </div>
                         </div>
-                        <!-- Botón Limpiar para regresar al consolidado general de Lima -->
+
+                        <!-- Botón Limpiar -->
                         <button type="button" @click="limpiar()"
                                 class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
                             <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
@@ -175,7 +243,6 @@
                     </div>
 
                     <!-- COL 2: Electores Hábiles + Asistencia apilados -->
-                    <!-- Comentario descriptivo: Las tarjetas de electores, asistentes y ausentes actualizan sus cifras en caliente mediante AlpineJS -->
                     <div class="flex flex-col gap-6">
 
                         <!-- Electores Hábiles -->
@@ -212,26 +279,25 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10">
-                                            <i data-lucide="x-circle" class="h-5 w-5 text-blue-500"></i>
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-400/10">
+                                            <i data-lucide="clock" class="h-5 w-5 text-zinc-500"></i>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-medium text-zinc-500">Ausentes</p>
-                                            <p class="text-xl font-bold text-blue-500" x-text="ausentes.toLocaleString('es-PE')">[[${#numbers.formatInteger(ausentes, 3, 'POINT')}]]</p>
+                                            <p class="text-sm font-medium text-zinc-500">Pendientes</p>
+                                            <p class="text-xl font-bold text-zinc-500" x-text="pendientes.toLocaleString('es-PE')">[[${#numbers.formatInteger(ausentes, 3, 'POINT')}]]</p>
                                         </div>
                                     </div>
-                                    <span class="text-sm font-semibold text-blue-500" x-text="pctAusencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
+                                    <span class="text-sm font-semibold text-zinc-500" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
                             <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
-                                * Esta información solo considera las actas contabilizadas.
+                                * Los datos de asistencia se actualizarán a medida que los ciudadanos emitan su voto durante el proceso electoral.
                             </p>
                         </div>
 
                     </div>
 
                     <!-- COL 3: Participación Ciudadana (Gráfico de Dona) -->
-                    <!-- Comentario descriptivo: Se eliminó ciudadanos pendientes del gráfico y su leyenda, mostrando exclusivamente Asistentes y Ausentes -->
                     <div class="flex flex-col gap-6">
                         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
@@ -239,8 +305,8 @@
                                 Participación Ciudadana
                             </h3>
                             <div class="relative mx-auto max-w-[220px]">
-                                <canvas id="participacionChart" 
-                                        th:data-asistencia="${porcentajeAsistencia}" 
+                                <canvas id="participacionChart"
+                                        th:data-asistencia="${porcentajeAsistencia}"
                                         th:data-ausencia="${porcentajeAusencia}"></canvas>
                             </div>
                             <div class="mt-4 space-y-2">
@@ -253,14 +319,14 @@
                                 </div>
                                 <div class="flex items-center justify-between text-xs">
                                     <span class="flex items-center gap-1.5">
-                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span>
-                                        Ciudadanos ausentes
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-400"></span>
+                                        Ciudadanos pendientes
                                     </span>
-                                    <span class="font-semibold text-zinc-900" x-text="pctAusencia.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
                             <p class="mt-6 text-xs leading-relaxed text-zinc-400">
-                                * Gráfico dinámico: Los porcentajes sumados reflejan el 100% de la participación (Asistentes vs Ausentes) para el ámbito consultado.
+                                * Los porcentajes reflejan la participación registrada hasta el momento y se actualizarán en tiempo real durante el proceso electoral.
                             </p>
                         </div>
                     </div>
@@ -270,13 +336,11 @@
             </div> <!-- FIN FILTERS & GRID WRAPPER -->
 
             <!-- ==================== LISTA DE ÁMBITOS ==================== -->
-            <!-- DINÁMICO: Carga segura del listado de ámbitos inyectados por el backend en th:data-ambitos -->
             <div th:data-ambitos="${ambitosJson}"
                  x-data="{
                     sortBy: 'alfabetico',
                     items: [],
                     init() {
-                        // Comentario descriptivo: Parsear de forma segura los ámbitos para evitar fallos de sintaxis en el navegador
                         this.items = JSON.parse(this.$el.getAttribute('data-ambitos') || '[]');
                     },
                     format(n) { return n.toLocaleString('es-PE') },
@@ -340,17 +404,16 @@
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('participacionChart');
         if (ctx) {
-            // DINÁMICO: Obtener los porcentajes iniciales desde los atributos del canvas
             const asistencia = parseFloat(ctx.getAttribute('data-asistencia')) || 0;
-            const ausencia = parseFloat(ctx.getAttribute('data-ausencia')) || 0;
+            const pendientes = parseFloat(ctx.getAttribute('data-ausencia')) || 0;
 
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Asistentes', 'Ausentes'],
+                    labels: ['Asistentes', 'Pendientes'],
                     datasets: [{
-                        data: [asistencia, ausencia],
-                        backgroundColor: ['#1e3a5f', '#94a3b8'],
+                        data: [asistencia, pendientes],
+                        backgroundColor: ['#1e3a5f', '#a1a1aa'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                     }]

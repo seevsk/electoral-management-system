@@ -101,18 +101,6 @@ public class VoterServiceImpl implements VoterService {
     // =========================================================================
 
     @Override
-    public long getElectoresHabilitados() {
-        // Comentario descriptivo: Obtiene el total de electores habilitados filtrando solo por estado Activo (A)
-        return voterRepository.countByStatus(STATUS_ACTIVE);
-    }
-
-    @Override
-    public long getVotantesAsistentes() {
-        // Comentario descriptivo: Obtiene el total de asistentes activos que ya emitieron su voto (hasVoted = true)
-        return voterRepository.countByStatusAndHasVotedTrue(STATUS_ACTIVE);
-    }
-
-    @Override
     public List<Map<String, Object>> getParticipationByScope() {
         List<Object[]> queryResult = voterRepository.getParticipationByScope();
         List<Map<String, Object>> participationList = new ArrayList<>();
@@ -157,6 +145,28 @@ public class VoterServiceImpl implements VoterService {
             participationList.add(districtData);
         }
         return participationList;
+    }
+
+    // =========================================================================
+    // NUEVO MÉTODO: OBTENER TODOS LOS UBIGEOS PARA FILTROS EN CASCADA
+    // =========================================================================
+
+    @Override
+    public List<Map<String, Object>> getAllUbigeos() {
+        List<Object[]> queryResult = voterRepository.findAllUbigeos();
+        List<Map<String, Object>> ubigeosList = new ArrayList<>();
+
+        for (Object[] row : queryResult) {
+            Map<String, Object> ubigeo = new HashMap<>();
+            ubigeo.put("department", row[0]);      // department
+            ubigeo.put("province", row[1]);        // province
+            ubigeo.put("district", row[2]);        // district
+            ubigeo.put("locationCode", row[3]);    // locationCode
+            ubigeo.put("total", row[4]);           // total - NUEVO
+            ubigeo.put("attended", row[5]);        // attended - NUEVO
+            ubigeosList.add(ubigeo);
+        }
+        return ubigeosList;
     }
 
     // Metodos privados

@@ -28,18 +28,25 @@ public class NavigationController
     @GetMapping("/participation")
     public String participation(Model model)
     {
-        // Obtención de datos dinámicos directos de la base de datos
-        long electoresHabilitados = voterService.getElectoresHabilitados();
-        long asistentes = voterService.getVotantesAsistentes();
+        // Obtener datos de participación por distrito (Lima Metropolitana)
+        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
+
+        // Calcular totales consolidados de Lima a partir de los distritos
+        long electoresHabilitados = 0;
+        long asistentes = 0;
+        for (Map<String, Object> dist : distritosList) {
+            electoresHabilitados += (Long) dist.get("total");
+            asistentes += (Long) dist.get("attended");
+        }
         long ausentes = electoresHabilitados - asistentes;
 
         double porcentajeAsistencia = electoresHabilitados > 0 ? (asistentes * 100.0) / electoresHabilitados : 0.0;
         double porcentajeAusencia = electoresHabilitados > 0 ? (ausentes * 100.0) / electoresHabilitados : 0.0;
 
-        // Simulación de actas en proporción al avance de participación
-        long totalActas = 92766; // Total estático del padrón nacional real
-        long actasContabilizadas = (long) (totalActas * (porcentajeAsistencia / 100.0));
-        double porcentajeActas = porcentajeAsistencia;
+        // Barra de progreso de actas — valor independiente de la participación
+        long totalActas = 92766;
+        long actasContabilizadas = 0;
+        double porcentajeActas = 0.0;
 
         // Añadir atributos de forma directa al modelo de Thymeleaf
         model.addAttribute("electoresHabilitados", electoresHabilitados);
@@ -52,7 +59,7 @@ public class NavigationController
         model.addAttribute("actasContabilizadas", actasContabilizadas);
         model.addAttribute("porcentajeActas", porcentajeActas);
 
-        // Comentario descriptivo: Obtener ámbitos (departamentos) y serializarlos a JSON para Alpine.js
+        // Obtener ámbitos (departamentos) y serializarlos a JSON para Alpine.js
         List<Map<String, Object>> ambitosList = voterService.getParticipationByScope();
         String ambitosJson = "[]";
         try {
@@ -62,8 +69,7 @@ public class NavigationController
         }
         model.addAttribute("ambitosJson", ambitosJson);
 
-        // Comentario descriptivo: Obtener los distritos de Lima Metropolitana con sus estadísticas y serializarlos a JSON
-        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
+        // Serializar distritos a JSON para Alpine.js
         String distritosJson = "[]";
         try {
             distritosJson = new ObjectMapper().writeValueAsString(distritosList);
@@ -71,6 +77,18 @@ public class NavigationController
             e.printStackTrace();
         }
         model.addAttribute("distritosJson", distritosJson);
+
+        // ========== NUEVO: DATOS DE UBIGEO PARA LOS FILTROS ==========
+        // Obtener todos los ubigeos (departamentos, provincias, distritos)
+        List<Map<String, Object>> ubicacionesList = voterService.getAllUbigeos(); // Necesitas crear este método
+        String locationsJson = "[]";
+        try {
+            locationsJson = new ObjectMapper().writeValueAsString(ubicacionesList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        model.addAttribute("locationsJson", locationsJson);
+        // ============================================================
 
         return "index";
     }
