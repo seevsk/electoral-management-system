@@ -34,34 +34,28 @@ public class NavigationController
             return "redirect:/voter/portal";
         }
 
-        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
-
-        long electoresHabilitados = 0;
-        long asistentes = 0;
-        for (Map<String, Object> dist : distritosList) {
-            electoresHabilitados += (Long) dist.get("total");
-            asistentes += (Long) dist.get("attended");
-        }
-        long ausentes = electoresHabilitados - asistentes;
-
-        double porcentajeAsistencia = electoresHabilitados > 0 ? (asistentes * 100.0) / electoresHabilitados : 0.0;
-        double porcentajeAusencia = electoresHabilitados > 0 ? (ausentes * 100.0) / electoresHabilitados : 0.0;
-
-        long totalActas = 92766;
-        long actasContabilizadas = (long) (totalActas * (porcentajeAsistencia / 100.0));
-        double porcentajeActas = porcentajeAsistencia;
-
-        model.addAttribute("electoresHabilitados", electoresHabilitados);
-        model.addAttribute("asistentes", asistentes);
-        model.addAttribute("ausentes", ausentes);
-        model.addAttribute("porcentajeAsistencia", porcentajeAsistencia);
-        model.addAttribute("porcentajeAusencia", porcentajeAusencia);
-
-        model.addAttribute("totalActas", totalActas);
-        model.addAttribute("actasContabilizadas", actasContabilizadas);
-        model.addAttribute("porcentajeActas", porcentajeActas);
-
+        // Totales nacionales calculados desde todos los departamentos
         List<Map<String, Object>> ambitosList = voterService.getParticipationByScope();
+        long totalPadron = 0, votosEmitidos = 0, cuentasActivasSinVoto = 0, cuentasInactivas = 0;
+        for (Map<String, Object> scope : ambitosList) {
+            totalPadron           += (Long) scope.get("total");
+            votosEmitidos         += (Long) scope.get("attended");
+            cuentasActivasSinVoto += (Long) scope.get("pending");
+            cuentasInactivas      += (Long) scope.get("inactive");
+        }
+
+        double porcentajeVotos          = totalPadron > 0 ? (votosEmitidos         * 100.0) / totalPadron : 0.0;
+        double porcentajeActivosSinVoto = totalPadron > 0 ? (cuentasActivasSinVoto * 100.0) / totalPadron : 0.0;
+        double porcentajeInactivas      = totalPadron > 0 ? (cuentasInactivas      * 100.0) / totalPadron : 0.0;
+
+        model.addAttribute("totalPadron",              totalPadron);
+        model.addAttribute("votosEmitidos",            votosEmitidos);
+        model.addAttribute("cuentasActivasSinVoto",    cuentasActivasSinVoto);
+        model.addAttribute("cuentasInactivas",         cuentasInactivas);
+        model.addAttribute("porcentajeVotos",          porcentajeVotos);
+        model.addAttribute("porcentajeActivosSinVoto", porcentajeActivosSinVoto);
+        model.addAttribute("porcentajeInactivas",      porcentajeInactivas);
+
         String ambitosJson = "[]";
         try {
             ambitosJson = new ObjectMapper().writeValueAsString(ambitosList);
@@ -70,7 +64,7 @@ public class NavigationController
         }
         model.addAttribute("ambitosJson", ambitosJson);
 
-        // Obtener todos los ubigeos para los filtros en cascada
+        // Ubigeos para los filtros en cascada
         List<Map<String, Object>> ubicacionesList = voterService.getAllUbigeos();
         String locationsJson = "[]";
         try {
