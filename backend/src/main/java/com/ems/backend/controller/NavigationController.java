@@ -28,42 +28,28 @@ public class NavigationController
     @GetMapping("/participation")
     public String participation(Authentication authentication, Model model)
     {
-<<<<<<< HEAD
-        // Obtener datos de participación por distrito (Lima Metropolitana)
-        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
-
-        // Calcular totales consolidados de Lima a partir de los distritos
-        long electoresHabilitados = 0;
-        long asistentes = 0;
-        for (Map<String, Object> dist : distritosList) {
-            electoresHabilitados += (Long) dist.get("total");
-            asistentes += (Long) dist.get("attended");
-        }
-=======
         // Authenticated voters go to their dedicated portal
         if (authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
             return "redirect:/voter/portal";
         }
 
-        long electoresHabilitados = voterService.getElectoresHabilitados();
-        long asistentes = voterService.getVotantesAsistentes();
->>>>>>> 33c660d017241e9a8075c40455dd1bd91b2e6897
+        List<Map<String, Object>> distritosList = voterService.getParticipationByDistrict();
+
+        long electoresHabilitados = 0;
+        long asistentes = 0;
+        for (Map<String, Object> dist : distritosList) {
+            electoresHabilitados += (Long) dist.get("total");
+            asistentes += (Long) dist.get("attended");
+        }
         long ausentes = electoresHabilitados - asistentes;
 
         double porcentajeAsistencia = electoresHabilitados > 0 ? (asistentes * 100.0) / electoresHabilitados : 0.0;
         double porcentajeAusencia = electoresHabilitados > 0 ? (ausentes * 100.0) / electoresHabilitados : 0.0;
 
-<<<<<<< HEAD
-        // Barra de progreso de actas — valor independiente de la participación
-        long totalActas = 92766;
-        long actasContabilizadas = 0;
-        double porcentajeActas = 0.0;
-=======
         long totalActas = 92766;
         long actasContabilizadas = (long) (totalActas * (porcentajeAsistencia / 100.0));
         double porcentajeActas = porcentajeAsistencia;
->>>>>>> 33c660d017241e9a8075c40455dd1bd91b2e6897
 
         model.addAttribute("electoresHabilitados", electoresHabilitados);
         model.addAttribute("asistentes", asistentes);
@@ -84,18 +70,8 @@ public class NavigationController
         }
         model.addAttribute("ambitosJson", ambitosJson);
 
-        // Serializar distritos a JSON para Alpine.js
-        String distritosJson = "[]";
-        try {
-            distritosJson = new ObjectMapper().writeValueAsString(distritosList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        model.addAttribute("distritosJson", distritosJson);
-
-        // ========== NUEVO: DATOS DE UBIGEO PARA LOS FILTROS ==========
-        // Obtener todos los ubigeos (departamentos, provincias, distritos)
-        List<Map<String, Object>> ubicacionesList = voterService.getAllUbigeos(); // Necesitas crear este método
+        // Obtener todos los ubigeos para los filtros en cascada
+        List<Map<String, Object>> ubicacionesList = voterService.getAllUbigeos();
         String locationsJson = "[]";
         try {
             locationsJson = new ObjectMapper().writeValueAsString(ubicacionesList);
@@ -103,7 +79,6 @@ public class NavigationController
             e.printStackTrace();
         }
         model.addAttribute("locationsJson", locationsJson);
-        // ============================================================
 
         return "index";
     }
