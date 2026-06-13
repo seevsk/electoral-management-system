@@ -1,6 +1,8 @@
 package com.ems.backend.repository;
 
 import com.ems.backend.entity.Voter;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -69,32 +71,86 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     List<Voter> searchEligibleUserVotersForCandidates(@Param("term") String term);
 
     // =========================================================================
+    // PAGINACIÓN SERVIDOR — PÁGINA DE ESTADO DE VOTANTES
+    // =========================================================================
+
+    @Query(
+        value = """
+            select v from Voter v
+            join fetch v.account a
+            where (:statusFilter is null or v.status = :statusFilter)
+              and (:search is null
+                   or lower(v.fullName)      like lower(concat('%', :search, '%'))
+                   or lower(v.firstSurname)  like lower(concat('%', :search, '%'))
+                   or lower(v.secondSurname) like lower(concat('%', :search, '%'))
+                   or a.dni                   like concat('%', :search, '%'))
+            order by v.firstSurname asc, v.secondSurname asc
+            """,
+        countQuery = """
+            select count(v) from Voter v
+            join v.account a
+            where (:statusFilter is null or v.status = :statusFilter)
+              and (:search is null
+                   or lower(v.fullName)      like lower(concat('%', :search, '%'))
+                   or lower(v.firstSurname)  like lower(concat('%', :search, '%'))
+                   or lower(v.secondSurname) like lower(concat('%', :search, '%'))
+                   or a.dni                   like concat('%', :search, '%'))
+            """
+    )
+    Page<Voter> findPaginatedForStatusPage(
+        @Param("search") String search,
+        @Param("statusFilter") String statusFilter,
+        Pageable pageable
+    );
+
+    // =========================================================================
     // CONSULTAS PARA PARTICIPACIÓN CIUDADANA
     // =========================================================================
 
     /**
-     * Cuenta todos los votantes habilitados filtrando por su estado ('A' = Activo).
-     */
-    long countByStatus(String status);
-
-    /**
-     * Cuenta todos los votantes habilitados ('A') que ya han emitido su voto (hasVoted = true).
-     */
-    long countByStatusAndHasVotedTrue(String status);
-
-    /**
-     * Agrupa los votantes activos por departamento y cuenta el total de electores
-     * y cuántos de ellos asistieron a votar.
+     * Comentario descriptivo: Obtiene la participación agrupada por departamentos
+     * filtrando solo por votantes con estado Activo ('A') para producción.
      */
     @Query("""
             select l.department,
                    count(v),
-                   sum(case when v.hasVoted = true then 1L else 0L end)
+                   sum(case when v.hasVoted = true then 1L else 0L end),
+                   sum(case when v.status = 'A' and v.hasVoted = false then 1L else 0L end),
+                   sum(case when v.status = 'I' then 1L else 0L end)
             from Voter v
             join Location l on v.locationCode = l.locationCode
-            where v.status = 'A'
             group by l.department
             """)
     List<Object[]> getParticipationByScope();
+
+    @Query("""
+            select l.locationCode, l.district,
+                   count(v),
+                   sum(case when v.hasVoted = true then 1L else 0L end),
+                   sum(case when v.status = 'A' and v.hasVoted = false then 1L else 0L end),
+                   sum(case when v.status = 'I' then 1L else 0L end)
+            from Voter v
+            join Location l on v.locationCode = l.locationCode
+            where l.department = 'LIMA'
+            group by l.locationCode, l.district
+            order by l.district asc
+            """)
+    List<Object[]> getParticipationByDistrict();
+
+    @Query("""
+        SELECT l.department, l.province, l.district, l.locationCode,
+               COUNT(v.id),
+               SUM(CASE WHEN v.hasVoted = true THEN 1L ELSE 0L END),
+               SUM(CASE WHEN v.status = 'A' AND v.hasVoted = false THEN 1L ELSE 0L END),
+               SUM(CASE WHEN v.status = 'I' THEN 1L ELSE 0L END)
+        FROM Location l
+        LEFT JOIN Voter v ON v.locationCode = l.locationCode
+        WHERE l.department IS NOT NULL
+          AND l.province IS NOT NULL
+          AND l.district IS NOT NULL
+        GROUP BY l.department, l.province, l.district, l.locationCode
+        ORDER BY l.department, l.province, l.district
+        """)
+    List<Object[]> findAllUbigeos();
 }
 

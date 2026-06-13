@@ -22,23 +22,22 @@
             </div>
 
             <!-- ==================== PROGRESS BAR SECTION ==================== -->
-            <!-- DINÁMICO: Carga de avance de actas proporcional a la participacion calculada desde el backend -->
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-zinc-900">Actas contabilizadas</h2>
-                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeActas, 1, 3, 'POINT')} + '%'"></p>
+                        <h2 class="text-lg font-semibold text-zinc-900">Votos Contabilizados</h2>
+                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')} + '%'"></p>
                     </div>
                     <div class="text-right text-sm text-zinc-500">
-                        <p>Total de actas: <span class="font-semibold text-zinc-900" th:text="${#numbers.formatInteger(totalActas, 3, 'POINT')}"></span></p>
+                        <p>Total de Electores: <span class="font-semibold text-zinc-900" th:text="${#numbers.formatInteger(totalPadron, 3, 'POINT')}"></span></p>
                         <p class="text-xs">
-                            <span th:text="${#numbers.formatDecimal(100.0 - porcentajeActas, 1, 3, 'POINT')} + '%'"></span> de Actas pendientes de procesar
+                            <span th:text="${#numbers.formatDecimal(100.0 - porcentajeVotos, 1, 3, 'POINT')} + '%'"></span> de votos pendientes de emitir
                         </p>
                     </div>
                 </div>
 
                 <div class="mt-4 h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeActas} + '%'"></div>
+                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeVotos} + '%'"></div>
                 </div>
 
                 <div class="mt-4 border-t border-zinc-100 pt-4">
@@ -49,143 +48,319 @@
                         </p>
                         <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
                             <span class="flex items-center gap-1.5">
-                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-                                Contabilizadas (<span th:text="${#numbers.formatInteger(actasContabilizadas, 3, 'POINT')}"></span>)
+                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
+                                Votos Emitidos (<span th:text="${#numbers.formatInteger(votosEmitidos, 3, 'POINT')}"></span>)
                             </span>
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                Pendientes (<span th:text="${#numbers.formatInteger(totalActas - actasContabilizadas, 3, 'POINT')}"></span>)
+                                Votos Pendientes (<span th:text="${#numbers.formatInteger(totalPadron - votosEmitidos, 3, 'POINT')}"></span>)
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ==================== 3-COLUMN GRID ==================== -->
-            <div class="mb-8 grid gap-6 lg:grid-cols-3">
+            <!-- ==================== FILTERS & GRID WRAPPER (ALPINE.JS) ==================== -->
+            <div id="filters-grid-wrapper"
+                 th:data-locations="${locationsJson}"
+                 th:data-total="${totalPadron}"
+                 th:data-attended="${votosEmitidos}"
+                 th:data-pending="${cuentasActivasSinVoto}"
+                 th:data-inactive="${cuentasInactivas}"
+                 x-data="{
+                    locations: [],
+                    selectedDepartment: '',
+                    selectedProvince: '',
+                    selectedLocationCode: '',
+                    totNacional: 0,
+                    attNacional: 0,
+                    pendNacional: 0,
+                    inacNacional: 0,
 
-                <!-- COL 1: Mapa -->
-                <div class="flex flex-col gap-6">
-                    <!-- Mapa -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                            <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Ámbito Geográfico
-                        </h3>
-                        <img th:src="@{/img/mapa-lima.jpg}"
-                             alt="Mapa de Lima Metropolitana"
-                             class="w-full rounded-lg object-contain shadow-sm"
-                             style="max-height: 450px; background: #f4f4f5;">
+                    init() {
+                        this.locations   = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
+                        this.totNacional  = parseInt(this.$el.getAttribute('data-total')    || '0');
+                        this.attNacional  = parseInt(this.$el.getAttribute('data-attended') || '0');
+                        this.pendNacional = parseInt(this.$el.getAttribute('data-pending')  || '0');
+                        this.inacNacional = parseInt(this.$el.getAttribute('data-inactive') || '0');
+                    },
+
+                    get departments() {
+                        return [...new Set(this.locations.map(l => l.department))].sort();
+                    },
+
+                    get provinces() {
+                        if (!this.selectedDepartment) return [];
+                        return [...new Set(
+                            this.locations
+                                .filter(l => l.department === this.selectedDepartment)
+                                .map(l => l.province)
+                        )].sort();
+                    },
+
+                    get districts() {
+                        if (!this.selectedProvince) return [];
+                        return this.locations.filter(l =>
+                            l.department === this.selectedDepartment &&
+                            l.province === this.selectedProvince
+                        );
+                    },
+
+                    _loc() {
+                        if (!this.selectedLocationCode) return null;
+                        return this.districts.find(d => d.locationCode === this.selectedLocationCode) || null;
+                    },
+
+                    get totalPadron() {
+                        const l = this._loc();
+                        return l ? l.total : this.totNacional;
+                    },
+
+                    get votosEmitidos() {
+                        const l = this._loc();
+                        return l ? l.attended : this.attNacional;
+                    },
+
+                    get activosSinVoto() {
+                        const l = this._loc();
+                        return l ? l.pending : this.pendNacional;
+                    },
+
+                    get cuentasInactivas() {
+                        const l = this._loc();
+                        return l ? l.inactive : this.inacNacional;
+                    },
+
+                    get pctVotos() {
+                        return this.totalPadron > 0 ? (this.votosEmitidos  * 100.0) / this.totalPadron : 0.0;
+                    },
+
+                    get pctActivosSinVoto() {
+                        return this.totalPadron > 0 ? (this.activosSinVoto * 100.0) / this.totalPadron : 0.0;
+                    },
+
+                    get pctInactivas() {
+                        return this.totalPadron > 0 ? (this.cuentasInactivas * 100.0) / this.totalPadron : 0.0;
+                    },
+
+                    onDepartmentChange() {
+                        this.selectedProvince = '';
+                        this.selectedLocationCode = '';
+                        this.updateChart();
+                    },
+
+                    onProvinceChange() {
+                        this.selectedLocationCode = '';
+                        this.updateChart();
+                    },
+
+                    onDistrictChange() {
+                        this.updateChart();
+                    },
+
+                    limpiar() {
+                        this.selectedDepartment = '';
+                        this.selectedProvince = '';
+                        this.selectedLocationCode = '';
+                        this.updateChart();
+                    },
+
+                    updateChart() {
+                        const chart = Chart.getChart('participacionChart');
+                        if (chart) {
+                            const d = buildChartData(this.pctVotos, this.pctActivosSinVoto);
+                            chart.data.labels                        = d.labels;
+                            chart.data.datasets[0].data              = d.data;
+                            chart.data.datasets[0].backgroundColor   = d.colors;
+                            chart.data.datasets[0].borderWidth        = d.hasData ? 2 : 0;
+                            chart.update();
+                        }
+                    }
+                 }">
+
+                <!-- ==================== FILTROS DE UBICACIÓN (IGUAL QUE REGISTRAR VOTANTE) ==================== -->
+                <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center">
+                        <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
+                            <i data-lucide="filter" class="h-4 w-4"></i>
+                            Filtrar Ámbito:
+                        </div>
+                        <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
+
+                            <!-- País (FIJO - PERÚ por defecto) -->
+                            <div>
+                                <select disabled
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option>PERÚ</option>
+                                </select>
+                            </div>
+
+                            <!-- Departamento (igual que Registrar Votante) -->
+                            <div>
+                                <select x-model="selectedDepartment" @change="onDepartmentChange()"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
+                                    <option value="">Departamento</option>
+                                    <template x-for="dept in departments" :key="dept">
+                                        <option :value="dept" x-text="dept"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Provincia (igual que Registrar Votante) -->
+                            <div>
+                                <select x-model="selectedProvince" @change="onProvinceChange()"
+                                        :disabled="!selectedDepartment"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Provincia</option>
+                                    <template x-for="prov in provinces" :key="prov">
+                                        <option :value="prov" x-text="prov"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Distrito (igual que Registrar Votante) -->
+                            <div>
+                                <select x-model="selectedLocationCode" @change="onDistrictChange()"
+                                        :disabled="!selectedProvince"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Todos los Distritos</option>
+                                    <template x-for="loc in districts" :key="loc.locationCode">
+                                        <option :value="loc.locationCode" x-text="loc.district"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Botón Limpiar -->
+                        <button type="button" @click="limpiar()"
+                                class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
+                            <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                            Limpiar
+                        </button>
                     </div>
                 </div>
 
-                <!-- COL 2: Electores Hábiles + Asistencia apilados -->
-                <div class="flex flex-col gap-6">
+                <!-- ==================== 3-COLUMN GRID ==================== -->
+                <div class="mb-8 grid gap-6 lg:grid-cols-3">
 
-                    <!-- Electores Hábiles -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <div class="flex flex-col items-center text-center">
-                            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
-                                <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
-                            </div>
-                            <p class="text-sm font-medium text-zinc-500">Electores hábiles</p>
-                            <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" th:text="${#numbers.formatInteger(electoresHabilitados, 3, 'POINT')}"></p>
-                            <p class="mt-1 text-xs text-zinc-400">Ciudadanos aptos para votar</p>
+                    <!-- COL 1: Mapa -->
+                    <div class="flex flex-col gap-6">
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Ámbito Geográfico
+                            </h3>
+                            <img th:src="@{/img/mapa-lima.jpg}"
+                                 alt="Mapa de Lima Metropolitana"
+                                 class="w-full rounded-lg object-contain shadow-sm"
+                                 style="max-height: 450px; background: #f4f4f5;">
                         </div>
                     </div>
 
-                    <!-- Card: Asistencia -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                            <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Asistencia
-                        </h3>
-                        <p class="mb-4 text-xs text-zinc-400">Resumen de participación ciudadana</p>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
-                                        <i data-lucide="check-circle" class="h-5 w-5 text-primary-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-zinc-500">Asistentes</p>
-                                        <p class="text-xl font-bold text-primary-600" th:text="${#numbers.formatInteger(asistentes, 3, 'POINT')}"></p>
-                                    </div>
+                    <!-- COL 2: Electores Hábiles + Asistencia apilados -->
+                    <div class="flex flex-col gap-6">
+
+                        <!-- Electores Hábiles -->
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
+                                    <i data-lucide="users" class="h-5 w-5 text-primary-600"></i>
                                 </div>
-                                <span class="text-sm font-semibold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')} + '%'"></span>
+                                <p class="text-sm font-medium text-zinc-500">Total de ciudadanos</p>
+                                <p class="mt-1 text-3xl font-bold tracking-tight text-zinc-900" x-text="totalPadron.toLocaleString('es-PE')">[[${#numbers.formatInteger(totalPadron, 3, 'POINT')}]]</p>
+                                <p class="mt-1 text-xs text-zinc-400">Registrados en el padrón electoral</p>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-400/10">
-                                        <i data-lucide="x-circle" class="h-5 w-5 text-blue-500"></i>
+                        </div>
+
+                        <!-- Card: Estado del padrón -->
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Estado del padrón
+                            </h3>
+                            <p class="mb-4 text-xs text-zinc-400">Distribución de ciudadanos por estado</p>
+                            <div class="space-y-4">
+                                <!-- Cuentas activas con voto emitido -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
+                                            <i data-lucide="check-circle" class="h-5 w-5 text-primary-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-zinc-500">Votos emitidos</p>
+                                            <p class="text-xl font-bold text-primary-600" x-text="votosEmitidos.toLocaleString('es-PE')">[[${#numbers.formatInteger(votosEmitidos, 3, 'POINT')}]]</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-zinc-500">Ausentes</p>
-                                        <p class="text-xl font-bold text-blue-500" th:text="${#numbers.formatInteger(ausentes, 3, 'POINT')}"></p>
-                                    </div>
+                                    <span class="text-sm font-semibold text-primary-600" x-text="pctVotos.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')}]]%</span>
                                 </div>
-                                <span class="text-sm font-semibold text-blue-500" th:text="${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')} + '%'"></span>
+                                <!-- Cuentas activas sin voto emitido -->
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400/10">
+                                            <i data-lucide="clock" class="h-5 w-5 text-amber-500"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-zinc-500">Votos Pendientes</p>
+                                            <p class="text-xl font-bold text-amber-500" x-text="activosSinVoto.toLocaleString('es-PE')">[[${#numbers.formatInteger(cuentasActivasSinVoto, 3, 'POINT')}]]</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-amber-500" x-text="pctActivosSinVoto.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeActivosSinVoto, 1, 3, 'POINT')}]]%</span>
+                                </div>
                             </div>
+                            <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
+                                Los datos se actualizarán a medida que los ciudadanos activen su cuenta y emitan su voto durante el proceso electoral.
+                            </p>
                         </div>
-                        <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
-                            * Esta información solo considera las actas contabilizadas.
-                        </p>
+
+                    </div>
+
+                    <!-- COL 3: Participación Ciudadana (Gráfico de Dona) -->
+                    <div class="flex flex-col gap-6">
+                        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
+                                Participación Ciudadana
+                            </h3>
+                            <div class="relative mx-auto max-w-[220px]">
+                                <canvas id="participacionChart"
+                                        th:data-votos="${porcentajeVotos}"
+                                        th:data-activos-sin-voto="${porcentajeActivosSinVoto}"
+                                        th:data-inactivas="${porcentajeInactivas}"></canvas>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
+                                        Votos emitidos
+                                    </span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctVotos.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')}]]%</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                                        Votos Pendientes
+                                    </span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctActivosSinVoto.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeActivosSinVoto, 1, 3, 'POINT')}]]%</span>
+                                </div>
+                            </div>
+                            <p class="mt-6 text-xs leading-relaxed text-zinc-400">
+                                Los porcentajes reflejan la participación registrada hasta el momento y se actualizarán en tiempo real durante el proceso electoral.
+                            </p>
+                        </div>
                     </div>
 
                 </div>
 
-                <!-- COL 3: Solo Participación Ciudadana -->
-                <div class="flex flex-col gap-6">
-
-                    <!-- Card: Participación Ciudadana (Doughnut Chart) -->
-                    <!-- DINÁMICO: data-asistencia y data-ausencia para inicializar Chart.js dinámicamente -->
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                        <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                            <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
-                            Participación Ciudadana
-                        </h3>
-                        <div class="relative mx-auto max-w-[220px]">
-                            <canvas id="participacionChart" 
-                                    th:data-asistencia="${porcentajeAsistencia}" 
-                                    th:data-ausencia="${porcentajeAusencia}"></canvas>
-                        </div>
-                        <div class="mt-4 space-y-2">
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
-                                    Ciudadanos asistentes
-                                </span>
-                                <span class="font-semibold text-zinc-900" th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 3, 'POINT')} + '%'"></span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-blue-400"></span>
-                                    Ciudadanos ausentes
-                                </span>
-                                <span class="font-semibold text-zinc-900" th:text="${#numbers.formatDecimal(porcentajeAusencia, 1, 3, 'POINT')} + '%'"></span>
-                            </div>
-                            <div class="flex items-center justify-between text-xs">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                    Ciudadanos pendientes
-                                </span>
-                                <span class="font-semibold text-zinc-900">0.000%</span>
-                            </div>
-                        </div>
-                        <p class="mt-3 text-xs leading-relaxed text-zinc-400">
-                            *Ciudadanos pendientes: Porcentaje de ciudadanos aún no clasificados como asistentes o ausentes. Esta cifra se actualizará conforme avance la contabilización de las actas.
-                        </p>
-                    </div>
-
-                </div>
-
-            </div>
+            </div> <!-- FIN FILTERS & GRID WRAPPER -->
 
             <!-- ==================== LISTA DE ÁMBITOS ==================== -->
-            <!-- DINÁMICO: Inicialización de la variable items de AlpineJS con el JSON enviado desde el controlador -->
-            <div x-data="{
+            <div th:data-ambitos="${ambitosJson}"
+                 x-data="{
                     sortBy: 'alfabetico',
-                    items: [(${ambitosJson})],
+                    items: [],
+                    init() {
+                        this.items = JSON.parse(this.$el.getAttribute('data-ambitos') || '[]');
+                    },
                     format(n) { return n.toLocaleString('es-PE') },
                     get sortedItems() {
                         const sorted = [...this.items]
@@ -225,7 +400,6 @@
                                 <div class="h-full rounded-full bg-primary-600 animate-progress"
                                      :style="'width: ' + item.pct + '%'"></div>
                             </div>
-                            <p class="mt-1.5 text-xs text-zinc-400" x-text="'Asistieron: ' + format(item.attended) + ' de ' + format(item.total)"></p>
                         </div>
                     </template>
                 </div>
@@ -244,22 +418,31 @@
 <!-- ==================== SCRIPTS ==================== -->
 <script th:src="@{/js/app.js}"></script>
 <script>
+    function buildChartData(pctVotos, pctActivosSinV) {
+        const hasData = pctVotos > 0 || pctActivosSinV > 0;
+        return {
+            labels:   hasData ? ['Votos emitidos', 'Votos Pendientes'] : ['Sin datos'],
+            data:     hasData ? [pctVotos, pctActivosSinV]             : [100],
+            colors:   hasData ? ['#1e3a5f', '#f59e0b']                 : ['#d4d4d8'],
+            hasData:  hasData
+        };
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('participacionChart');
         if (ctx) {
-            // DINÁMICO: Obtener los porcentajes reales desde los atributos del canvas
-            const asistencia = parseFloat(ctx.getAttribute('data-asistencia')) || 0;
-            const ausencia = parseFloat(ctx.getAttribute('data-ausencia')) || 0;
-            const pendiente = 0;
+            const pctVotos       = parseFloat(ctx.getAttribute('data-votos'))            || 0;
+            const pctActivosSinV = parseFloat(ctx.getAttribute('data-activos-sin-voto')) || 0;
+            const d = buildChartData(pctVotos, pctActivosSinV);
 
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Asistentes', 'Ausentes', 'Pendientes'],
+                    labels: d.labels,
                     datasets: [{
-                        data: [asistencia, ausencia, pendiente],
-                        backgroundColor: ['#1e3a5f', '#94a3b8', '#e4e4e7'],
-                        borderWidth: 2,
+                        data: d.data,
+                        backgroundColor: d.colors,
+                        borderWidth: d.hasData ? 2 : 0,
                         borderColor: '#ffffff',
                     }]
                 },
@@ -270,6 +453,7 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
+                            filter: function (item) { return item.label !== 'Sin datos'; },
                             callbacks: {
                                 label: function (context) {
                                     return context.label + ': ' + context.parsed.toFixed(3) + '%';

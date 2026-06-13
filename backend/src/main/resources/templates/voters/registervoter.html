@@ -61,14 +61,6 @@
                     },
                     onProvinceChange() {
                         this.selectedLocationCode = '';
-                    },
-                    firstSurname: '',
-                    secondSurname: '',
-                    nombres: '',
-                    fullName: '',
-                    updateFullName() {
-                        this.fullName = [this.firstSurname.trim(), this.secondSurname.trim(), this.nombres.trim()]
-                            .filter(v => v).join(' ');
                     }
                  }">
 
@@ -94,7 +86,6 @@
                                 Primer Apellido
                             </label>
                             <input id="firstSurname" type="text" th:field="*{firstSurname}" required
-                                   x-model="firstSurname" @input="updateFullName()"
                                    placeholder="Primer apellido"
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                         </div>
@@ -104,7 +95,6 @@
                                 Segundo Apellido
                             </label>
                             <input id="secondSurname" type="text" th:field="*{secondSurname}" required
-                                   x-model="secondSurname" @input="updateFullName()"
                                    placeholder="Segundo apellido"
                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                         </div>
@@ -115,20 +105,8 @@
                             <i data-lucide="user" class="h-3.5 w-3.5"></i>
                             Nombres
                         </label>
-                        <input id="nombresInput" type="text" required
-                               x-model="nombres" @input="updateFullName()"
+                        <input id="nombresInput" type="text" th:field="*{fullName}" required
                                placeholder="Nombres del votante"
-                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
-                    </div>
-
-                    <div role="group" class="flex w-full flex-col gap-2">
-                        <label for="fullName" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
-                            <i data-lucide="user-check" class="h-3.5 w-3.5"></i>
-                            Nombre Completo
-                        </label>
-                        <input id="fullName" type="text" th:field="*{fullName}" required
-                               x-model="fullName"
-                               placeholder="Se genera automáticamente"
                                class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
                     </div>
 
