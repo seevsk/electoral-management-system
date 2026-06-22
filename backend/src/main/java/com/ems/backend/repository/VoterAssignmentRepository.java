@@ -11,6 +11,8 @@ import java.util.Optional;
 @Repository
 public interface VoterAssignmentRepository extends JpaRepository<VoterAssignment, Integer> {
 
+    Optional<VoterAssignment> findByVoter_Id(Integer voterId);
+
     @Query("SELECT va FROM VoterAssignment va " +
            "JOIN FETCH va.voter v " +
            "JOIN FETCH v.account a " +
