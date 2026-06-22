@@ -28,6 +28,7 @@
             <!-- Script con datos de ubicaciones -->
             <script th:inline="javascript">
                 const locationsData = /*[[${locationsJson}]]*/ [];
+                const adminApiBase = /*[[@{/admin/api}]]*/ '/admin/api';
             </script>
 
             <!-- Form Card -->
@@ -37,6 +38,10 @@
                     selectedDepartment: '',
                     selectedProvince: '',
                     selectedLocationCode: '',
+                    votingLocations: [],
+                    selectedVotingLocationId: '',
+                    votingTables: [],
+                    selectedVotingTableId: '',
                     get departments() {
                         return [...new Set(this.locations.map(l => l.department))].sort();
                     },
@@ -58,9 +63,36 @@
                     onDepartmentChange() {
                         this.selectedProvince = '';
                         this.selectedLocationCode = '';
+                        this.resetVotingAssignment();
                     },
                     onProvinceChange() {
                         this.selectedLocationCode = '';
+                        this.resetVotingAssignment();
+                    },
+                    onDistrictChange(locationCode) {
+                        this.selectedLocationCode = locationCode;
+                        this.resetVotingAssignment();
+                        if (locationCode) this.fetchVotingLocations(locationCode);
+                    },
+                    onVotingLocationChange(locationId) {
+                        this.selectedVotingLocationId = locationId;
+                        this.votingTables = [];
+                        this.selectedVotingTableId = '';
+                        if (locationId) this.fetchVotingTables(locationId);
+                    },
+                    resetVotingAssignment() {
+                        this.votingLocations = [];
+                        this.selectedVotingLocationId = '';
+                        this.votingTables = [];
+                        this.selectedVotingTableId = '';
+                    },
+                    async fetchVotingLocations(locationCode) {
+                        const res = await fetch(adminApiBase + '/voting-locations?locationCode=' + locationCode);
+                        this.votingLocations = await res.json();
+                    },
+                    async fetchVotingTables(locationId) {
+                        const res = await fetch(adminApiBase + '/voting-tables?locationId=' + locationId);
+                        this.votingTables = await res.json();
                     }
                  }">
 
@@ -188,12 +220,44 @@
                             </select>
 
                             <!-- Distrito -->
-                            <select x-model="selectedLocationCode" name="locationCode" required
+                            <select name="locationCode" required
                                     :disabled="!selectedProvince"
+                                    @change="onDistrictChange($event.target.value)"
                                     class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
                                 <option value="">Distrito</option>
                                 <template x-for="loc in districts" :key="loc.locationCode">
                                     <option :value="loc.locationCode" x-text="loc.district"></option>
+                                </template>
+                            </select>
+
+                        </div>
+                    </div>
+
+                    <!-- Local de Votación -->
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="building-2" class="h-3.5 w-3.5"></i>
+                            Local de Votación
+                        </label>
+                        <div class="grid gap-4 sm:grid-cols-2">
+
+                            <select required
+                                    :disabled="votingLocations.length === 0"
+                                    @change="onVotingLocationChange($event.target.value)"
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                <option value="">Seleccione local</option>
+                                <template x-for="vl in votingLocations" :key="vl.id">
+                                    <option :value="vl.id" x-text="vl.name"></option>
+                                </template>
+                            </select>
+
+                            <select name="votingTableId" required
+                                    :disabled="votingTables.length === 0"
+                                    x-model="selectedVotingTableId"
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                <option value="">Seleccione mesa</option>
+                                <template x-for="vt in votingTables" :key="vt.id">
+                                    <option :value="vt.id" x-text="vt.tableNumber"></option>
                                 </template>
                             </select>
 

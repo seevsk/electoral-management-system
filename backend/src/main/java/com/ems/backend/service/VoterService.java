@@ -13,9 +13,9 @@ public interface VoterService {
 
     Voter findById(Integer id);
 
-    Voter save(Voter voter, String dni); // recibe el dni en lugar del account
+    Voter save(Voter voter, String dni, Integer votingTableId);
 
-    Voter update(Integer id, Voter voter);
+    Voter update(Integer id, Voter voter, Integer votingTableId);
 
     Page<Voter> findPaginated(int page, int size, String search, String statusFilter);
 
