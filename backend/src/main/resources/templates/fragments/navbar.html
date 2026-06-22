@@ -26,6 +26,11 @@
                 <i data-lucide="home" class="h-4 w-4"></i>
                 Inicio
             </a>
+            <a th:href="@{/voting-location}"
+               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'voting-location' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
+                <i data-lucide="map-pin" class="h-4 w-4"></i>
+                Local de Votacion
+            </a>
             <span class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
                 <i data-lucide="landmark" class="h-4 w-4"></i>
                 Presidencial
@@ -116,6 +121,9 @@
     <nav class="flex flex-1 flex-col gap-1">
         <a th:href="@{/participation}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
             <i data-lucide="home" class="h-4 w-4"></i> Inicio
+        </a>
+        <a th:href="@{/voting-location}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
+            <i data-lucide="map-pin" class="h-4 w-4"></i> Local de Votacion
         </a>
         <span class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
             <i data-lucide="landmark" class="h-4 w-4"></i> Presidencial
