@@ -23,30 +23,19 @@
         <div class="flex items-center gap-1">
             <a th:href="@{/participation}"
                th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'inicio' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
-                <i data-lucide="home" class="h-4 w-4"></i>
-                Inicio
+                <i data-lucide="users" class="h-4 w-4"></i>
+                Participación Ciudadana
             </a>
             <a th:href="@{/voting-location}"
                th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'voting-location' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
                 <i data-lucide="map-pin" class="h-4 w-4"></i>
                 Local de Votacion
             </a>
-            <span class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
+            <a th:href="@{/presidencial}"
+               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'presidencial' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
                 <i data-lucide="landmark" class="h-4 w-4"></i>
-                Presidencial
-            </span>
-            <span class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
-                <i data-lucide="building-2" class="h-4 w-4"></i>
-                Senadores
-            </span>
-            <span class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
-                <i data-lucide="book-open" class="h-4 w-4"></i>
-                Diputados
-            </span>
-            <span class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
-                <i data-lucide="globe" class="h-4 w-4"></i>
-                Parlamento Andino
-            </span>
+                Resultados Presidenciales
+            </a>
         </div>
 
         <!-- Voter authenticated: show name + logout -->
@@ -120,23 +109,14 @@
     </div>
     <nav class="flex flex-1 flex-col gap-1">
         <a th:href="@{/participation}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
-            <i data-lucide="home" class="h-4 w-4"></i> Inicio
+            <i data-lucide="users" class="h-4 w-4"></i> Participación Ciudadana
         </a>
         <a th:href="@{/voting-location}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
             <i data-lucide="map-pin" class="h-4 w-4"></i> Local de Votacion
         </a>
-        <span class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
+        <a th:href="@{/presidencial}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
             <i data-lucide="landmark" class="h-4 w-4"></i> Presidencial
-        </span>
-        <span class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
-            <i data-lucide="building-2" class="h-4 w-4"></i> Senadores
-        </span>
-        <span class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
-            <i data-lucide="book-open" class="h-4 w-4"></i> Diputados
-        </span>
-        <span class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-500 opacity-50 pointer-events-none cursor-default" title="Próximamente">
-            <i data-lucide="globe" class="h-4 w-4"></i> Parlamento Andino
-        </span>
+        </a>
     </nav>
     <!-- Mobile: voter authenticated -->
     <div sec:authorize="isAuthenticated()" class="border-t border-white/10 pt-4">
