@@ -30,6 +30,9 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     // Listar votantes por estado ordenados por nombre completo
     List<Voter> findByStatusOrderByFullNameAsc(String status);
 
+    // Total de votantes registrados en un distrito (para el eje Y de los resultados presidenciales)
+    long countByLocationCode(String locationCode);
+
     @Query("""
             select v
             from Voter v

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Resultados Presidenciales - Sistema Electoral</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <!-- ==================== NAVBAR ==================== -->
+    <div th:replace="~{fragments/navbar :: navbar(activePage='presidencial')}"></div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="min-w-0 flex-1 pt-16 md:pt-16">
+
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Resultados Presidenciales</h1>
+                <p class="mt-1 text-sm text-zinc-500">Elección de Fórmula Presidencial</p>
+            </div>
+
+            <!-- ==================== ESTADO: NONE ==================== -->
+            <div th:if="${state == 'NONE'}" class="mx-auto max-w-lg rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
+                <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
+                    <i data-lucide="calendar-x-2" class="h-8 w-8 text-zinc-400"></i>
+                </div>
+                <h2 class="font-heading text-xl font-bold text-zinc-900">Aún no hay elecciones presidenciales programadas</h2>
+                <p class="mt-3 text-sm leading-relaxed text-zinc-500">
+                    No existen por el momento elecciones presidenciales programadas.
+                    Cuando se programe un nuevo proceso electoral, encontrarás los resultados aquí.
+                </p>
+            </div>
+
+            <!-- ==================== ESTADO: SCHEDULED ==================== -->
+            <div th:if="${state == 'SCHEDULED'}" class="mx-auto max-w-lg rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
+                <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary-600/10">
+                    <i data-lucide="calendar-clock" class="h-8 w-8 text-primary-600"></i>
+                </div>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Próximas Elecciones
+                </span>
+                <h2 class="mt-4 font-heading text-xl font-bold text-zinc-900" th:text="${election.name}">Elecciones Generales</h2>
+
+                <div class="mt-6 rounded-xl border border-primary-100 bg-primary-50 px-6 py-5">
+                    <p class="text-xs font-semibold uppercase tracking-widest text-primary-400">Inicio de votación</p>
+                    <p class="mt-2 font-heading text-4xl font-bold tracking-tight text-primary-700"
+                       th:text="${#temporals.format(election.startDate, 'dd')}">01</p>
+                    <p class="text-lg font-semibold text-primary-600"
+                       th:text="${#temporals.format(election.startDate, 'MM/yyyy')}">01/2026</p>
+                    <p class="mt-2 text-sm text-zinc-500">
+                        <i data-lucide="clock" class="mr-1 inline-block h-4 w-4 align-text-bottom text-primary-400"></i>
+                        Apertura:
+                        <strong class="text-zinc-700" th:text="${#temporals.format(election.startDate, 'HH:mm')} + ' hrs'">08:00 hrs</strong>
+                    </p>
+                    <p class="mt-1 text-sm text-zinc-500">
+                        <i data-lucide="clock" class="mr-1 inline-block h-4 w-4 align-text-bottom text-zinc-400"></i>
+                        Cierre:
+                        <strong class="text-zinc-700" th:text="${#temporals.format(election.endDate, 'HH:mm')} + ' hrs'">18:00 hrs</strong>
+                    </p>
+                </div>
+
+                <p class="mt-6 text-sm leading-relaxed text-zinc-500">
+                    Los resultados estarán disponibles aquí al finalizar el horario de votación.
+                </p>
+            </div>
+
+            <!-- ==================== ESTADO: IN_PROGRESS ==================== -->
+            <div th:if="${state == 'IN_PROGRESS'}" class="mx-auto max-w-lg rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
+                <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                    <i data-lucide="clock" class="h-8 w-8 text-amber-600"></i>
+                </div>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Votación en curso
+                </span>
+                <h2 class="mt-4 font-heading text-xl font-bold text-zinc-900" th:text="${election.name}">Elecciones Generales</h2>
+                <p class="mt-3 text-sm leading-relaxed text-zinc-500">
+                    Los resultados se publicarán al finalizar el horario de votación:
+                    <strong class="text-zinc-700"
+                            th:text="${#temporals.format(election.endDate, 'dd/MM/yyyy')} + ' a las ' + ${#temporals.format(election.endDate, 'HH:mm')} + ' hrs'">
+                        07/06/2026 a las 18:00 hrs
+                    </strong>.
+                </p>
+                <div class="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
+                    <p class="text-xs text-zinc-400">
+                        <i data-lucide="info" class="mr-1 inline-block h-3.5 w-3.5 align-text-bottom"></i>
+                        No se muestran resultados parciales durante la votación para no influir en el proceso electoral.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ==================== ESTADO: CLOSED — RESULTADOS ==================== -->
+            <div th:if="${state == 'CLOSED'}">
+
+                <!-- Filtro por ámbito (mismo cascade departamento/provincia/distrito que Participación Ciudadana) -->
+                <div class="mb-6 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm"
+                     th:data-locations="${locationsJson}"
+                     th:data-selected="${results.selectedDistrictCode}"
+                     x-data="{
+                        locations: [],
+                        selectedDepartment: '',
+                        selectedProvince: '',
+                        selectedLocationCode: '',
+
+                        init() {
+                            this.locations = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
+                            this.selectedLocationCode = this.$el.getAttribute('data-selected') || '';
+                            const current = this.locations.find(l => l.locationCode === this.selectedLocationCode);
+                            if (current) {
+                                this.selectedDepartment = current.department;
+                                this.selectedProvince = current.province;
+                            }
+                        },
+
+                        get departments() {
+                            return [...new Set(this.locations.map(l => l.department))].sort();
+                        },
+
+                        get provinces() {
+                            if (!this.selectedDepartment) return [];
+                            return [...new Set(
+                                this.locations
+                                    .filter(l => l.department === this.selectedDepartment)
+                                    .map(l => l.province)
+                            )].sort();
+                        },
+
+                        get districts() {
+                            if (!this.selectedProvince) return [];
+                            return this.locations.filter(l =>
+                                l.department === this.selectedDepartment &&
+                                l.province === this.selectedProvince
+                            );
+                        },
+
+                        onDepartmentChange() {
+                            this.selectedProvince = '';
+                            this.selectedLocationCode = '';
+                        },
+
+                        onProvinceChange() {
+                            this.selectedLocationCode = '';
+                        },
+
+                        limpiar() {
+                            this.selectedDepartment = '';
+                            this.selectedProvince = '';
+                            this.selectedLocationCode = '';
+                            this.$refs.districtFilterForm.submit();
+                        }
+                     }">
+                    <form method="get" th:action="@{/presidencial}" x-ref="districtFilterForm"
+                          class="flex flex-col gap-4 md:flex-row md:items-center">
+                        <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
+                            <i data-lucide="filter" class="h-4 w-4"></i>
+                            Filtrar Ámbito:
+                        </div>
+                        <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
+
+                            <!-- País (FIJO - PERÚ por defecto) -->
+                            <div>
+                                <select disabled
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option>PERÚ</option>
+                                </select>
+                            </div>
+
+                            <!-- Departamento -->
+                            <div>
+                                <select x-model="selectedDepartment" @change="onDepartmentChange()"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
+                                    <option value="">Departamento</option>
+                                    <template x-for="dept in departments" :key="dept">
+                                        <option :value="dept" x-text="dept"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Provincia -->
+                            <div>
+                                <select x-model="selectedProvince" @change="onProvinceChange()"
+                                        :disabled="!selectedDepartment"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Provincia</option>
+                                    <template x-for="prov in provinces" :key="prov">
+                                        <option :value="prov" x-text="prov"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Distrito -->
+                            <div>
+                                <select x-model="selectedLocationCode" name="district"
+                                        @change="$refs.districtFilterForm.submit()"
+                                        :disabled="!selectedProvince"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Todos los Distritos</option>
+                                    <template x-for="loc in districts" :key="loc.locationCode">
+                                        <option :value="loc.locationCode" x-text="loc.district"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Botón Limpiar -->
+                        <button type="button" @click="limpiar()"
+                                class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
+                            <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                            Limpiar
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Gráfico de resultados (carrusel de 7 en 7) -->
+                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="prevPageBtn"
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">
+                            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                        </button>
+
+                        <div class="relative min-w-0 flex-1">
+                            <!-- Fila superior: fotos + porcentaje -->
+                            <div id="photosRow" class="grid w-full gap-2"></div>
+
+                            <div class="relative mt-2 w-full" style="height: 260px;">
+                                <canvas id="resultsChart"></canvas>
+                            </div>
+
+                            <!-- Fila inferior: logos -->
+                            <div id="logosRow" class="mt-2 grid w-full gap-2"></div>
+                        </div>
+
+                        <button type="button" id="nextPageBtn"
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">
+                            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabla de detalle -->
+                <div class="mt-6 overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
+                    <table class="w-full text-sm">
+                        <thead class="bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                        <tr>
+                            <th class="px-4 py-3">Candidato</th>
+                            <th class="px-4 py-3 text-right">Votos</th>
+                            <th class="px-4 py-3 text-right">Porcentaje (%)</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100">
+                        <tr th:each="c : ${results.candidateResults}">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-3">
+                                    <img th:if="${c.partyLogoUrl}" th:src="${c.partyLogoUrl}" alt=""
+                                         class="h-7 w-7 shrink-0 rounded-full border border-zinc-200 bg-white object-contain p-0.5"/>
+                                    <img th:if="${c.candidatePhotoUrl}" th:src="${c.candidatePhotoUrl}" alt=""
+                                         class="h-10 w-10 shrink-0 rounded-full object-cover"/>
+                                    <div th:unless="${c.candidatePhotoUrl}"
+                                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                                        <i data-lucide="user" class="h-5 w-5"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-zinc-900" th:text="${c.candidateFullName}">Candidato</p>
+                                        <p class="text-xs text-zinc-500" th:text="${c.partyName}">Partido</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-right font-semibold text-zinc-900" th:text="${c.voteCount}">0</td>
+                            <td class="px-4 py-3 text-right text-zinc-500"
+                                th:text="${#numbers.formatDecimal(c.percentage, 1, 2, 'POINT')} + '%'">0%</td>
+                        </tr>
+                        <tr>
+                            <td class="px-4 py-3 text-zinc-400">Votos en blanco</td>
+                            <td class="px-4 py-3 text-right text-zinc-500" th:text="${results.blankVoteCount}">0</td>
+                            <td class="px-4 py-3 text-right text-zinc-400"
+                                th:text="${#numbers.formatDecimal(results.blankVotePercentage, 1, 2, 'POINT')} + '%'">0%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="mt-4 text-xs text-zinc-400">
+                    Fuente: Sistema Electoral. Resultados actualizados al finalizar el proceso de votación.
+                </p>
+
+                <script th:inline="javascript">
+                    document.addEventListener('DOMContentLoaded', function () {
+                        var canvas = document.getElementById('resultsChart');
+                        if (!canvas) return;
+
+                        var names        = /*[[${results.candidateResults.![candidateFullName]}]]*/ [];
+                        var votes        = /*[[${results.candidateResults.![voteCount]}]]*/ [];
+                        var percentages  = /*[[${results.candidateResults.![percentage]}]]*/ [];
+                        var photos       = /*[[${results.candidateResults.![candidatePhotoUrl]}]]*/ [];
+                        var partyLogos   = /*[[${results.candidateResults.![partyLogoUrl]}]]*/ [];
+                        var partyNames   = /*[[${results.candidateResults.![partyName]}]]*/ [];
+
+                        var candidates = names.map(function (name, i) {
+                            return {
+                                name: name,
+                                votes: votes[i],
+                                percentage: percentages[i],
+                                photo: photos[i],
+                                partyLogo: partyLogos[i],
+                                partyName: partyNames[i]
+                            };
+                        });
+
+                        var chartMaxVotes = /*[[${results.chartMaxVotes}]]*/ 1;
+
+                        function getPageSize() {
+                            var w = window.innerWidth;
+                            if (w < 480) return 3;
+                            if (w < 768) return 4;
+                            if (w < 1024) return 5;
+                            return 7;
+                        }
+
+                        var PAGE_SIZE = getPageSize();
+                        var totalPages = Math.max(1, Math.ceil(candidates.length / PAGE_SIZE));
+                        var currentPage = 0;
+                        var currentPageItems = [];
+
+                        var photosRow = document.getElementById('photosRow');
+                        var logosRow = document.getElementById('logosRow');
+                        var prevBtn = document.getElementById('prevPageBtn');
+                        var nextBtn = document.getElementById('nextPageBtn');
+
+                        function showTooltip(anchorEl, lines) {
+                            hideTooltip();
+                            var container = anchorEl.closest('.relative');
+                            var tooltip = document.createElement('div');
+                            tooltip.id = 'resultTooltip';
+                            tooltip.className = 'pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg bg-zinc-900 px-3 py-1.5 text-center text-xs text-white shadow-lg';
+                            tooltip.innerHTML = lines.map(function (l) { return '<div>' + l + '</div>'; }).join('');
+
+                            var anchorRect = anchorEl.getBoundingClientRect();
+                            var containerRect = container.getBoundingClientRect();
+                            tooltip.style.left = (anchorRect.left - containerRect.left + anchorRect.width / 2) + 'px';
+                            tooltip.style.top = (anchorRect.top - containerRect.top - 6) + 'px';
+                            container.appendChild(tooltip);
+                        }
+
+                        function hideTooltip() {
+                            var existing = document.getElementById('resultTooltip');
+                            if (existing) existing.remove();
+                        }
+
+                        var chart = new Chart(canvas, {
+                            type: 'bar',
+                            data: {
+                                labels: [],
+                                datasets: [{
+                                    label: 'Votos',
+                                    data: [],
+                                    backgroundColor: '#1e3a5f',
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                interaction: { mode: 'index', intersect: false },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: false }
+                                },
+                                onHover: function (event, elements) {
+                                    if (elements.length && photosRow.children[elements[0].index]) {
+                                        var idx = elements[0].index;
+                                        var item = currentPageItems[idx];
+                                        showTooltip(photosRow.children[idx], [
+                                            item.name,
+                                            'Votos: ' + item.votes.toLocaleString('es-PE'),
+                                            item.percentage.toFixed(2) + '%'
+                                        ]);
+                                    } else {
+                                        hideTooltip();
+                                    }
+                                },
+                                scales: {
+                                    x: { ticks: { display: false }, grid: { display: false } },
+                                    y: { min: 0, max: chartMaxVotes }
+                                }
+                            }
+                        });
+
+                        function renderPage() {
+                            var start = currentPage * PAGE_SIZE;
+                            var pageItems = candidates.slice(start, start + PAGE_SIZE);
+                            currentPageItems = pageItems;
+                            var cols = pageItems.length;
+
+                            photosRow.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+                            logosRow.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+                            photosRow.innerHTML = '';
+                            logosRow.innerHTML = '';
+
+                            pageItems.forEach(function (c) {
+                                var photoCol = document.createElement('div');
+                                photoCol.className = 'flex flex-col items-center px-1';
+                                photoCol.innerHTML =
+                                    (c.photo
+                                        ? '<img src="' + c.photo + '" alt="" class="h-[58px] w-[58px] rounded-full border-2 border-white object-cover shadow"/>'
+                                        : '<div class="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-zinc-100 text-zinc-400"><i data-lucide="user" class="h-6 w-6"></i></div>');
+                                photosRow.appendChild(photoCol);
+
+                                var logoCol = document.createElement('div');
+                                logoCol.className = 'flex items-center justify-center px-1';
+                                var btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'flex h-[41px] w-[41px] items-center justify-center rounded-full border border-zinc-200 bg-white p-1 transition-transform hover:scale-105';
+                                if (c.partyLogo) {
+                                    var img = document.createElement('img');
+                                    img.src = c.partyLogo;
+                                    img.alt = c.partyName;
+                                    img.className = 'h-full w-full rounded-full object-contain';
+                                    btn.appendChild(img);
+                                }
+                                btn.addEventListener('mouseenter', function () { showTooltip(btn, [c.partyName]); });
+                                btn.addEventListener('mouseleave', hideTooltip);
+                                btn.addEventListener('focus', function () { showTooltip(btn, [c.partyName]); });
+                                btn.addEventListener('blur', hideTooltip);
+                                logoCol.appendChild(btn);
+                                logosRow.appendChild(logoCol);
+                            });
+
+                            chart.data.labels = pageItems.map(function (c) { return c.name; });
+                            chart.data.datasets[0].data = pageItems.map(function (c) { return c.votes; });
+                            chart.update();
+
+                            prevBtn.disabled = currentPage === 0;
+                            nextBtn.disabled = currentPage >= totalPages - 1;
+
+                            if (typeof lucide !== 'undefined') lucide.createIcons();
+                        }
+
+                        prevBtn.addEventListener('click', function () {
+                            hideTooltip();
+                            if (currentPage > 0) { currentPage--; renderPage(); }
+                        });
+                        nextBtn.addEventListener('click', function () {
+                            hideTooltip();
+                            if (currentPage < totalPages - 1) { currentPage++; renderPage(); }
+                        });
+
+                        var resizeTimeout;
+                        window.addEventListener('resize', function () {
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = setTimeout(function () {
+                                var newPageSize = getPageSize();
+                                if (newPageSize === PAGE_SIZE) return;
+                                var firstVisibleIndex = currentPage * PAGE_SIZE;
+                                PAGE_SIZE = newPageSize;
+                                totalPages = Math.max(1, Math.ceil(candidates.length / PAGE_SIZE));
+                                currentPage = Math.min(Math.floor(firstVisibleIndex / PAGE_SIZE), totalPages - 1);
+                                hideTooltip();
+                                renderPage();
+                            }, 200);
+                        });
+
+                        renderPage();
+                    });
+                </script>
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+
+</body>
+</html>
