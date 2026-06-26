@@ -2,16 +2,22 @@ package com.ems.backend.service.impl;
 
 import com.ems.backend.entity.Account;
 import com.ems.backend.entity.Voter;
+import com.ems.backend.entity.VoterAssignment;
+import com.ems.backend.entity.VotingTable;
 import com.ems.backend.repository.AccountRepository;
+import com.ems.backend.repository.VoterAssignmentRepository;
 import com.ems.backend.repository.VoterRepository;
+import com.ems.backend.repository.VotingTableRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -26,10 +32,17 @@ public class VoterServiceImpl implements VoterService {
 
     private final VoterRepository voterRepository;
     private final AccountRepository accountRepository;
+    private final VoterAssignmentRepository voterAssignmentRepository;
+    private final VotingTableRepository votingTableRepository;
 
-    public VoterServiceImpl(VoterRepository voterRepository, AccountRepository accountRepository) {
+    public VoterServiceImpl(VoterRepository voterRepository,
+                            AccountRepository accountRepository,
+                            VoterAssignmentRepository voterAssignmentRepository,
+                            VotingTableRepository votingTableRepository) {
         this.voterRepository = voterRepository;
         this.accountRepository = accountRepository;
+        this.voterAssignmentRepository = voterAssignmentRepository;
+        this.votingTableRepository = votingTableRepository;
     }
 
     @Override
@@ -50,46 +63,59 @@ public class VoterServiceImpl implements VoterService {
     }
 
     @Override
-    public Voter save(Voter voter, String dni) {
-        // Validar formato DNI
+    @Transactional
+    public Voter save(Voter voter, String dni, Integer votingTableId) {
         if (dni == null || !dni.matches("^[0-9]{8}$")) {
             throw new BusinessRuleException("El DNI debe tener exactamente 8 dígitos numéricos.");
         }
-
         if (voter.getBirthDate() == null) {
             throw new BusinessRuleException("La fecha de nacimiento es obligatoria.");
         }
         if (voter.getDniExpiryDate() == null) {
             throw new BusinessRuleException("La fecha de vencimiento del DNI es obligatoria.");
         }
+        if (votingTableId == null) {
+            throw new BusinessRuleException("La asignacion de mesa de votacion es obligatoria.");
+        }
 
-        // Buscar account existente o crear una nueva
         Account account = accountRepository.findByDni(dni)
                 .orElseGet(() -> {
                     Account newAccount = new Account();
                     newAccount.setDni(dni);
                     newAccount.setRole("user");
                     newAccount.setPasswordHash(null);
-                    // isActive y createdAt los maneja el @PrePersist
                     return accountRepository.save(newAccount);
                 });
 
-        // Validar que esa account no esté ya asociada a otro votante
         if (voterRepository.existsByAccount_Id(account.getId())) {
             throw new BusinessRuleException("El DNI ya está asociado a un votante registrado.");
         }
 
         voter.setAccount(account);
         normalizeVoterFields(voter);
-        return voterRepository.save(voter);
+        Voter saved = voterRepository.save(voter);
+
+        VotingTable table = resolveTableForDistrict(votingTableId, saved.getLocationCode());
+        VoterAssignment assignment = new VoterAssignment();
+        assignment.setVoter(saved);
+        assignment.setVotingTable(table);
+        assignment.setAssignedAt(LocalDate.now());
+        assignment.setCreatedAt(LocalDateTime.now());
+        voterAssignmentRepository.save(assignment);
+
+        return saved;
     }
 
     @Override
-    public Voter update(Integer id, Voter voter) {
+    @Transactional
+    public Voter update(Integer id, Voter voter, Integer votingTableId) {
         Voter existing = findById(id);
 
         if (STATUS_INACTIVE.equals(existing.getStatus())) {
             throw new BusinessRuleException("No se puede actualizar un votante inactivo. Habilítelo primero.");
+        }
+        if (votingTableId == null) {
+            throw new BusinessRuleException("La asignacion de mesa de votacion es obligatoria.");
         }
 
         normalizeVoterFields(voter);
@@ -107,8 +133,20 @@ public class VoterServiceImpl implements VoterService {
         existing.setBirthDate(voter.getBirthDate());
         existing.setDniExpiryDate(voter.getDniExpiryDate());
         existing.setLocationCode(voter.getLocationCode());
+        Voter saved = voterRepository.save(existing);
 
-        return voterRepository.save(existing);
+        VotingTable table = resolveTableForDistrict(votingTableId, saved.getLocationCode());
+        VoterAssignment assignment = voterAssignmentRepository.findByVoter_Id(id)
+                .orElse(new VoterAssignment());
+        if (assignment.getId() == null) {
+            assignment.setAssignedAt(LocalDate.now());
+            assignment.setCreatedAt(LocalDateTime.now());
+        }
+        assignment.setVoter(saved);
+        assignment.setVotingTable(table);
+        voterAssignmentRepository.save(assignment);
+
+        return saved;
     }
 
     @Override
@@ -230,5 +268,15 @@ public class VoterServiceImpl implements VoterService {
         if (value == null) return null;
         String normalized = value.trim();
         return normalized.isEmpty() ? null : normalized;
+    }
+
+    private VotingTable resolveTableForDistrict(Integer votingTableId, String locationCode) {
+        VotingTable table = votingTableRepository.findByIdWithLocation(votingTableId)
+                .orElseThrow(() -> new BusinessRuleException("Mesa de votacion no encontrada."));
+        if (!table.getVotingLocation().getLocationCode().equals(locationCode)) {
+            throw new BusinessRuleException(
+                    "La mesa seleccionada no pertenece al distrito del votante.");
+        }
+        return table;
     }
 }

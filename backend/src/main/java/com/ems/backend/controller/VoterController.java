@@ -2,8 +2,11 @@ package com.ems.backend.controller;
 
 import com.ems.backend.entity.Location;
 import com.ems.backend.entity.Voter;
+import com.ems.backend.entity.VoterAssignment;
 import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.LocationRepository;
+import com.ems.backend.repository.VoterAssignmentRepository;
+import com.ems.backend.repository.VotingTableRepository;
 import com.ems.backend.service.VoterService;
 import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.validation.Valid;
@@ -33,13 +36,19 @@ public class VoterController {
     private final VoterService voterService;
     private final AccountRepository accountRepository;
     private final LocationRepository locationRepository;
+    private final VoterAssignmentRepository voterAssignmentRepository;
+    private final VotingTableRepository votingTableRepository;
 
     public VoterController(VoterService voterService,
                            AccountRepository accountRepository,
-                           LocationRepository locationRepository) {
+                           LocationRepository locationRepository,
+                           VoterAssignmentRepository voterAssignmentRepository,
+                           VotingTableRepository votingTableRepository) {
         this.voterService = voterService;
         this.accountRepository = accountRepository;
         this.locationRepository = locationRepository;
+        this.voterAssignmentRepository = voterAssignmentRepository;
+        this.votingTableRepository = votingTableRepository;
     }
 
     @GetMapping
@@ -85,6 +94,7 @@ public class VoterController {
             @Valid @ModelAttribute Voter voter,
             BindingResult bindingResult,
             @RequestParam("dni") String dni,
+            @RequestParam(value = "votingTableId", required = false) Integer votingTableId,
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
@@ -95,7 +105,7 @@ public class VoterController {
             return "redirect:/admin/voters/register";
         }
         try {
-            voterService.save(voter, dni);
+            voterService.save(voter, dni, votingTableId);
             redirectAttributes.addFlashAttribute("successMessage", "Votante registrado correctamente.");
             return "redirect:/admin/voters/list";
         } catch (BusinessRuleException ex) {
@@ -108,9 +118,20 @@ public class VoterController {
         Voter voter = voterService.findById(id);
         Location currentLocation = locationRepository.findById(voter.getLocationCode()).orElse(null);
 
+        VoterAssignment assignment = voterAssignmentRepository.findByVoter_Id(id).orElse(null);
+        Integer currentVotingTableId = null;
+        Integer currentVotingLocationId = null;
+        if (assignment != null) {
+            currentVotingTableId = assignment.getVotingTableId();
+            currentVotingLocationId = votingTableRepository.findById(currentVotingTableId)
+                    .map(vt -> vt.getVotingLocationId()).orElse(null);
+        }
+
         model.addAttribute("currentDepartment", currentLocation != null ? currentLocation.getDepartment() : "");
         model.addAttribute("currentProvince", currentLocation != null ? currentLocation.getProvince() : "");
         model.addAttribute("currentLocationCode", voter.getLocationCode());
+        model.addAttribute("currentVotingLocationId", currentVotingLocationId);
+        model.addAttribute("currentVotingTableId", currentVotingTableId);
         model.addAttribute("voter", voter);
         model.addAttribute("accounts", accountRepository.findAll());
         model.addAttribute("locationsJson", buildLocationsJson());
@@ -123,6 +144,7 @@ public class VoterController {
             @PathVariable Integer id,
             @Valid @ModelAttribute Voter voter,
             BindingResult bindingResult,
+            @RequestParam(value = "votingTableId", required = false) Integer votingTableId,
             RedirectAttributes redirectAttributes
     ) {
         if (bindingResult.hasErrors()) {
@@ -133,7 +155,7 @@ public class VoterController {
             return "redirect:/admin/voters/update/" + id;
         }
         try {
-            voterService.update(id, voter);
+            voterService.update(id, voter, votingTableId);
             redirectAttributes.addFlashAttribute("successMessage", "Votante actualizado correctamente.");
             return "redirect:/admin/voters/list";
         } catch (BusinessRuleException ex) {
