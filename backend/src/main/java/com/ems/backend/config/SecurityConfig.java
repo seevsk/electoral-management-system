@@ -32,7 +32,7 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/", "/participation",
+                    "/", "/participation", "/presidencial",
                     "/login/**", "/activation", "/recovery", "/recovery/**",
                     "/auth/**",
                     "/css/**", "/js/**", "/images/**", "/webjars/**",

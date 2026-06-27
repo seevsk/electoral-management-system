@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Resultados Presidenciales - Sistema Electoral</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <!-- ==================== NAVBAR ==================== -->
+    <div th:replace="~{fragments/navbar :: navbar(activePage='presidencial')}"></div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="min-w-0 flex-1 pt-16 md:pt-16">
+
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Resultados Presidenciales</h1>
+                <p class="mt-1 text-sm text-zinc-500">Elección de Fórmula Presidencial</p>
+            </div>
+
+            <!-- ==================== ESTADO: NONE ==================== -->
+            <div th:if="${state == 'NONE'}" class="mx-auto max-w-lg rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
+                <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
+                    <i data-lucide="calendar-x-2" class="h-8 w-8 text-zinc-400"></i>
+                </div>
+                <h2 class="font-heading text-xl font-bold text-zinc-900">Aún no hay elecciones presidenciales programadas</h2>
+                <p class="mt-3 text-sm leading-relaxed text-zinc-500">
+                    No existen por el momento elecciones presidenciales programadas.
+                    Cuando se programe un nuevo proceso electoral, encontrarás los resultados aquí.
+                </p>
+            </div>
+
+            <!-- ==================== ESTADO: SCHEDULED ==================== -->
+            <div th:if="${state == 'SCHEDULED'}" class="mx-auto max-w-lg rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
+                <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary-600/10">
+                    <i data-lucide="calendar-clock" class="h-8 w-8 text-primary-600"></i>
+                </div>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Próximas Elecciones
+                </span>
+                <h2 class="mt-4 font-heading text-xl font-bold text-zinc-900" th:text="${election.name}">Elecciones Generales</h2>
+
+                <div class="mt-6 rounded-xl border border-primary-100 bg-primary-50 px-6 py-5">
+                    <p class="text-xs font-semibold uppercase tracking-widest text-primary-400">Inicio de votación</p>
+                    <p class="mt-2 font-heading text-4xl font-bold tracking-tight text-primary-700"
+                       th:text="${#temporals.format(election.startDate, 'dd')}">01</p>
+                    <p class="text-lg font-semibold text-primary-600"
+                       th:text="${#temporals.format(election.startDate, 'MM/yyyy')}">01/2026</p>
+                    <p class="mt-2 text-sm text-zinc-500">
+                        <i data-lucide="clock" class="mr-1 inline-block h-4 w-4 align-text-bottom text-primary-400"></i>
+                        Apertura:
+                        <strong class="text-zinc-700" th:text="${#temporals.format(election.startDate, 'HH:mm')} + ' hrs'">08:00 hrs</strong>
+                    </p>
+                    <p class="mt-1 text-sm text-zinc-500">
+                        <i data-lucide="clock" class="mr-1 inline-block h-4 w-4 align-text-bottom text-zinc-400"></i>
+                        Cierre:
+                        <strong class="text-zinc-700" th:text="${#temporals.format(election.endDate, 'HH:mm')} + ' hrs'">18:00 hrs</strong>
+                    </p>
+                </div>
+
+                <p class="mt-6 text-sm leading-relaxed text-zinc-500">
+                    Los resultados estarán disponibles aquí al finalizar el horario de votación.
+                </p>
+            </div>
+
+            <!-- ==================== ESTADO: IN_PROGRESS ==================== -->
+            <div th:if="${state == 'IN_PROGRESS'}" class="mx-auto max-w-lg rounded-2xl border border-zinc-200 bg-white p-10 text-center shadow-sm">
+                <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                    <i data-lucide="clock" class="h-8 w-8 text-amber-600"></i>
+                </div>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                    Votación en curso
+                </span>
+                <h2 class="mt-4 font-heading text-xl font-bold text-zinc-900" th:text="${election.name}">Elecciones Generales</h2>
+                <p class="mt-3 text-sm leading-relaxed text-zinc-500">
+                    Los resultados se publicarán al finalizar el horario de votación:
+                    <strong class="text-zinc-700"
+                            th:text="${#temporals.format(election.endDate, 'dd/MM/yyyy')} + ' a las ' + ${#temporals.format(election.endDate, 'HH:mm')} + ' hrs'">
+                        07/06/2026 a las 18:00 hrs
+                    </strong>.
+                </p>
+                <div class="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 px-5 py-4">
+                    <p class="text-xs text-zinc-400">
+                        <i data-lucide="info" class="mr-1 inline-block h-3.5 w-3.5 align-text-bottom"></i>
+                        No se muestran resultados parciales durante la votación para no influir en el proceso electoral.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ==================== ESTADO: CLOSED — RESULTADOS ==================== -->
+            <div th:if="${state == 'CLOSED'}"
+                 x-data="resultsApp()">
+
+                <script th:inline="javascript">
+                    window.__initialResults = /*[[${results}]]*/ null;
+                    window.__initialLocations = /*[[${ubicacionesList}]]*/ null;
+                </script>
+
+                <!-- Filtro por ámbito (cascade departamento/provincia/distrito) -->
+                <div class="mb-6 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center">
+                        <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
+                            <i data-lucide="filter" class="h-4 w-4"></i>
+                            Filtrar Ámbito:
+                        </div>
+                        <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
+
+                            <!-- País (FIJO - PERÚ por defecto) -->
+                            <div>
+                                <select disabled
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option>PERÚ</option>
+                                </select>
+                            </div>
+
+                            <!-- Departamento -->
+                            <div>
+                                <select x-model="selectedDepartment" @change="onDepartmentChange()"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
+                                    <option value="">Departamento</option>
+                                    <template x-for="dept in departments" :key="dept">
+                                        <option :value="dept" x-text="dept"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Provincia -->
+                            <div>
+                                <select x-model="selectedProvince" @change="onProvinceChange()"
+                                        :disabled="!selectedDepartment"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Provincia</option>
+                                    <template x-for="prov in provinces" :key="prov">
+                                        <option :value="prov" x-text="prov"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Distrito -->
+                            <div>
+                                <select x-model="selectedLocationCode" @change="onDistrictChange()"
+                                        :disabled="!selectedProvince"
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                    <option value="">Todos los Distritos</option>
+                                    <template x-for="loc in districts" :key="loc.locationCode">
+                                        <option :value="loc.locationCode" x-text="loc.district"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Botón Limpiar -->
+                        <button type="button" @click="limpiar()"
+                                class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
+                            <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ordenamiento -->
+                <div class="mb-4 flex items-center justify-end gap-2">
+                    <label class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
+                    <select x-model="sortBy" @change="onSortChange()"
+                            class="h-9 w-48 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
+                        <option value="mayor">Mayor votación</option>
+                        <option value="menor">Menor votación</option>
+                    </select>
+                </div>
+
+                <!-- Gráfico de resultados -->
+                <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="prevPage()"
+                                :disabled="currentPage === 0"
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">
+                            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                        </button>
+
+                        <div class="relative min-w-0 flex-1">
+                            <div class="relative w-full" style="height: 300px;">
+                                <canvas id="resultsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <button type="button" @click="nextPage()"
+                                :disabled="currentPage >= totalPages - 1"
+                                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30">
+                            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Indicador de página -->
+                    <div class="mt-3 text-center text-xs text-zinc-400" x-show="totalPages > 1">
+                        Página <span x-text="currentPage + 1"></span> de <span x-text="totalPages"></span>
+                    </div>
+                </div>
+
+                <!-- Tabla de detalle -->
+                <div class="mt-6 overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-sm">
+                    <table class="w-full text-sm">
+                        <thead class="bg-zinc-50 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                        <tr>
+                            <th class="px-4 py-3">Candidato</th>
+                            <th class="px-4 py-3 text-right">Votos</th>
+                            <th class="px-4 py-3 text-right">Porcentaje (%)</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100">
+                        <template x-for="c in pageItems" :key="c.candidateId">
+                            <tr>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <img x-show="c.partyLogoUrl" :src="c.partyLogoUrl" alt=""
+                                             class="h-7 w-7 shrink-0 rounded-full border border-zinc-200 bg-white object-contain p-0.5"/>
+                                        <img x-show="c.candidatePhotoUrl" :src="c.candidatePhotoUrl" alt=""
+                                             class="h-10 w-10 shrink-0 rounded-full object-cover"/>
+                                        <div x-show="!c.candidatePhotoUrl"
+                                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                                            <i data-lucide="user" class="h-5 w-5"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-zinc-900" x-text="c.candidateFullName">Candidato</p>
+                                            <p class="text-xs text-zinc-500" x-text="c.partyName">Partido</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-right font-semibold text-zinc-900" x-text="c.voteCount.toLocaleString('es-PE')">0</td>
+                                <td class="px-4 py-3 text-right text-zinc-500" x-text="c.percentage.toFixed(2) + '%'">0%</td>
+                            </tr>
+                        </template>
+                        <tr>
+                            <td class="px-4 py-3 text-zinc-400">Votos en blanco</td>
+                            <td class="px-4 py-3 text-right text-zinc-500" x-text="blankVoteCount.toLocaleString('es-PE')">0</td>
+                            <td class="px-4 py-3 text-right text-zinc-400" x-text="blankVotePercentage.toFixed(2) + '%'">0%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="mt-4 text-xs text-zinc-400">
+                    Fuente: Sistema Electoral. Resultados actualizados al finalizar el proceso de votación.
+                </p>
+
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+<script>
+    // ============================================================
+    // afterDraw plugin: candidate photos + party logos + % labels
+    // ============================================================
+    var resultsOverlayPlugin = {
+        id: 'resultsOverlay',
+        afterDraw: function (chart) {
+            try {
+                var ctx = chart.ctx;
+                var meta = chart.getDatasetMeta(0);
+                if (!meta || !meta.data) return;
+                var yScale = chart.scales.y;
+                if (!yScale) return;
+                var base = yScale.getPixelForValue(0);
+                var pageItems = window.__pageItems || [];
+
+                meta.data.forEach(function (bar, i) {
+                    var c = pageItems[i];
+                    if (!c) return;
+
+                    var x = bar.x;
+                    var y = bar.y;
+                    if (x == null || y == null) return;
+
+                    var offset = 0;
+
+                    // --- Draw photo above bar ---
+                    if (c.photoImg) {
+                        var pSize = 26;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x, y - pSize - 4 + pSize / 2, pSize / 2, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(c.photoImg, x - pSize / 2, y - pSize - 4, pSize, pSize);
+                        ctx.restore();
+                        offset = pSize + 4;
+                    } else {
+                        // Placeholder gris cuando no hay foto
+                        var pSize = 26;
+                        ctx.save();
+                        ctx.fillStyle = '#e4e4e7';
+                        ctx.beginPath();
+                        ctx.arc(x, y - pSize - 4 + pSize / 2, pSize / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = '#a1a1aa';
+                        ctx.font = '14px Poppins, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('👤', x, y - pSize - 4 + pSize / 2);
+                        ctx.restore();
+                        offset = pSize + 4;
+                    }
+
+                    // --- Draw percentage ---
+                    ctx.save();
+                    ctx.fillStyle = '#1e3a5f';
+                    ctx.font = 'bold 10px Poppins, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(c.percentage.toFixed(2) + '%', x, y - offset - 2);
+                    ctx.restore();
+
+                    // --- Draw party logo below bar ---
+                    if (c.logoImg) {
+                        var lSize = 18;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(x, base + 6 + lSize / 2, lSize / 2, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(c.logoImg, x - lSize / 2, base + 6, lSize, lSize);
+                        ctx.restore();
+                    }
+                });
+            } catch (e) {
+                console.error('[resultsOverlay] error:', e);
+            }
+        }
+    };
+
+    // ============================================================
+    // Helpers
+    // ============================================================
+    function getPageSize() {
+        var w = window.innerWidth;
+        if (w < 480) return 3;
+        if (w < 768) return 4;
+        if (w < 1024) return 5;
+        return 7;
+    }
+
+    function preloadImages(candidates, callback) {
+        var loaded = 0;
+        var total = candidates.length;
+        if (total === 0) { callback(); return; }
+
+        candidates.forEach(function (c) {
+            c.photoImg = null;
+            c.logoImg = null;
+            var pending = 2;
+
+            function done() {
+                pending--;
+                if (pending === 0) {
+                    loaded++;
+                    if (loaded === total) callback();
+                }
+            }
+
+            if (c.candidatePhotoUrl) {
+                var pImg = new Image();
+                pImg.crossOrigin = 'anonymous';
+                pImg.onload = function () { c.photoImg = pImg; done(); };
+                pImg.onerror = done;
+                pImg.src = c.candidatePhotoUrl;
+            } else {
+                done();
+            }
+
+            if (c.partyLogoUrl) {
+                var lImg = new Image();
+                lImg.crossOrigin = 'anonymous';
+                lImg.onload = function () { c.logoImg = lImg; done(); };
+                lImg.onerror = done;
+                lImg.src = c.partyLogoUrl;
+            } else {
+                done();
+            }
+        });
+    }
+
+    // ============================================================
+    // Alpine.js component
+    // ============================================================
+    window.resultsApp = function () {
+        var chartInstance = null;
+        return {
+            // --- Ubigeos state ---
+            locations: [],
+            selectedDepartment: '',
+            selectedProvince: '',
+            selectedLocationCode: '',
+
+            // --- Results state ---
+            allCandidates: [],
+            blankVoteCount: 0,
+            blankVotePercentage: 0,
+            chartMaxVotes: 1,
+            sortBy: 'mayor',
+            loading: false,
+
+            // --- Pagination ---
+            currentPage: 0,
+            pageSize: 7,
+            pageItems: [],
+
+            get departments() {
+                return [...new Set(this.locations.map(function (l) { return l.department; }))].sort();
+            },
+
+            get provinces() {
+                if (!this.selectedDepartment) return [];
+                return [...new Set(
+                    this.locations
+                        .filter(function (l) { return l.department === this.selectedDepartment; }.bind(this))
+                        .map(function (l) { return l.province; })
+                )].sort();
+            },
+
+            get districts() {
+                if (!this.selectedProvince) return [];
+                return this.locations.filter(function (l) {
+                    return l.department === this.selectedDepartment &&
+                           l.province === this.selectedProvince;
+                }.bind(this));
+            },
+
+            get totalPages() {
+                return Math.max(1, Math.ceil(this.allCandidates.length / this.pageSize));
+            },
+
+            // --- Lifecycle ---
+            init: function () {
+                var initialData = window.__initialResults;
+                console.log('[resultsApp] init, initialData:', initialData ? 'ok' : 'null');
+                if (!initialData) return;
+
+                this.locations = window.__initialLocations || [];
+                console.log('[resultsApp] locations:', this.locations.length, 'candidates:', initialData.candidateResults ? initialData.candidateResults.length : 0);
+                this.allCandidates = initialData.candidateResults || [];
+                this.blankVoteCount = initialData.blankVoteCount || 0;
+                this.blankVotePercentage = initialData.blankVotePercentage || 0;
+                this.chartMaxVotes = initialData.chartMaxVotes || 1;
+
+                this.pageSize = getPageSize();
+                this.rebuildChart();
+            },
+
+            // --- Events ---
+            onDepartmentChange: function () {
+                this.selectedProvince = '';
+                this.selectedLocationCode = '';
+            },
+
+            onProvinceChange: function () {
+                this.selectedLocationCode = '';
+            },
+
+            onDistrictChange: function () {
+                this.fetchResults();
+            },
+
+            limpiar: function () {
+                this.selectedDepartment = '';
+                this.selectedProvince = '';
+                this.selectedLocationCode = '';
+                this.fetchResults();
+            },
+
+            onSortChange: function () {
+                this.sortCandidates();
+                this.currentPage = 0;
+                this.renderPage();
+            },
+
+            prevPage: function () {
+                if (this.currentPage > 0) {
+                    this.currentPage--;
+                    this.renderPage();
+                }
+            },
+
+            nextPage: function () {
+                if (this.currentPage < this.totalPages - 1) {
+                    this.currentPage++;
+                    this.renderPage();
+                }
+            },
+
+            // --- Data fetching ---
+            fetchResults: function () {
+                var self = this;
+                self.loading = true;
+                var code = self.selectedLocationCode || '';
+                var url = CTX + 'api/presidencial/results' + (code ? '?district=' + encodeURIComponent(code) : '');
+                console.log('[fetchResults] url:', url, 'CTX:', CTX);
+
+                fetch(url)
+                    .then(function (r) {
+                        if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + r.statusText);
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        console.log('[fetchResults] OK, candidates:', data.candidateResults ? data.candidateResults.length : 0, 'blank:', data.blankVoteCount);
+                        self.allCandidates = data.candidateResults || [];
+                        self.blankVoteCount = data.blankVoteCount || 0;
+                        self.blankVotePercentage = data.blankVotePercentage || 0;
+                        self.chartMaxVotes = data.chartMaxVotes || 1;
+                        self.sortCandidates();
+                        self.currentPage = 0;
+                        self.rebuildChart();
+                        self.loading = false;
+                    })
+                    .catch(function (err) {
+                        console.error('[fetchResults] error:', err);
+                        self.loading = false;
+                    });
+            },
+
+            // --- Sorting ---
+            sortCandidates: function () {
+                var self = this;
+                if (self.sortBy === 'mayor') {
+                    self.allCandidates.sort(function (a, b) { return b.voteCount - a.voteCount; });
+                } else if (self.sortBy === 'menor') {
+                    self.allCandidates.sort(function (a, b) { return a.voteCount - b.voteCount; });
+                } else if (self.sortBy === 'lista') {
+                    self.allCandidates.sort(function (a, b) { return a.listNumber - b.listNumber; });
+                }
+            },
+
+            // --- Chart ---
+            rebuildChart: function () {
+                var self = this;
+                preloadImages(this.allCandidates, function () {
+                    self.renderPage();
+                });
+            },
+
+            renderPage: function () {
+                var self = this;
+                var start = self.currentPage * self.pageSize;
+                var items = self.allCandidates.slice(start, start + self.pageSize);
+                self.pageItems = items;
+                window.__pageItems = items;
+
+                var canvas = document.getElementById('resultsChart');
+                if (!canvas) return;
+
+                if (!chartInstance) {
+                    chartInstance = new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: ['placeholder'],
+                            datasets: [{
+                                label: 'Votos',
+                                data: [0],
+                                backgroundColor: '#1e3a5f',
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: { top: 44, bottom: 32 }
+                            },
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    enabled: true,
+                                    callbacks: {
+                                        label: function (context) {
+                                            var c = window.__pageItems[context.dataIndex];
+                                            if (!c) return '';
+                                            return c.candidateFullName + ' — ' + c.partyName +
+                                                ' — ' + c.voteCount.toLocaleString('es-PE') +
+                                                ' votos (' + c.percentage.toFixed(2) + '%)';
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { display: false },
+                                    grid: { display: false }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1,
+                                    ticks: {
+                                        callback: function (value) {
+                                            return value.toLocaleString('es-PE');
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        plugins: [resultsOverlayPlugin]
+                    });
+                }
+
+                try {
+                    var yMax = Math.max(1, Math.round(self.chartMaxVotes * 1.1));
+                    chartInstance.options.scales.y.max = yMax;
+                    chartInstance.data.labels = items.map(function (c) { return c.candidateFullName; });
+                    chartInstance.data.datasets[0].data = items.map(function (c) { return c.voteCount; });
+                    chartInstance.update();
+                } catch (e) {
+                    console.error('[renderPage] chart update error:', e);
+                    chartInstance.destroy();
+                    chartInstance = null;
+                    self.renderPage();
+                    return;
+                }
+
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        };
+    };
+
+    // ============================================================
+    // Resize handler (al final del DOMContentLoaded)
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function () {
+        var resizeTimeout;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function () {
+                var appEl = document.querySelector('[x-data="resultsApp()"]');
+                if (!appEl) return;
+                var alpineData = Alpine.$data(appEl);
+                if (!alpineData || !alpineData.allCandidates) return;
+                var newSize = getPageSize();
+                if (newSize === alpineData.pageSize) return;
+                var firstVisible = alpineData.currentPage * alpineData.pageSize;
+                alpineData.pageSize = newSize;
+                alpineData.currentPage = Math.min(
+                    Math.floor(firstVisible / newSize),
+                    Math.max(0, Math.ceil(alpineData.allCandidates.length / newSize) - 1)
+                );
+                alpineData.renderPage();
+            }, 200);
+        });
+    });
+</script>
+
+</body>
+</html>
