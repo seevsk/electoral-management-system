@@ -1,14 +1,16 @@
 package com.ems.backend.controller;
 
+import com.ems.backend.dto.PresidentialResultsDto;
 import com.ems.backend.entity.Election;
 import com.ems.backend.service.ElectionDisplayState;
 import com.ems.backend.service.ElectionResultsService;
 import com.ems.backend.service.VoterService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,7 @@ public class PresidentialResultsController {
     }
 
     @GetMapping("/presidencial")
-    public String presidencial(@RequestParam(required = false) String district, Model model) {
+    public String presidencial(Model model) {
         Optional<Election> electionOpt = electionResultsService.findRelevantPresidentialElection();
 
         if (electionOpt.isEmpty()) {
@@ -41,21 +43,34 @@ public class PresidentialResultsController {
         model.addAttribute("election", election);
 
         if (state == ElectionDisplayState.CLOSED) {
-            String districtCode = (district == null || district.isBlank()) ? null : district;
-            model.addAttribute("results", electionResultsService.getResults(election.getId(), districtCode));
+            PresidentialResultsDto results = electionResultsService.getResults(election.getId(), null);
+            model.addAttribute("results", results);
 
-            // Mismo cascade de ubigeos (departamento/provincia/distrito) que usa /participation,
-            // para mantener el filtro consistente y escalable entre ambas pantallas.
             List<Map<String, Object>> ubicacionesList = voterService.getAllUbigeos();
-            String locationsJson = "[]";
-            try {
-                locationsJson = new ObjectMapper().writeValueAsString(ubicacionesList);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            model.addAttribute("locationsJson", locationsJson);
+            model.addAttribute("ubicacionesList", ubicacionesList);
         }
 
         return "results/presidential-results";
+    }
+
+    @GetMapping("/api/presidencial/results")
+    @ResponseBody
+    public ResponseEntity<PresidentialResultsDto> apiResults(@RequestParam(required = false) String district) {
+        Optional<Election> electionOpt = electionResultsService.findRelevantPresidentialElection();
+
+        if (electionOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Election election = electionOpt.get();
+        ElectionDisplayState state = electionResultsService.resolveState(election);
+
+        if (state != ElectionDisplayState.CLOSED) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String districtCode = (district == null || district.isBlank()) ? null : district;
+        PresidentialResultsDto results = electionResultsService.getResults(election.getId(), districtCode);
+        return ResponseEntity.ok(results);
     }
 }

@@ -8,7 +8,6 @@ import com.ems.backend.entity.Voter;
 import com.ems.backend.repository.ElectionRepository;
 import com.ems.backend.repository.PartyElectionRepresentativeRepository;
 import com.ems.backend.repository.VoteRepository;
-import com.ems.backend.repository.VoterRepository;
 import com.ems.backend.service.ElectionDisplayState;
 import com.ems.backend.service.ElectionResultsService;
 import org.springframework.stereotype.Service;
@@ -27,16 +26,13 @@ public class ElectionResultsServiceImpl implements ElectionResultsService {
     private final ElectionRepository electionRepository;
     private final PartyElectionRepresentativeRepository partyElectionRepresentativeRepository;
     private final VoteRepository voteRepository;
-    private final VoterRepository voterRepository;
 
     public ElectionResultsServiceImpl(ElectionRepository electionRepository,
                                       PartyElectionRepresentativeRepository partyElectionRepresentativeRepository,
-                                      VoteRepository voteRepository,
-                                      VoterRepository voterRepository) {
+                                      VoteRepository voteRepository) {
         this.electionRepository = electionRepository;
         this.partyElectionRepresentativeRepository = partyElectionRepresentativeRepository;
         this.voteRepository = voteRepository;
-        this.voterRepository = voterRepository;
     }
 
     @Override
@@ -49,17 +45,17 @@ public class ElectionResultsServiceImpl implements ElectionResultsService {
         LocalDateTime now = LocalDateTime.now();
         String status = election.getStatus();
 
-        if ("C".equals(status)) {
+        if (now.isAfter(election.getEndDate())) {
             return ElectionDisplayState.CLOSED;
         }
-        if ("P".equals(status)) {
-            return ElectionDisplayState.SCHEDULED;
+        if ("C".equals(status)) {
+            return ElectionDisplayState.CLOSED;
         }
         if (now.isBefore(election.getStartDate())) {
             return ElectionDisplayState.SCHEDULED;
         }
-        if (now.isAfter(election.getEndDate())) {
-            return ElectionDisplayState.CLOSED;
+        if ("P".equals(status)) {
+            return ElectionDisplayState.SCHEDULED;
         }
         return ElectionDisplayState.IN_PROGRESS;
     }
@@ -105,9 +101,10 @@ public class ElectionResultsServiceImpl implements ElectionResultsService {
 
         double blankPercentage = totalVotes > 0 ? (blankVotes * 100.0) / totalVotes : 0.0;
 
-        long chartMaxVotes = Math.max(1L, districtCode == null
-                ? voterRepository.count()
-                : voterRepository.countByLocationCode(districtCode));
+        long chartMaxVotes = candidateResults.stream()
+                .mapToLong(CandidateResultDto::getVoteCount)
+                .max()
+                .orElse(1L);
 
         return new PresidentialResultsDto(
                 election.getId(),
