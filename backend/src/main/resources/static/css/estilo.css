@@ -47,8 +47,38 @@
 
 /* Leaflet */
 .leaflet-container {
+    z-index: 0 !important;
     background: #f8fafc;
     font-family: inherit;
+}
+
+.leaflet-pane,
+.leaflet-map-pane,
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+    z-index: 1 !important;
+}
+
+.leaflet-control-container {
+    z-index: 10 !important;
+}
+
+#limaMap,
+.lima-map-container {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.main-navbar,
+header,
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
 }
 
 .participation-tooltip {

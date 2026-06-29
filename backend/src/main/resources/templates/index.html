@@ -67,6 +67,7 @@
                       districtIndex: new Map(),
                       leafletMap: null,
                       leafletLayer: null,
+                      fullMapBounds: null,
                       districtLayerByCode: {},
                       selectedDepartment: '',
                       selectedProvince: '',
@@ -208,17 +209,18 @@
                           }
 
                           const map = L.map(mapTarget, {
-                              zoomControl: false,
+                              zoomControl: true,
                               attributionControl: false,
-                              scrollWheelZoom: false,
+                              scrollWheelZoom: true,
                               doubleClickZoom: false,
                               boxZoom: false,
                               keyboard: false,
-                              dragging: false,
+                              dragging: true,
                               tap: false,
-                              minZoom: 2,
-                              maxZoom: 9,
-                              zoomSnap: 0.25
+                              minZoom: 5,
+                              maxZoom: 14,
+                              zoomSnap: 0.25,
+                              zoomDelta: 0.5
                           });
                           this.leafletMap = map;
 
@@ -260,10 +262,24 @@
                           }).addTo(map);
 
                           this.leafletLayer = layer;
-                          map.fitBounds(layer.getBounds(), { padding: [18, 18] });
-                          map.setMaxBounds(layer.getBounds().pad(0.08));
+                          this.fullMapBounds = layer.getBounds();
+                          map.fitBounds(this.fullMapBounds, { padding: [32, 32], animate: false });
+                          map.setMaxBounds(this.fullMapBounds.pad(0.12));
                           setTimeout(() => map.invalidateSize(), 0);
                           this.syncSelectedDistrictStyle();
+                      },
+
+                      focusFullMap() {
+                          if (!this.leafletMap || !this.fullMapBounds) return;
+                          this.leafletMap.fitBounds(this.fullMapBounds, { padding: [32, 32], animate: true });
+                      },
+
+                      focusDistrict(item) {
+                          if (!this.leafletMap) return;
+                          const layer = item ? this.districtLayerByCode[item.code] : null;
+                          if (layer && layer.getBounds) {
+                              this.leafletMap.fitBounds(layer.getBounds(), { padding: [48, 48], animate: true });
+                          }
                       },
 
                       syncSelectedDistrictStyle() {
@@ -414,15 +430,17 @@
                          this.hoveredDistrict = item.name;
                          this.updateChart();
                          this.syncSelectedDistrictStyle();
-                      },
+                         this.focusDistrict(item);
+                       },
 
-                     limpiar() {
-                         this.selectedDepartment = '';
-                         this.selectedProvince = '';
-                         this.selectedLocationCode = '';
-                         this.updateChart();
-                         this.syncSelectedDistrictStyle();
-                     },
+                      limpiar() {
+                          this.selectedDepartment = '';
+                          this.selectedProvince = '';
+                          this.selectedLocationCode = '';
+                          this.updateChart();
+                          this.syncSelectedDistrictStyle();
+                          this.focusFullMap();
+                      },
 
                     updateChart() {
                         const chart = Chart.getChart('participacionChart');
@@ -492,9 +510,9 @@
                                 <span class="text-[11px] font-medium uppercase tracking-wider text-zinc-400">Mapa interactivo de Lima Metropolitana</span>
                             </div>
 
-                            <div class="overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-br from-slate-50 to-white shadow-sm">
+                            <div class="lima-map-container overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-br from-slate-50 to-white shadow-sm">
                                 <div class="relative">
-                                    <div id="limaMap" class="h-[420px] w-full bg-slate-100"></div>
+                                    <div id="limaMap" class="h-[480px] w-full bg-slate-100"></div>
                                     <div x-show="mapLoading" x-cloak class="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-medium text-zinc-500">
                                         Cargando mapa interactivo...
                                     </div>
