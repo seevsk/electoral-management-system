@@ -1,82 +1,75 @@
-Audita y ajusta el módulo Candidatos ya implementado. NO rehagas el CRUD desde cero.
+El mapa interactivo de /ems/participation sigue sin renderizar bien. La lógica de participación ya funciona y el listado inferior también. NO tocar esa parte.
 
-Contexto:
-El proyecto es Spring Boot + Thymeleaf + SQL Server + Flyway.
-El módulo Candidatos ya existe y funciona parcialmente:
-- /admin/candidates/list
-- /admin/candidates/register
-- /admin/candidates/status
-- /admin/candidates/update/{id}
+Problema actual:
+- Las cards y lista inferior funcionan.
+- El GeoJSON parece cargarse.
+- Al seleccionar aparece un distrito como ATE.
+- Pero el mapa visualmente no muestra los polígonos reales; se ve casi vacío/mini.
+- El problema está en el renderizado SVG manual/proyección/viewBox.
 
-Este módulo corresponde al PB-06: Registrar candidatos presidenciales.
+Cambio de enfoque:
+Reemplaza el renderizado SVG manual por Leaflet.js usando el GeoJSON real.
 
-Revisa estos documentos antes de tocar código:
-- backend/docs/domain-rules-and-flow.md
-- backend/docs/visibility-rules.md
-- backend/docs/remaining-phases-plan.md
+Objetivo:
+En el bloque “Ámbito Geográfico”, mostrar un mapa real e interactivo de Lima Metropolitana usando Leaflet + GeoJSON.
 
-Revisa también:
-- CandidateController
-- CandidateService
-- CandidateServiceImpl
-- CandidateRepository
-- ElectionRepository
-- PartyElectionRepresentativeRepository
-- VoterRepository
-- templates/candidates/
-- CloudinaryStorageService
-- CloudinaryStorageServiceImpl
+Reglas:
+1. No tocar BD.
+2. No tocar migraciones.
+3. No tocar login.
+4. No tocar votación.
+5. No tocar resultados presidenciales.
+6. No tocar candidatos, partidos ni elecciones.
+7. No tocar el listado inferior de distritos, porque ya funciona.
+8. Mantener la lógica actual de votos emitidos, votos pendientes y porcentaje.
+9. Solo modificar el bloque del mapa en `src/main/resources/templates/index.html` y CSS si hace falta.
 
-Ajustes necesarios:
+Implementación requerida:
+1. Usar Leaflet para renderizar el GeoJSON:
+   - cargar CSS/JS de Leaflet en `index.html`
+   - crear un div para el mapa, por ejemplo `id="limaMap"`
+   - cargar el GeoJSON desde Thymeleaf usando:
+     `const geoJsonUrl = /*[[@{/data/lima-distritos.geojson}]]*/ '/ems/data/lima-distritos.geojson';`
+2. Renderizar el GeoJSON con `L.geoJSON`.
+3. Usar `map.fitBounds(geoJsonLayer.getBounds())` para que Lima Metropolitana se vea completa.
+4. Desactivar o limitar zoom si es necesario para que parezca un mapa electoral fijo.
+5. Cada distrito debe:
+   - tener borde visible
+   - tener color según porcentaje de participación
+   - mostrar tooltip con nombre del distrito
+   - reaccionar al hover
+   - poder seleccionarse con click
+6. Al hacer click en un distrito:
+   - seleccionar ese distrito
+   - actualizar los filtros de Departamento/Provincia/Distrito
+   - actualizar las tarjetas principales
+   - actualizar el donut
+   - resaltar el distrito seleccionado
+   - sincronizar con la lista inferior
+7. Relacionar el distrito del GeoJSON con la data del backend usando nombre normalizado:
+   - ignorar mayúsculas/minúsculas
+   - ignorar tildes
+   - ignorar espacios dobles
+8. Si el GeoJSON trae Callao u otras zonas, renderizar solo los distritos que existan en `districtStats` o en la data de participación del backend.
+9. Si Leaflet/GeoJSON falla, mostrar mensaje solo dentro del bloque del mapa, pero la pantalla debe seguir cargando.
 
-1. Elección presidencial
-El combo de elecciones del formulario de candidatos debe mostrar solo elecciones presidenciales disponibles.
-Si ya existe en ElectionRepository un método como:
-findAvailablePresidentialElectionsForCandidates()
-úsalo en CandidateServiceImpl.
-No debe traer elecciones de otros tipos.
+Importante:
+Ya no quiero un SVG manual calculado con viewBox.
+Quiero Leaflet + GeoJSON porque el SVG manual no está dibujando los polígonos correctamente.
 
-2. Un candidato por partido y elección presidencial
-Además de validar:
-- mismo votante en misma elección
-- mismo número de lista para mismo partido y elección
+Diseño:
+- Mantener el estilo actual de la card.
+- El mapa debe ocupar bien el bloque izquierdo.
+- Altura sugerida: 360px o 420px.
+- Fondo claro.
+- Bordes suaves.
+- Sin resultados de candidatos.
 
-también debe validar:
-- no se puede registrar más de un candidato para el mismo partido en la misma elección presidencial.
-
-Si ya existe una relación en party_election_representatives con ese party_id y election_id, bloquear el registro con este mensaje:
-"Este partido ya tiene un candidato asignado para esta elección."
-
-3. Foto opcional
-La foto del candidato debe seguir siendo opcional.
-En registro:
-- Si photoFile == null o photoFile.isEmpty(), guardar photo_url como null.
-- No llamar a Cloudinary.
-
-En actualización:
-- Si no se sube nueva foto, mantener la photo_url actual.
-- Si se sube nueva foto, recién llamar a Cloudinary.
-
-4. Manejo de errores Cloudinary
-Si Cloudinary falla, no debe salir Whitelabel Error Page.
-Debe volver al formulario con un mensaje controlado.
-No imprimir ni exponer CLOUDINARY_API_SECRET.
-
-5. party_election_representatives
-Al registrar candidato, debe crear o sincronizar la relación en party_election_representatives.
-Al actualizar candidato, debe mantener coherencia con party_id, election_id y candidate_id.
-No usar parties.representative como fuente principal.
-
-6. Restricciones
-No modificar migraciones Flyway.
-No modificar tablas.
-No tocar el CRUD de partidos.
-No tocar login.
-No usar React ni Angular.
-Mantener Thymeleaf.
-No cambiar rutas existentes.
+Archivos permitidos:
+- `src/main/resources/templates/index.html`
+- `src/main/resources/static/css/estilo.css` solo si hace falta.
 
 Al terminar:
-- Compila el proyecto.
-- Indica exactamente qué archivos modificaste.
-- Indica qué validaciones quedaron implementadas.
+- Compilar con `mvn -q -DskipTests compile`.
+- Indicar qué archivos tocaste.
+- Indicar cómo probar en `/ems/participation`.

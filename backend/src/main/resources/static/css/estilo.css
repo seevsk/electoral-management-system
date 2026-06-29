@@ -2,6 +2,8 @@
    Sistema Electoral - Custom Styles
    ============================================ */
 
+@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+
 /* Transiciones globales */
 * {
     transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -41,4 +43,16 @@
 /* Alpine.js: ocultar elementos antes de la hidratación */
 [x-cloak] {
     display: none !important;
+}
+
+/* Leaflet */
+.leaflet-container {
+    background: #f8fafc;
+    font-family: inherit;
+}
+
+.participation-tooltip {
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
 }
