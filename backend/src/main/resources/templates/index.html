@@ -42,11 +42,11 @@
                         <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
-                                Votos Emitidos (<span th:text="${#numbers.formatInteger(votosEmitidos, 3, 'POINT')}"></span>)
+                                Votos Emitidos (<span th:text="${#numbers.formatInteger(votosEmitidos, 1, 'POINT')}" style="display:contents"></span>)
                             </span>
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                Votos Pendientes (<span th:text="${#numbers.formatInteger(votosPendientes, 3, 'POINT')}"></span>)
+                                Votos Pendientes (<span th:text="${#numbers.formatInteger(votosPendientes, 1, 'POINT')}" style="display:contents"></span>)
                             </span>
                         </div>
                     </div>
@@ -573,7 +573,7 @@
                                     <span class="text-sm font-semibold text-amber-500" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajePendientes, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
-                            <p class="mt-4 border-t border-zinc-100 pt-3 text-xs leading-relaxed text-zinc-400">La participación se calcula con base en `has_voted` para emitidos y pendientes.</p>
+                            <p class="mt-4 border-t border-zinc-100 pt-3 text-xs leading-relaxed text-zinc-400">Los votos emitidos y pendientes reflejan el estado actual de participación en tiempo real.</p>
                         </div>
                     </div>
 

@@ -142,7 +142,7 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
         SELECT l.department, l.province, l.district, l.locationCode,
                COUNT(v.id),
                SUM(CASE WHEN v.hasVoted = true THEN 1L ELSE 0L END),
-               SUM(CASE WHEN v.status = 'A' AND v.hasVoted = false THEN 1L ELSE 0L END),
+               SUM(CASE WHEN v.hasVoted = false THEN 1L ELSE 0L END),
                SUM(CASE WHEN v.status = 'I' THEN 1L ELSE 0L END)
         FROM Location l
         LEFT JOIN Voter v ON v.locationCode = l.locationCode
