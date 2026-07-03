@@ -1,9 +1,7 @@
 package com.ems.backend.service;
 
-import com.ems.backend.entity.Candidate;
 import com.ems.backend.entity.Voter;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -26,10 +24,6 @@ public interface VoterService {
 
     // Cambia el estado a Activo (A)
     void enable(Integer id);
-
-
-    //probando la paginacion para ver los formatos json
-    Page<Voter> findAll(Pageable pageable);
 
     // =========================================================================
     // MÉTODOS PARA OBTENER ESTADÍSTICAS DE PARTICIPACIÓN CIUDADANA

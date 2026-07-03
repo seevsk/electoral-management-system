@@ -1,14 +1,11 @@
 package com.ems.backend.service.impl;
 
-import com.ems.backend.entity.Candidate;
 import com.ems.backend.entity.Party;
 import com.ems.backend.repository.PartyRepository;
 import com.ems.backend.service.CloudinaryStorageService;
 import com.ems.backend.service.PartyService;
 import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -183,9 +180,4 @@ public class PartyServiceImpl implements PartyService {
         }
     }
 
-    //Probando la paginacion en formatoide json
-    @Override
-    public Page<Party> findAll(Pageable pageable) {
-        return partyRepository.findAll(pageable);
-    }
 }

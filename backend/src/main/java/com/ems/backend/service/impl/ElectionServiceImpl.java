@@ -2,13 +2,10 @@ package com.ems.backend.service.impl;
 
 import com.ems.backend.dto.ElectionDto;
 import com.ems.backend.entity.Election;
-import com.ems.backend.entity.Party;
 import com.ems.backend.repository.ElectionRepository;
 import com.ems.backend.service.ElectionService;
 import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Year;
@@ -88,11 +85,5 @@ public class ElectionServiceImpl implements ElectionService {
                 throw new BusinessRuleException("Ya existe una elección activa. Solo puede haber una activa a la vez.");
             }
         }
-    }
-
-    //Probando la paginacion en formatoide json
-    @Override
-    public Page<Election> findAll(Pageable pageable) {
-        return electionRepository.findAll(pageable);
     }
 }

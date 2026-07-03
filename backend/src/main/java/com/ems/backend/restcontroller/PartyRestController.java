@@ -1,10 +1,15 @@
 package com.ems.backend.restcontroller;
 
+import com.ems.backend.dto.PublicPartyDto;
 import com.ems.backend.entity.Party;
 import com.ems.backend.service.PartyService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/parties")
@@ -16,22 +21,31 @@ public class PartyRestController {
         this.partyService = partyService;
     }
 
-    /*@GetMapping
-    public List<Candidate> findAll() {
-        return candidateService.findAllActive();
-    } */
-
-    @GetMapping("/{id}")
-    public Party findById(@PathVariable Integer id) {
-        return partyService.findById(id);
+    @GetMapping
+    public List<PublicPartyDto> findAll() {
+        return partyService.findAllActive().stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    // probando con paginacion
-    @GetMapping
-    public Page<Party> findAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+    @GetMapping("/{id}")
+    public ResponseEntity<PublicPartyDto> findById(@PathVariable Integer id) {
+        return partyService.findAllActive().stream()
+                .filter(party -> party.getId().equals(id))
+                .findFirst()
+                .map(this::toDto)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
-        return partyService.findAll(PageRequest.of(page, size));
+    private PublicPartyDto toDto(Party party) {
+        return new PublicPartyDto(
+                party.getId(),
+                party.getName(),
+                party.getAcronym(),
+                party.getRepresentative(),
+                party.getLogoUrl(),
+                party.getListPosition()
+        );
     }
 }

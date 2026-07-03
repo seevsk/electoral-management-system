@@ -1,9 +1,6 @@
 package com.ems.backend.service;
 
-import com.ems.backend.entity.Candidate;
 import com.ems.backend.entity.Party;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
@@ -26,7 +23,4 @@ public interface PartyService {
     void disable(Integer id);
 
     void enable(Integer id);
-
-    //probando la paginacion para ver los formatos json
-    Page<Party> findAll(Pageable pageable);
 }
