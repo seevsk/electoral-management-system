@@ -111,15 +111,14 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     // =========================================================================
 
     /**
-     * Comentario descriptivo: Obtiene la participación agrupada por departamentos
-     * filtrando solo por votantes con estado Activo ('A') para producción.
+     * Obtiene la participación agrupada por departamentos usando hasVoted
+     * para calcular emitidos y pendientes.
      */
     @Query("""
             select l.department,
                    count(v),
                    sum(case when v.hasVoted = true then 1L else 0L end),
-                   sum(case when v.status = 'A' and v.hasVoted = false then 1L else 0L end),
-                   sum(case when v.status = 'I' then 1L else 0L end)
+                   sum(case when v.hasVoted = false then 1L else 0L end)
             from Voter v
             join Location l on v.locationCode = l.locationCode
             group by l.department
@@ -127,15 +126,14 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
     List<Object[]> getParticipationByScope();
 
     @Query("""
-            select l.locationCode, l.district,
+            select l.department, l.province, l.locationCode, l.district,
                    count(v),
                    sum(case when v.hasVoted = true then 1L else 0L end),
-                   sum(case when v.status = 'A' and v.hasVoted = false then 1L else 0L end),
-                   sum(case when v.status = 'I' then 1L else 0L end)
+                   sum(case when v.hasVoted = false then 1L else 0L end)
             from Voter v
             join Location l on v.locationCode = l.locationCode
             where l.department = 'LIMA'
-            group by l.locationCode, l.district
+            group by l.department, l.province, l.locationCode, l.district
             order by l.district asc
             """)
     List<Object[]> getParticipationByDistrict();
@@ -144,7 +142,7 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
         SELECT l.department, l.province, l.district, l.locationCode,
                COUNT(v.id),
                SUM(CASE WHEN v.hasVoted = true THEN 1L ELSE 0L END),
-               SUM(CASE WHEN v.status = 'A' AND v.hasVoted = false THEN 1L ELSE 0L END),
+               SUM(CASE WHEN v.hasVoted = false THEN 1L ELSE 0L END),
                SUM(CASE WHEN v.status = 'I' THEN 1L ELSE 0L END)
         FROM Location l
         LEFT JOIN Voter v ON v.locationCode = l.locationCode
