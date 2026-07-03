@@ -76,6 +76,8 @@
                       mapError: '',
                       mapLoading: false,
                       sortBy: 'participacion-desc',
+                     currentPage: 1,
+                     pageSize: 9,
                      totNacional: 0,
                      attNacional: 0,
                      pendNacional: 0,
@@ -112,6 +114,30 @@
                         if (this.sortBy === 'participacion-asc') sorted.sort((a, b) => a.pct - b.pct);
                          if (this.sortBy === 'electores-desc') sorted.sort((a, b) => b.total - a.total);
                          return sorted;
+                     },
+
+                     get totalPages() {
+                         return Math.ceil(this.filteredDistricts.length / this.pageSize);
+                     },
+
+                     get pagedDistricts() {
+                         if (this.selectedLocationCode) return this.filteredDistricts;
+                         const start = (this.currentPage - 1) * this.pageSize;
+                         return this.filteredDistricts.slice(start, start + this.pageSize);
+                     },
+
+                     get pageNumbers() {
+                         const total = this.totalPages;
+                         const cur = this.currentPage;
+                         if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+                         const pages = new Set([1, total, cur]);
+                         if (cur > 1) pages.add(cur - 1);
+                         if (cur < total) pages.add(cur + 1);
+                         return [...pages].sort((a, b) => a - b);
+                     },
+
+                     goToPage(page) {
+                         this.currentPage = Math.max(1, Math.min(page, this.totalPages));
                      },
 
                       districtTextColor(pct) {
@@ -408,17 +434,20 @@
                      onDepartmentChange() {
                          this.selectedProvince = '';
                          this.selectedLocationCode = '';
+                         this.currentPage = 1;
                          this.updateChart();
                          this.syncSelectedDistrictStyle();
                      },
 
                      onProvinceChange() {
                          this.selectedLocationCode = '';
+                         this.currentPage = 1;
                          this.updateChart();
                          this.syncSelectedDistrictStyle();
                      },
 
                      onDistrictChange() {
+                         this.currentPage = 1;
                          this.updateChart();
                          this.syncSelectedDistrictStyle();
                      },
@@ -428,6 +457,7 @@
                          this.selectedProvince = item.province;
                          this.selectedLocationCode = item.code;
                          this.hoveredDistrict = item.name;
+                         this.currentPage = 1;
                          this.updateChart();
                          this.syncSelectedDistrictStyle();
                          this.focusDistrict(item);
@@ -437,6 +467,7 @@
                           this.selectedDepartment = '';
                           this.selectedProvince = '';
                           this.selectedLocationCode = '';
+                          this.currentPage = 1;
                           this.updateChart();
                           this.syncSelectedDistrictStyle();
                           this.focusFullMap();
@@ -609,7 +640,7 @@
                         </h3>
                         <div class="flex items-center gap-2">
                             <label for="ordenarDistritos" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
-                            <select id="ordenarDistritos" x-model="sortBy" class="h-10 w-52 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
+                            <select id="ordenarDistritos" x-model="sortBy" @change="currentPage = 1" class="h-10 w-52 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
                                 <option value="participacion-desc">Mayor participación</option>
                                 <option value="participacion-asc">Menor participación</option>
                                 <option value="alfabetico">Alfabéticamente</option>
@@ -619,7 +650,7 @@
                     </div>
 
                     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        <template x-for="item in filteredDistricts" :key="item.code">
+                        <template x-for="item in pagedDistricts" :key="item.code">
                             <button type="button" @click="selectDistrict(item)" class="text-left rounded-xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" :class="selectedLocationCode === item.code ? 'border-primary-500 ring-2 ring-primary-500/20' : 'border-zinc-200'">
                                 <div class="flex items-start justify-between gap-3">
                                     <div>
@@ -653,6 +684,33 @@
                                 </div>
                             </button>
                         </template>
+                    </div>
+
+                    <div x-show="!selectedLocationCode && totalPages > 1" class="mt-6 flex items-center justify-between gap-2">
+                        <p class="text-xs text-zinc-400">
+                            Mostrando
+                            <span x-text="((currentPage - 1) * pageSize) + 1"></span>–<span x-text="Math.min(currentPage * pageSize, filteredDistricts.length)"></span>
+                            de <span x-text="filteredDistricts.length"></span> distritos
+                        </p>
+                        <div class="flex items-center gap-1">
+                            <button type="button" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40">
+                                <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                            </button>
+                            <template x-for="(page, idx) in pageNumbers" :key="page">
+                                <span x-show="idx > 0 && pageNumbers[idx - 1] !== page - 1"
+                                    class="px-1 text-xs text-zinc-300">…</span>
+                                <button type="button" @click="goToPage(page)"
+                                    class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg border px-2 text-xs font-medium transition-colors"
+                                    :class="page === currentPage ? 'border-primary-600 bg-primary-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'">
+                                    <span x-text="page"></span>
+                                </button>
+                            </template>
+                            <button type="button" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40">
+                                <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
