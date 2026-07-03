@@ -35,6 +35,8 @@ public class SecurityConfig {
                     "/", "/participation", "/presidencial",
                     "/login/**", "/activation", "/recovery", "/recovery/**",
                     "/auth/**",
+                    "/api/parties/**", "/api/candidates/**",
+                    "/api/participation/**", "/api/presidencial/results",
                     "/css/**", "/js/**", "/images/**", "/webjars/**",
                     "/error"
                 ).permitAll()

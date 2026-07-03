@@ -1,9 +1,6 @@
 package com.ems.backend.service.impl;
 
-import com.ems.backend.entity.Account;
-import com.ems.backend.entity.Voter;
-import com.ems.backend.entity.VoterAssignment;
-import com.ems.backend.entity.VotingTable;
+import com.ems.backend.entity.*;
 import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.VoterAssignmentRepository;
 import com.ems.backend.repository.VoterRepository;
