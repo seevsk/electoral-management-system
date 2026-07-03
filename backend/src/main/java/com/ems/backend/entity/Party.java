@@ -1,5 +1,6 @@
 package com.ems.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +12,8 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
+// Evita errores de serialización con Hibernate
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "parties")
 public class Party {

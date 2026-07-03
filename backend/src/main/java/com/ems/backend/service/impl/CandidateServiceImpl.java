@@ -13,6 +13,8 @@ import com.ems.backend.repository.VoterRepository;
 import com.ems.backend.service.CandidateService;
 import com.ems.backend.service.CloudinaryStorageService;
 import com.ems.backend.service.exception.BusinessRuleException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -324,5 +326,12 @@ public class CandidateServiceImpl implements CandidateService {
 
     private boolean hasPhotoFile(MultipartFile photoFile) {
         return photoFile != null && !photoFile.isEmpty();
+    }
+
+
+    //Probando la paginacion en formatoide json
+    @Override
+    public Page<Candidate> findAll(Pageable pageable) {
+        return candidateRepository.findAll(pageable);
     }
 }

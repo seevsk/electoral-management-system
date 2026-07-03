@@ -1,8 +1,11 @@
 package com.ems.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+// Evita errores de serialización con Hibernate
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "voting_location")
 public class VotingLocation {

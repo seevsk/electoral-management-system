@@ -1,9 +1,6 @@
 package com.ems.backend.service.impl;
 
-import com.ems.backend.entity.Account;
-import com.ems.backend.entity.Voter;
-import com.ems.backend.entity.VoterAssignment;
-import com.ems.backend.entity.VotingTable;
+import com.ems.backend.entity.*;
 import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.VoterAssignmentRepository;
 import com.ems.backend.repository.VoterRepository;
@@ -13,6 +10,7 @@ import com.ems.backend.service.exception.BusinessRuleException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -172,6 +170,12 @@ public class VoterServiceImpl implements VoterService {
         Voter voter = findById(id);
         voter.setStatus(STATUS_ACTIVE);
         voterRepository.save(voter);
+    }
+
+    //Probando la paginacion en formatoide json
+    @Override
+    public Page<Voter> findAll(Pageable pageable) {
+        return voterRepository.findAll(pageable);
     }
 
     // =========================================================================
