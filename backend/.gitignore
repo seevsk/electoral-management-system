@@ -41,5 +41,8 @@ scripts/
 # Local environment variables
 .env
 
+# Generated reports
+generated-reports/
+
 # Backend local agent guide
 AGENTS.md
