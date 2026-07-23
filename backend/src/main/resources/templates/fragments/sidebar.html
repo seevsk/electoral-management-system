@@ -85,6 +85,11 @@
                     <i data-lucide="calendar-check" class="h-4 w-4"></i>
                     Elecciones
                 </a>
+                <a th:href="@{/admin/reports}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                    Reportes
+                </a>
             </nav>
 
             <!-- Logout: real POST to Spring Security logout endpoint -->
@@ -171,6 +176,10 @@
                 <a th:href="@{/admin/elections}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'elections' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="calendar-check" class="h-4 w-4"></i> Elecciones
+                </a>
+                <a th:href="@{/admin/reports}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Reportes
                 </a>
             </nav>
             <div class="border-t border-white/10 pt-4">
