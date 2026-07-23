@@ -30,7 +30,8 @@ public class JwtService {
     private long expirationVoter;
 
     public String generateToken(Account account) {
-        long expMs = "admin".equals(account.getRole()) ? expirationAdmin : expirationVoter;
+        boolean isStaff = "admin".equals(account.getRole()) || "operator".equals(account.getRole());
+        long expMs = isStaff ? expirationAdmin : expirationVoter;
         return Jwts.builder()
                 .subject(account.getDni())
                 .claim(CLAIM_ROLE, "ROLE_" + account.getRole().toUpperCase())

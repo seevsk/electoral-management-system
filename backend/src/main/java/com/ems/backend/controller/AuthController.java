@@ -40,6 +40,22 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/operator/login")
+    public String loginOperator(@RequestParam String dni,
+                                @RequestParam String password,
+                                HttpServletResponse response,
+                                RedirectAttributes redirectAttrs) {
+        try {
+            Account account = authService.authenticateOperator(dni, password);
+            String token = jwtService.generateToken(account);
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtService.createAuthCookie(token).toString());
+            return "redirect:/admin/reports";
+        } catch (BusinessRuleException e) {
+            redirectAttrs.addFlashAttribute("loginError", e.getMessage());
+            return "redirect:/login/operator";
+        }
+    }
+
     @PostMapping("/voter/login")
     public String loginVoter(@RequestParam String dni,
                              @RequestParam String password,
