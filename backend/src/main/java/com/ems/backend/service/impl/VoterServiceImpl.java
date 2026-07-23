@@ -1,9 +1,6 @@
 package com.ems.backend.service.impl;
 
-import com.ems.backend.entity.Account;
-import com.ems.backend.entity.Voter;
-import com.ems.backend.entity.VoterAssignment;
-import com.ems.backend.entity.VotingTable;
+import com.ems.backend.entity.*;
 import com.ems.backend.repository.AccountRepository;
 import com.ems.backend.repository.VoterAssignmentRepository;
 import com.ems.backend.repository.VoterRepository;
@@ -185,10 +182,9 @@ public class VoterServiceImpl implements VoterService {
 
         for (Object[] row : queryResult) {
             String name     = (String) row[0];
-            long total      = (Long)   row[1];
-            long attended   = (Long)   row[2];
-            long pending    = (Long)   row[3];
-            long inactive   = (Long)   row[4];
+            long total      = toLong(row[1]);
+            long attended   = toLong(row[2]);
+            long pending    = toLong(row[3]);
             double pct = total > 0 ? (attended * 100.0) / total : 0.0;
 
             Map<String, Object> scopeData = new HashMap<>();
@@ -196,7 +192,6 @@ public class VoterServiceImpl implements VoterService {
             scopeData.put("total",    total);
             scopeData.put("attended", attended);
             scopeData.put("pending",  pending);
-            scopeData.put("inactive", inactive);
             scopeData.put("pct",      pct);
 
             participationList.add(scopeData);
@@ -210,21 +205,23 @@ public class VoterServiceImpl implements VoterService {
         List<Map<String, Object>> participationList = new ArrayList<>();
 
         for (Object[] row : queryResult) {
-            String code   = (String) row[0];
-            String name   = (String) row[1];
-            long total    = (Long)   row[2];
-            long attended = (Long)   row[3];
-            long pending  = (Long)   row[4];
-            long inactive = (Long)   row[5];
+            String department = (String) row[0];
+            String province   = (String) row[1];
+            String code       = (String) row[2];
+            String name       = (String) row[3];
+            long total        = toLong(row[4]);
+            long attended     = toLong(row[5]);
+            long pending      = toLong(row[6]);
             double pct = total > 0 ? (attended * 100.0) / total : 0.0;
 
             Map<String, Object> districtData = new HashMap<>();
+            districtData.put("department", department);
+            districtData.put("province", province);
             districtData.put("code",     code);
             districtData.put("name",     name);
             districtData.put("total",    total);
             districtData.put("attended", attended);
             districtData.put("pending",  pending);
-            districtData.put("inactive", inactive);
             districtData.put("pct",      pct);
 
             participationList.add(districtData);
@@ -243,10 +240,10 @@ public class VoterServiceImpl implements VoterService {
             ubigeo.put("province",    row[1]);
             ubigeo.put("district",    row[2]);
             ubigeo.put("locationCode",row[3]);
-            ubigeo.put("total",       row[4]);
-            ubigeo.put("attended",    row[5]);
-            ubigeo.put("pending",     row[6]);
-            ubigeo.put("inactive",    row[7]);
+            ubigeo.put("total",       toLong(row[4]));
+            ubigeo.put("attended",    toLong(row[5]));
+            ubigeo.put("pending",     toLong(row[6]));
+            ubigeo.put("inactive",    toLong(row[7]));
             ubigeosList.add(ubigeo);
         }
         return ubigeosList;
@@ -278,5 +275,9 @@ public class VoterServiceImpl implements VoterService {
                     "La mesa seleccionada no pertenece al distrito del votante.");
         }
         return table;
+    }
+
+    private long toLong(Object value) {
+        return value == null ? 0L : ((Number) value).longValue();
     }
 }

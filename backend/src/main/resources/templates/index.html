@@ -7,83 +7,89 @@
 
 <div class="flex min-h-svh">
 
-    <!-- ==================== NAVBAR ==================== -->
     <div th:replace="~{fragments/navbar :: navbar(activePage='inicio')}"></div>
 
-    <!-- ==================== MAIN CONTENT ==================== -->
     <main class="flex-1 pt-16 md:pt-16">
-
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-            <!-- Page Header -->
             <div class="mb-8">
                 <h1 class="font-heading text-3xl font-semibold text-zinc-900">Participación Ciudadana</h1>
                 <p class="mt-1 text-sm text-zinc-500">Resumen de la participación en las Elecciones Generales 2026</p>
             </div>
 
-            <!-- ==================== PROGRESS BAR SECTION ==================== -->
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-zinc-900">Votos Contabilizados</h2>
-                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')} + '%'"></p>
+                        <h2 class="text-lg font-semibold text-zinc-900">Participación general</h2>
+                        <p class="text-3xl font-bold text-primary-600" th:text="${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')} + '%' "></p>
                     </div>
                     <div class="text-right text-sm text-zinc-500">
                         <p>Total de Electores: <span class="font-semibold text-zinc-900" th:text="${#numbers.formatInteger(totalPadron, 3, 'POINT')}"></span></p>
-                        <p class="text-xs">
-                            <span th:text="${#numbers.formatDecimal(100.0 - porcentajeVotos, 1, 3, 'POINT')} + '%'"></span> de votos pendientes de emitir
-                        </p>
+                        <p class="text-xs"><span th:text="${#numbers.formatDecimal(porcentajePendientes, 1, 3, 'POINT')} + '%' "></span> de votos pendientes de emitir</p>
                     </div>
                 </div>
 
                 <div class="mt-4 h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeVotos} + '%'"></div>
+                    <div class="h-full rounded-full bg-primary-600 animate-progress" th:style="'width: ' + ${porcentajeVotos} + '%' "></div>
                 </div>
 
                 <div class="mt-4 border-t border-zinc-100 pt-4">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p class="text-xs font-medium uppercase tracking-wider text-zinc-400">
                             <i data-lucide="clock" class="mr-1 inline-block h-3 w-3"></i>
-                            ACTUALIZADO AL <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span> A LAS <span th:text="${#temporals.format(#temporals.createNow(), 'hh:mm:ss a')}"></span>
+                            Actualizado al <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span> a las <span th:text="${#temporals.format(#temporals.createNow(), 'hh:mm:ss a')}"></span>
                         </p>
                         <div class="flex flex-wrap gap-4 text-xs text-zinc-500">
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
-                                Votos Emitidos (<span th:text="${#numbers.formatInteger(votosEmitidos, 3, 'POINT')}"></span>)
+                                Votos Emitidos (<span th:text="${#numbers.formatInteger(votosEmitidos, 1, 'POINT')}" style="display:contents"></span>)
                             </span>
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
-                                Votos Pendientes (<span th:text="${#numbers.formatInteger(totalPadron - votosEmitidos, 3, 'POINT')}"></span>)
+                                Votos Pendientes (<span th:text="${#numbers.formatInteger(votosPendientes, 1, 'POINT')}" style="display:contents"></span>)
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ==================== FILTERS & GRID WRAPPER (ALPINE.JS) ==================== -->
-            <div id="filters-grid-wrapper"
+             <div id="filters-grid-wrapper"
                  th:data-locations="${locationsJson}"
+                 th:data-districts="${districtsJson}"
+                 th:data-geojson-url="@{/data/lima-distritos.geojson}"
                  th:data-total="${totalPadron}"
                  th:data-attended="${votosEmitidos}"
-                 th:data-pending="${cuentasActivasSinVoto}"
-                 th:data-inactive="${cuentasInactivas}"
-                 x-data="{
-                    locations: [],
-                    selectedDepartment: '',
-                    selectedProvince: '',
-                    selectedLocationCode: '',
-                    totNacional: 0,
-                    attNacional: 0,
-                    pendNacional: 0,
-                    inacNacional: 0,
+                 th:data-pending="${votosPendientes}"
+                  x-data="{
+                      locations: [],
+                      districts: [],
+                      geoDistricts: [],
+                      districtIndex: new Map(),
+                      leafletMap: null,
+                      leafletLayer: null,
+                      fullMapBounds: null,
+                      districtLayerByCode: {},
+                      selectedDepartment: '',
+                      selectedProvince: '',
+                      selectedLocationCode: '',
+                      hoveredDistrict: '',
+                      mapError: '',
+                      mapLoading: false,
+                      sortBy: 'participacion-desc',
+                     currentPage: 1,
+                     pageSize: 9,
+                     totNacional: 0,
+                     attNacional: 0,
+                     pendNacional: 0,
 
-                    init() {
-                        this.locations   = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
-                        this.totNacional  = parseInt(this.$el.getAttribute('data-total')    || '0');
-                        this.attNacional  = parseInt(this.$el.getAttribute('data-attended') || '0');
-                        this.pendNacional = parseInt(this.$el.getAttribute('data-pending')  || '0');
-                        this.inacNacional = parseInt(this.$el.getAttribute('data-inactive') || '0');
-                    },
+                      async init() {
+                          this.locations = JSON.parse(this.$el.getAttribute('data-locations') || '[]');
+                          this.districts = JSON.parse(this.$el.getAttribute('data-districts') || '[]');
+                          this.totNacional = parseInt(this.$el.getAttribute('data-total') || '0');
+                          this.attNacional = parseInt(this.$el.getAttribute('data-attended') || '0');
+                          this.pendNacional = parseInt(this.$el.getAttribute('data-pending') || '0');
+                          await this.loadGeoDistricts();
+                      },
 
                     get departments() {
                         return [...new Set(this.locations.map(l => l.department))].sort();
@@ -91,25 +97,316 @@
 
                     get provinces() {
                         if (!this.selectedDepartment) return [];
-                        return [...new Set(
-                            this.locations
-                                .filter(l => l.department === this.selectedDepartment)
-                                .map(l => l.province)
-                        )].sort();
+                        return [...new Set(this.locations.filter(l => l.department === this.selectedDepartment).map(l => l.province))].sort();
                     },
 
-                    get districts() {
-                        if (!this.selectedProvince) return [];
-                        return this.locations.filter(l =>
-                            l.department === this.selectedDepartment &&
-                            l.province === this.selectedProvince
-                        );
-                    },
+                     get filteredDistricts() {
+                         const items = this.districts.filter(item => {
+                             if (this.selectedDepartment && item.department !== this.selectedDepartment) return false;
+                             if (this.selectedProvince && item.province !== this.selectedProvince) return false;
+                             if (this.selectedLocationCode && item.code !== this.selectedLocationCode) return false;
+                            return true;
+                        });
 
-                    _loc() {
-                        if (!this.selectedLocationCode) return null;
-                        return this.districts.find(d => d.locationCode === this.selectedLocationCode) || null;
-                    },
+                        const sorted = [...items];
+                        if (this.sortBy === 'alfabetico') sorted.sort((a, b) => a.name.localeCompare(b.name));
+                        if (this.sortBy === 'participacion-desc') sorted.sort((a, b) => b.pct - a.pct);
+                        if (this.sortBy === 'participacion-asc') sorted.sort((a, b) => a.pct - b.pct);
+                         if (this.sortBy === 'electores-desc') sorted.sort((a, b) => b.total - a.total);
+                         return sorted;
+                     },
+
+                     get totalPages() {
+                         return Math.ceil(this.filteredDistricts.length / this.pageSize);
+                     },
+
+                     get pagedDistricts() {
+                         if (this.selectedLocationCode) return this.filteredDistricts;
+                         const start = (this.currentPage - 1) * this.pageSize;
+                         return this.filteredDistricts.slice(start, start + this.pageSize);
+                     },
+
+                     get pageNumbers() {
+                         const total = this.totalPages;
+                         const cur = this.currentPage;
+                         if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+                         const pages = new Set([1, total, cur]);
+                         if (cur > 1) pages.add(cur - 1);
+                         if (cur < total) pages.add(cur + 1);
+                         return [...pages].sort((a, b) => a - b);
+                     },
+
+                     goToPage(page) {
+                         this.currentPage = Math.max(1, Math.min(page, this.totalPages));
+                     },
+
+                      districtTextColor(pct) {
+                          return pct >= 50 ? '#ffffff' : '#0f172a';
+                      },
+
+                     get selectedDistrictLabel() {
+                         const l = this._loc();
+                         return l ? l.district : 'Lima Metropolitana';
+                     },
+
+                     normalizeText(value) {
+                         return (value || '')
+                             .normalize('NFD')
+                             .replace(/[\u0300-\u036f]/g, '')
+                             .replace(/\s+/g, '')
+                             .replace(/-/g, '')
+                             .toUpperCase();
+                     },
+
+                      featureDistrictName(feature) {
+                          const props = feature?.properties || {};
+                          return props.distrito2 || props.distrito || props.DISTRICT || props.NOMB_DIST || props.NOMBDIST || props.name || props.NOMBRE || '';
+                      },
+
+                      resolveDistrictItem(feature) {
+                          const key = this.normalizeText(this.featureDistrictName(feature));
+                          return this.districtIndex.get(key) || null;
+                      },
+
+                      districtColor(pct) {
+                          if (pct >= 70) return '#1d4ed8';
+                          if (pct >= 50) return '#2563eb';
+                          if (pct >= 30) return '#38bdf8';
+                          if (pct >= 15) return '#7dd3fc';
+                          return '#dbeafe';
+                      },
+
+                      styleDistrict(item) {
+                          const selected = item && item.code === this.selectedLocationCode;
+                          return {
+                              color: selected ? '#0f172a' : '#334155',
+                              weight: selected ? 2.8 : 1.2,
+                              opacity: 1,
+                              fillColor: this.districtColor(item ? item.pct : 0),
+                              fillOpacity: selected ? 0.96 : 0.82,
+                              lineJoin: 'round',
+                              lineCap: 'round'
+                          };
+                      },
+
+                      async loadGeoDistricts() {
+                          this.mapLoading = true;
+                          this.mapError = '';
+                          try {
+                              if (!window.L) throw new Error('Leaflet no está cargado.');
+                              const url = this.$el.getAttribute('data-geojson-url') || window.geoJsonUrl;
+                              if (!url) throw new Error('No se encontró la URL del GeoJSON.');
+                              const response = await fetch(url, { headers: { 'Accept': 'application/geo+json, application/json' } });
+                              if (!response.ok) throw new Error(`No se pudo cargar el GeoJSON (${response.status}).`);
+                              const geojson = await response.json();
+                              this.renderLeafletMap(geojson);
+                          } catch (error) {
+                              this.mapError = 'No fue posible cargar el mapa interactivo de Lima Metropolitana.';
+                              console.error(error);
+                          } finally {
+                              this.mapLoading = false;
+                          }
+                      },
+
+                      renderLeafletMap(geojson) {
+                          const features = (geojson && geojson.features) || [];
+                          this.districtIndex = new Map(this.districts.map(item => [this.normalizeText(item.name), item]));
+                          const filteredFeatures = features.filter(feature => {
+                              const item = this.resolveDistrictItem(feature);
+                              return item && feature?.geometry && (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon');
+                          });
+
+                          if (!filteredFeatures.length) {
+                              this.mapError = 'El GeoJSON no contiene distritos que coincidan con la data de participación.';
+                              return;
+                          }
+
+                          const mapTarget = document.getElementById('limaMap');
+                          if (!mapTarget) {
+                              this.mapError = 'No se encontró el contenedor del mapa.';
+                              return;
+                          }
+
+                          if (this.leafletMap) {
+                              this.leafletMap.remove();
+                              this.leafletMap = null;
+                              this.leafletLayer = null;
+                              this.districtLayerByCode = {};
+                          }
+
+                          const map = L.map(mapTarget, {
+                              zoomControl: true,
+                              attributionControl: false,
+                              scrollWheelZoom: true,
+                              doubleClickZoom: false,
+                              boxZoom: false,
+                              keyboard: false,
+                              dragging: true,
+                              tap: false,
+                              minZoom: 5,
+                              maxZoom: 14,
+                              zoomSnap: 0.25,
+                              zoomDelta: 0.5
+                          });
+                          this.leafletMap = map;
+
+                          const layer = L.geoJSON(filteredFeatures, {
+                              style: feature => this.styleDistrict(this.resolveDistrictItem(feature)),
+                              onEachFeature: (feature, featureLayer) => {
+                                  const item = this.resolveDistrictItem(feature);
+                                  if (!item) return;
+
+                                  this.districtLayerByCode[item.code] = featureLayer;
+                                  featureLayer._districtCode = item.code;
+                                  featureLayer.bindTooltip(item.name, {
+                                      sticky: true,
+                                      direction: 'auto',
+                                      opacity: 0.96,
+                                      className: 'leaflet-tooltip participation-tooltip'
+                                  });
+
+                                  featureLayer.on({
+                                      mouseover: () => {
+                                          featureLayer.setStyle({
+                                              weight: 3,
+                                              color: '#0f172a',
+                                              fillOpacity: 0.96
+                                          });
+                                          featureLayer.bringToFront();
+                                          this.hoveredDistrict = item.name;
+                                      },
+                                      mouseout: () => {
+                                          layer.resetStyle(featureLayer);
+                                          this.hoveredDistrict = '';
+                                          this.syncSelectedDistrictStyle();
+                                      },
+                                      click: () => {
+                                          this.selectDistrict(item);
+                                      }
+                                  });
+                              }
+                          }).addTo(map);
+
+                          this.leafletLayer = layer;
+                          this.fullMapBounds = layer.getBounds();
+                          map.fitBounds(this.fullMapBounds, { padding: [32, 32], animate: false });
+                          map.setMaxBounds(this.fullMapBounds.pad(0.12));
+                          setTimeout(() => map.invalidateSize(), 0);
+                          this.syncSelectedDistrictStyle();
+                      },
+
+                      focusFullMap() {
+                          if (!this.leafletMap || !this.fullMapBounds) return;
+                          this.leafletMap.fitBounds(this.fullMapBounds, { padding: [32, 32], animate: true });
+                      },
+
+                      focusDistrict(item) {
+                          if (!this.leafletMap) return;
+                          const layer = item ? this.districtLayerByCode[item.code] : null;
+                          if (layer && layer.getBounds) {
+                              this.leafletMap.fitBounds(layer.getBounds(), { padding: [48, 48], animate: true });
+                          }
+                      },
+
+                      syncSelectedDistrictStyle() {
+                          if (!this.leafletLayer) return;
+                          this.leafletLayer.eachLayer(featureLayer => {
+                              const code = featureLayer._districtCode;
+                              const item = code ? this.districts.find(d => d.code === code) : null;
+                              featureLayer.setStyle(this.styleDistrict(item));
+                              if (item && item.code === this.selectedLocationCode) {
+                                  featureLayer.bringToFront();
+                              }
+                          });
+                      },
+
+                     collectPoints(node, points) {
+                         if (!Array.isArray(node)) return;
+                         if (node.length === 2 && typeof node[0] === 'number' && typeof node[1] === 'number') {
+                             points.push(node);
+                             return;
+                         }
+                         node.forEach(child => this.collectPoints(child, points));
+                     },
+
+                     projectPoint(point, bounds) {
+                         const pad = 28;
+                         const w = 944;
+                         const h = 744;
+                         const lonRange = (bounds.maxLon - bounds.minLon) || 1;
+                         const latRange = (bounds.maxLat - bounds.minLat) || 1;
+                         return [
+                             pad + ((point[0] - bounds.minLon) / lonRange) * w,
+                             pad + ((bounds.maxLat - point[1]) / latRange) * h
+                         ];
+                     },
+
+                     ringToPath(ring, bounds) {
+                         if (!Array.isArray(ring) || !ring.length) return '';
+                         return ring.map((point, index) => {
+                             const projected = this.projectPoint(point, bounds);
+                             return `${index === 0 ? 'M' : 'L'}${projected[0].toFixed(2)},${projected[1].toFixed(2)}`;
+                         }).join(' ') + ' Z';
+                     },
+
+                     geometryToPath(geometry, bounds) {
+                         if (!geometry) return '';
+                         if (geometry.type === 'Polygon') {
+                             return geometry.coordinates.map(ring => this.ringToPath(ring, bounds)).join(' ');
+                         }
+                         if (geometry.type === 'MultiPolygon') {
+                             return geometry.coordinates.map(poly => poly.map(ring => this.ringToPath(ring, bounds)).join(' ')).join(' ');
+                         }
+                         return '';
+                     },
+
+                     buildGeoDistricts(geojson) {
+                         const features = (geojson && geojson.features) || [];
+                         const districtIndex = new Map(this.districts.map(item => [this.normalizeText(item.name), item]));
+                         const matched = [];
+                         const allPoints = [];
+
+                         for (const feature of features) {
+                             const name = this.featureDistrictName(feature);
+                             const item = districtIndex.get(this.normalizeText(name));
+                             if (!item || !feature?.geometry) continue;
+
+                             const points = [];
+                             this.collectPoints(feature.geometry.coordinates, points);
+                             points.forEach(point => allPoints.push(point));
+                             matched.push({ item, name, geometry: feature.geometry, points });
+                         }
+
+                         if (!allPoints.length) return [];
+
+                         const lons = allPoints.map(point => point[0]);
+                         const lats = allPoints.map(point => point[1]);
+                         const bounds = {
+                             minLon: Math.min(...lons),
+                             maxLon: Math.max(...lons),
+                             minLat: Math.min(...lats),
+                             maxLat: Math.max(...lats)
+                         };
+
+                         return matched.map(entry => ({
+                              ...entry.item,
+                              featureName: entry.name,
+                              path: this.geometryToPath(entry.geometry, bounds),
+                              labelX: this.projectPoint([
+                                  (Math.min(...entry.points.map(p => p[0])) + Math.max(...entry.points.map(p => p[0]))) / 2,
+                                  (Math.min(...entry.points.map(p => p[1])) + Math.max(...entry.points.map(p => p[1]))) / 2
+                              ], bounds)[0],
+                              labelY: this.projectPoint([
+                                  (Math.min(...entry.points.map(p => p[0])) + Math.max(...entry.points.map(p => p[0]))) / 2,
+                                  (Math.min(...entry.points.map(p => p[1])) + Math.max(...entry.points.map(p => p[1]))) / 2
+                              ], bounds)[1]
+                          })).filter(item => item.path);
+                     },
+
+                     _loc() {
+                         if (!this.selectedLocationCode) return null;
+                         return this.locations.find(d => d.locationCode === this.selectedLocationCode) || null;
+                     },
 
                     get totalPadron() {
                         const l = this._loc();
@@ -121,146 +418,149 @@
                         return l ? l.attended : this.attNacional;
                     },
 
-                    get activosSinVoto() {
+                    get votosPendientes() {
                         const l = this._loc();
                         return l ? l.pending : this.pendNacional;
                     },
 
-                    get cuentasInactivas() {
-                        const l = this._loc();
-                        return l ? l.inactive : this.inacNacional;
-                    },
-
                     get pctVotos() {
-                        return this.totalPadron > 0 ? (this.votosEmitidos  * 100.0) / this.totalPadron : 0.0;
+                        return this.totalPadron > 0 ? (this.votosEmitidos * 100.0) / this.totalPadron : 0.0;
                     },
 
-                    get pctActivosSinVoto() {
-                        return this.totalPadron > 0 ? (this.activosSinVoto * 100.0) / this.totalPadron : 0.0;
+                    get pctPendientes() {
+                        return this.totalPadron > 0 ? (this.votosPendientes * 100.0) / this.totalPadron : 0.0;
                     },
 
-                    get pctInactivas() {
-                        return this.totalPadron > 0 ? (this.cuentasInactivas * 100.0) / this.totalPadron : 0.0;
-                    },
+                     onDepartmentChange() {
+                         this.selectedProvince = '';
+                         this.selectedLocationCode = '';
+                         this.currentPage = 1;
+                         this.updateChart();
+                         this.syncSelectedDistrictStyle();
+                     },
 
-                    onDepartmentChange() {
-                        this.selectedProvince = '';
-                        this.selectedLocationCode = '';
-                        this.updateChart();
-                    },
+                     onProvinceChange() {
+                         this.selectedLocationCode = '';
+                         this.currentPage = 1;
+                         this.updateChart();
+                         this.syncSelectedDistrictStyle();
+                     },
 
-                    onProvinceChange() {
-                        this.selectedLocationCode = '';
-                        this.updateChart();
-                    },
+                     onDistrictChange() {
+                         this.currentPage = 1;
+                         this.updateChart();
+                         this.syncSelectedDistrictStyle();
+                     },
 
-                    onDistrictChange() {
-                        this.updateChart();
-                    },
+                     selectDistrict(item) {
+                         this.selectedDepartment = item.department;
+                         this.selectedProvince = item.province;
+                         this.selectedLocationCode = item.code;
+                         this.hoveredDistrict = item.name;
+                         this.currentPage = 1;
+                         this.updateChart();
+                         this.syncSelectedDistrictStyle();
+                         this.focusDistrict(item);
+                       },
 
-                    limpiar() {
-                        this.selectedDepartment = '';
-                        this.selectedProvince = '';
-                        this.selectedLocationCode = '';
-                        this.updateChart();
-                    },
+                      limpiar() {
+                          this.selectedDepartment = '';
+                          this.selectedProvince = '';
+                          this.selectedLocationCode = '';
+                          this.currentPage = 1;
+                          this.updateChart();
+                          this.syncSelectedDistrictStyle();
+                          this.focusFullMap();
+                      },
 
                     updateChart() {
                         const chart = Chart.getChart('participacionChart');
                         if (chart) {
-                            const d = buildChartData(this.pctVotos, this.pctActivosSinVoto);
-                            chart.data.labels                        = d.labels;
-                            chart.data.datasets[0].data              = d.data;
-                            chart.data.datasets[0].backgroundColor   = d.colors;
-                            chart.data.datasets[0].borderWidth        = d.hasData ? 2 : 0;
+                            const d = buildChartData(this.pctVotos, this.pctPendientes);
+                            chart.data.labels = d.labels;
+                            chart.data.datasets[0].data = d.data;
+                            chart.data.datasets[0].backgroundColor = d.colors;
+                            chart.data.datasets[0].borderWidth = d.hasData ? 2 : 0;
                             chart.update();
                         }
                     }
                  }">
 
-                <!-- ==================== FILTROS DE UBICACIÓN (IGUAL QUE REGISTRAR VOTANTE) ==================== -->
                 <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col gap-4 md:flex-row md:items-center">
-                        <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
+                        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 shrink-0">
                             <i data-lucide="filter" class="h-4 w-4"></i>
-                            Filtrar Ámbito:
+                            Filtrar ámbito
                         </div>
                         <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
-
-                            <!-- País (FIJO - PERÚ por defecto) -->
                             <div>
-                                <select disabled
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                <select disabled class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
                                     <option>PERÚ</option>
                                 </select>
                             </div>
-
-                            <!-- Departamento (igual que Registrar Votante) -->
                             <div>
-                                <select x-model="selectedDepartment" @change="onDepartmentChange()"
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
+                                <select x-model="selectedDepartment" @change="onDepartmentChange()" class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
                                     <option value="">Departamento</option>
                                     <template x-for="dept in departments" :key="dept">
                                         <option :value="dept" x-text="dept"></option>
                                     </template>
                                 </select>
                             </div>
-
-                            <!-- Provincia (igual que Registrar Votante) -->
                             <div>
-                                <select x-model="selectedProvince" @change="onProvinceChange()"
-                                        :disabled="!selectedDepartment"
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                <select x-model="selectedProvince" @change="onProvinceChange()" :disabled="!selectedDepartment" class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
                                     <option value="">Provincia</option>
                                     <template x-for="prov in provinces" :key="prov">
                                         <option :value="prov" x-text="prov"></option>
                                     </template>
                                 </select>
                             </div>
-
-                            <!-- Distrito (igual que Registrar Votante) -->
                             <div>
-                                <select x-model="selectedLocationCode" @change="onDistrictChange()"
-                                        :disabled="!selectedProvince"
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                <select x-model="selectedLocationCode" @change="onDistrictChange()" :disabled="!selectedProvince" class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
                                     <option value="">Todos los Distritos</option>
-                                    <template x-for="loc in districts" :key="loc.locationCode">
+                                    <template x-for="loc in locations.filter(l => !selectedDepartment || (l.department === selectedDepartment && l.province === selectedProvince))" :key="loc.locationCode">
                                         <option :value="loc.locationCode" x-text="loc.district"></option>
                                     </template>
                                 </select>
                             </div>
                         </div>
-
-                        <!-- Botón Limpiar -->
-                        <button type="button" @click="limpiar()"
-                                class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
+                        <button type="button" @click="limpiar()" class="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 hover:bg-zinc-50 focus:outline-none transition-colors shrink-0">
                             <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
                             Limpiar
                         </button>
                     </div>
                 </div>
 
-                <!-- ==================== 3-COLUMN GRID ==================== -->
                 <div class="mb-8 grid gap-6 lg:grid-cols-3">
-
-                    <!-- COL 1: Mapa -->
                     <div class="flex flex-col gap-6">
                         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                            <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                                <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
-                                Ámbito Geográfico
-                            </h3>
-                            <img th:src="@{/img/mapa-lima.jpg}"
-                                 alt="Mapa de Lima Metropolitana"
-                                 class="w-full rounded-lg object-contain shadow-sm"
-                                 style="max-height: 450px; background: #f4f4f5;">
+                            <div class="mb-4 flex items-center justify-between gap-3">
+                                <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                                    <i data-lucide="map" class="mr-1.5 inline-block h-4 w-4"></i>
+                                    Ámbito Geográfico
+                                </h3>
+                                <span class="text-[11px] font-medium uppercase tracking-wider text-zinc-400">Mapa interactivo de Lima Metropolitana</span>
+                            </div>
+
+                            <div class="lima-map-container overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-br from-slate-50 to-white shadow-sm">
+                                <div class="relative">
+                                    <div id="limaMap" class="h-[480px] w-full bg-slate-100"></div>
+                                    <div x-show="mapLoading" x-cloak class="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-medium text-zinc-500">
+                                        Cargando mapa interactivo...
+                                    </div>
+                                    <div x-show="mapError" x-cloak class="absolute inset-0 flex items-center justify-center bg-white/80 p-6 text-center">
+                                        <div class="max-w-md rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" x-text="mapError"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 flex flex-col gap-2 text-xs text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+                                <span x-text="hoveredDistrict || selectedDistrictLabel">Lima Metropolitana</span>
+                                <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full bg-blue-700"></span>Mayor participación</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- COL 2: Electores Hábiles + Asistencia apilados -->
                     <div class="flex flex-col gap-6">
-
-                        <!-- Electores Hábiles -->
                         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <div class="flex flex-col items-center text-center">
                                 <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary-600/10">
@@ -272,7 +572,6 @@
                             </div>
                         </div>
 
-                        <!-- Card: Estado del padrón -->
                         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h3 class="mb-1 text-sm font-semibold uppercase tracking-wider text-zinc-500">
                                 <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
@@ -280,7 +579,6 @@
                             </h3>
                             <p class="mb-4 text-xs text-zinc-400">Distribución de ciudadanos por estado</p>
                             <div class="space-y-4">
-                                <!-- Cuentas activas con voto emitido -->
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600/10">
@@ -293,28 +591,23 @@
                                     </div>
                                     <span class="text-sm font-semibold text-primary-600" x-text="pctVotos.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')}]]%</span>
                                 </div>
-                                <!-- Cuentas activas sin voto emitido -->
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-400/10">
                                             <i data-lucide="clock" class="h-5 w-5 text-amber-500"></i>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-medium text-zinc-500">Votos Pendientes</p>
-                                            <p class="text-xl font-bold text-amber-500" x-text="activosSinVoto.toLocaleString('es-PE')">[[${#numbers.formatInteger(cuentasActivasSinVoto, 3, 'POINT')}]]</p>
+                                            <p class="text-sm font-medium text-zinc-500">Votos pendientes</p>
+                                            <p class="text-xl font-bold text-amber-500" x-text="votosPendientes.toLocaleString('es-PE')">[[${#numbers.formatInteger(votosPendientes, 3, 'POINT')}]]</p>
                                         </div>
                                     </div>
-                                    <span class="text-sm font-semibold text-amber-500" x-text="pctActivosSinVoto.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeActivosSinVoto, 1, 3, 'POINT')}]]%</span>
+                                    <span class="text-sm font-semibold text-amber-500" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajePendientes, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
-                            <p class="mt-4 text-xs leading-relaxed text-zinc-400 border-t border-zinc-100 pt-3">
-                                Los datos se actualizarán a medida que los ciudadanos activen su cuenta y emitan su voto durante el proceso electoral.
-                            </p>
+                            <p class="mt-4 border-t border-zinc-100 pt-3 text-xs leading-relaxed text-zinc-400">Los votos emitidos y pendientes reflejan el estado actual de participación en tiempo real.</p>
                         </div>
-
                     </div>
 
-                    <!-- COL 3: Participación Ciudadana (Gráfico de Dona) -->
                     <div class="flex flex-col gap-6">
                         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
@@ -322,90 +615,107 @@
                                 Participación Ciudadana
                             </h3>
                             <div class="relative mx-auto max-w-[220px]">
-                                <canvas id="participacionChart"
-                                        th:data-votos="${porcentajeVotos}"
-                                        th:data-activos-sin-voto="${porcentajeActivosSinVoto}"
-                                        th:data-inactivas="${porcentajeInactivas}"></canvas>
+                                <canvas id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></canvas>
                             </div>
                             <div class="mt-4 space-y-2">
                                 <div class="flex items-center justify-between text-xs">
-                                    <span class="flex items-center gap-1.5">
-                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>
-                                        Votos emitidos
-                                    </span>
+                                    <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-primary-600"></span>Votos emitidos</span>
                                     <span class="font-semibold text-zinc-900" x-text="pctVotos.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 3, 'POINT')}]]%</span>
                                 </div>
                                 <div class="flex items-center justify-between text-xs">
-                                    <span class="flex items-center gap-1.5">
-                                        <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>
-                                        Votos Pendientes
-                                    </span>
-                                    <span class="font-semibold text-zinc-900" x-text="pctActivosSinVoto.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajeActivosSinVoto, 1, 3, 'POINT')}]]%</span>
+                                    <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-400"></span>Votos pendientes</span>
+                                    <span class="font-semibold text-zinc-900" x-text="pctPendientes.toFixed(3) + '%'">[[${#numbers.formatDecimal(porcentajePendientes, 1, 3, 'POINT')}]]%</span>
                                 </div>
                             </div>
-                            <p class="mt-6 text-xs leading-relaxed text-zinc-400">
-                                Los porcentajes reflejan la participación registrada hasta el momento y se actualizarán en tiempo real durante el proceso electoral.
-                            </p>
+                            <p class="mt-6 text-xs leading-relaxed text-zinc-400">Los porcentajes reflejan la participación registrada hasta el momento y se actualizan al elegir un distrito.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
+                            <i data-lucide="map-pinned" class="mr-1.5 inline-block h-4 w-4"></i>
+                            Participación por distritos de Lima Metropolitana
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <label for="ordenarDistritos" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
+                            <select id="ordenarDistritos" x-model="sortBy" @change="currentPage = 1" class="h-10 w-52 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                <option value="participacion-desc">Mayor participación</option>
+                                <option value="participacion-asc">Menor participación</option>
+                                <option value="alfabetico">Alfabéticamente</option>
+                                <option value="electores-desc">Mayor cantidad de electores</option>
+                            </select>
                         </div>
                     </div>
 
-                </div>
+                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        <template x-for="item in pagedDistricts" :key="item.code">
+                            <button type="button" @click="selectDistrict(item)" class="text-left rounded-xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" :class="selectedLocationCode === item.code ? 'border-primary-500 ring-2 ring-primary-500/20' : 'border-zinc-200'">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-zinc-900" x-text="item.name"></p>
+                                        <p class="text-xs text-zinc-400" x-text="item.department + ' / ' + item.province"></p>
+                                    </div>
+                                    <span class="rounded-full bg-zinc-100 px-2 py-1 text-[11px] font-semibold text-zinc-500" x-text="item.code"></span>
+                                </div>
 
-            </div> <!-- FIN FILTERS & GRID WRAPPER -->
+                                <div class="mt-4 grid grid-cols-3 gap-3 text-xs text-zinc-500">
+                                    <div>
+                                        <p class="text-[10px] uppercase tracking-wider">Electores</p>
+                                        <p class="mt-1 text-sm font-semibold text-zinc-900" x-text="item.total.toLocaleString('es-PE')"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] uppercase tracking-wider">Emitidos</p>
+                                        <p class="mt-1 text-sm font-semibold text-primary-600" x-text="item.attended.toLocaleString('es-PE')"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] uppercase tracking-wider">Pendientes</p>
+                                        <p class="mt-1 text-sm font-semibold text-amber-500" x-text="item.pending.toLocaleString('es-PE')"></p>
+                                    </div>
+                                </div>
 
-            <!-- ==================== LISTA DE ÁMBITOS ==================== -->
-            <div th:data-ambitos="${ambitosJson}"
-                 x-data="{
-                    sortBy: 'alfabetico',
-                    items: [],
-                    init() {
-                        this.items = JSON.parse(this.$el.getAttribute('data-ambitos') || '[]');
-                    },
-                    format(n) { return n.toLocaleString('es-PE') },
-                    get sortedItems() {
-                        const sorted = [...this.items]
-                        if (this.sortBy === 'alfabetico') sorted.sort((a,b) => a.name.localeCompare(b.name))
-                        if (this.sortBy === 'mayor')    sorted.sort((a,b) => b.pct - a.pct)
-                        if (this.sortBy === 'menor')    sorted.sort((a,b) => a.pct - b.pct)
-                        return sorted
-                    }
-                 }" class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                                <div class="mt-4 flex items-center justify-between text-xs">
+                                    <span class="font-medium text-zinc-500">Participación</span>
+                                    <span class="font-semibold text-primary-600" x-text="item.pct.toFixed(3) + '%' "></span>
+                                </div>
+                                <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-zinc-100">
+                                    <div class="h-full rounded-full bg-primary-600 animate-progress" :style="'width: ' + item.pct + '%' "></div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
 
-                <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-zinc-500">
-                        <i data-lucide="globe" class="mr-1.5 inline-block h-4 w-4"></i>
-                        Lista de Ámbitos (Departamentos)
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <label for="ordenar" class="whitespace-nowrap text-xs text-zinc-500">Ordenar por:</label>
-                        <select id="ordenar" x-model="sortBy"
-                                class="h-10 w-48 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
-                            <option value="alfabetico">Alfabéticamente</option>
-                            <option value="mayor">Mayor participación</option>
-                            <option value="menor">Menor participación</option>
-                        </select>
+                    <div x-show="!selectedLocationCode && totalPages > 1" class="mt-6 flex items-center justify-between gap-2">
+                        <p class="text-xs text-zinc-400">
+                            Mostrando
+                            <span x-text="((currentPage - 1) * pageSize) + 1"></span>–<span x-text="Math.min(currentPage * pageSize, filteredDistricts.length)"></span>
+                            de <span x-text="filteredDistricts.length"></span> distritos
+                        </p>
+                        <div class="flex items-center gap-1">
+                            <button type="button" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40">
+                                <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                            </button>
+                            <template x-for="(page, idx) in pageNumbers" :key="page">
+                                <span x-show="idx > 0 && pageNumbers[idx - 1] !== page - 1"
+                                    class="px-1 text-xs text-zinc-300">…</span>
+                                <button type="button" @click="goToPage(page)"
+                                    class="flex h-8 min-w-[2rem] items-center justify-center rounded-lg border px-2 text-xs font-medium transition-colors"
+                                    :class="page === currentPage ? 'border-primary-600 bg-primary-600 text-white' : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50'">
+                                    <span x-text="page"></span>
+                                </button>
+                            </template>
+                            <button type="button" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40">
+                                <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-6">
-                    <template x-for="(item, index) in sortedItems" :key="item.name">
-                        <div>
-                            <div class="mb-2 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium text-zinc-900" x-text="item.name"></span>
-                                </div>
-                                <span class="text-sm font-bold text-primary-600" x-text="item.pct.toFixed(3) + '%'"></span>
-                            </div>
-                            <div class="h-5 w-full overflow-hidden rounded-full bg-zinc-100">
-                                <div class="h-full rounded-full bg-primary-600 animate-progress"
-                                     :style="'width: ' + item.pct + '%'"></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
             </div>
 
-            <!-- Footer -->
             <div class="border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
                 Fuente: ONPE - Datos en tiempo real. Los datos mostrados son referenciales.
             </div>
@@ -415,25 +725,29 @@
 
 </div>
 
-<!-- ==================== SCRIPTS ==================== -->
+<script th:inline="javascript">
+    const geoJsonUrl = /*[[@{/data/lima-distritos.geojson}]]*/ '/ems/data/lima-distritos.geojson';
+    window.geoJsonUrl = geoJsonUrl;
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script th:src="@{/js/app.js}"></script>
 <script>
-    function buildChartData(pctVotos, pctActivosSinV) {
-        const hasData = pctVotos > 0 || pctActivosSinV > 0;
+    function buildChartData(pctVotos, pctPendientes) {
+        const hasData = pctVotos > 0 || pctPendientes > 0;
         return {
-            labels:   hasData ? ['Votos emitidos', 'Votos Pendientes'] : ['Sin datos'],
-            data:     hasData ? [pctVotos, pctActivosSinV]             : [100],
-            colors:   hasData ? ['#1e3a5f', '#f59e0b']                 : ['#d4d4d8'],
-            hasData:  hasData
+            labels: hasData ? ['Votos emitidos', 'Votos pendientes'] : ['Sin datos'],
+            data: hasData ? [pctVotos, pctPendientes] : [100],
+            colors: hasData ? ['#1e3a5f', '#f59e0b'] : ['#d4d4d8'],
+            hasData: hasData
         };
     }
 
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('participacionChart');
         if (ctx) {
-            const pctVotos       = parseFloat(ctx.getAttribute('data-votos'))            || 0;
-            const pctActivosSinV = parseFloat(ctx.getAttribute('data-activos-sin-voto')) || 0;
-            const d = buildChartData(pctVotos, pctActivosSinV);
+            const pctVotos = parseFloat(ctx.getAttribute('data-votos')) || 0;
+            const pctPendientes = parseFloat(ctx.getAttribute('data-pendientes')) || 0;
+            const d = buildChartData(pctVotos, pctPendientes);
 
             new Chart(ctx, {
                 type: 'doughnut',
@@ -443,7 +757,7 @@
                         data: d.data,
                         backgroundColor: d.colors,
                         borderWidth: d.hasData ? 2 : 0,
-                        borderColor: '#ffffff',
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: {
