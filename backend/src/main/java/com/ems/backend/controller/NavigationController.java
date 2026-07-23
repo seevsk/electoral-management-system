@@ -99,6 +99,12 @@ public class NavigationController
         return "auth/login-voter";
     }
 
+    @GetMapping("/login/operator")
+    public String operatorLogin()
+    {
+        return "auth/login-operator";
+    }
+
     @GetMapping("/admin/main")
     public String adminMain()
     {

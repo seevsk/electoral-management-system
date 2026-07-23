@@ -77,6 +77,11 @@
                     <i data-lucide="shield" class="h-4 w-4"></i>
                     Administrador
                 </a>
+                <a th:href="@{/login/operator}"
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                    Operador Electoral
+                </a>
                 <a th:href="@{/login/voter}"
                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
                     <i data-lucide="user" class="h-4 w-4"></i>
@@ -148,6 +153,10 @@
             <a th:href="@{/login/admin}"
                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                 <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+            </a>
+            <a th:href="@{/login/operator}"
+               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Operador Electoral
             </a>
             <a th:href="@{/login/voter}"
                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">

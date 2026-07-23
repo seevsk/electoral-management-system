@@ -40,6 +40,11 @@
                         <i data-lucide="shield" class="h-4 w-4"></i>
                         Administrador
                     </a>
+                    <a th:href="@{/login/operator}"
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                        Operador Electoral
+                    </a>
                     <a th:href="@{/login/voter}"
                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                         <i data-lucide="user" class="h-4 w-4"></i>
@@ -104,6 +109,41 @@
             </div>
         </div>
 
+        <!-- Authenticated as operator: navigation limited to reports only -->
+        <div sec:authorize="hasRole('OPERATOR')" class="flex flex-1 flex-col">
+            <!-- User info -->
+            <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="truncate text-sm font-medium text-white"
+                       th:text="${#authentication.name}">Operador</p>
+                    <p class="text-xs text-zinc-400">Operador Electoral</p>
+                </div>
+            </div>
+
+            <!-- Operator navigation: reports only -->
+            <nav class="flex flex-1 flex-col gap-1">
+                <a th:href="@{/admin/reports}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                    Reportes
+                </a>
+            </nav>
+
+            <!-- Logout: real POST to Spring Security logout endpoint -->
+            <div class="border-t border-white/10 pt-4">
+                <form th:action="@{/auth/logout}" method="post">
+                    <button type="submit"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                        <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
+                        <span class="flex-1 text-left">Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
     </aside>
 
     <!-- ==================== MOBILE SIDEBAR ==================== -->
@@ -139,6 +179,10 @@
                     <a th:href="@{/login/admin}"
                         class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                         <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+                    </a>
+                    <a th:href="@{/login/operator}"
+                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Operador Electoral
                     </a>
                     <a th:href="@{/login/voter}"
                         class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
@@ -177,6 +221,35 @@
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'elections' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="calendar-check" class="h-4 w-4"></i> Elecciones
                 </a>
+                <a th:href="@{/admin/reports}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Reportes
+                </a>
+            </nav>
+            <div class="border-t border-white/10 pt-4">
+                <form th:action="@{/auth/logout}" method="post">
+                    <button type="submit"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                        <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
+                        <span class="flex-1 text-left">Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Authenticated as operator (mobile): navigation limited to reports only -->
+        <div sec:authorize="hasRole('OPERATOR')" class="flex flex-1 flex-col">
+            <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="truncate text-sm font-medium text-white"
+                       th:text="${#authentication.name}">Operador</p>
+                    <p class="text-xs text-zinc-400">Operador Electoral</p>
+                </div>
+            </div>
+            <nav class="flex flex-1 flex-col gap-1">
                 <a th:href="@{/admin/reports}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Reportes
