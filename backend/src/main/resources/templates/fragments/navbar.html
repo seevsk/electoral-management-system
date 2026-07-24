@@ -10,13 +10,13 @@
         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
             <i data-lucide="vote" class="h-5 w-5"></i>
         </div>
-        <span class="text-sm font-bold">Sistema Electoral</span>
+        <span class="text-sm font-bold" th:text="#{navbar.app.name}">Sistema Electoral</span>
     </div>
 
     <!-- Spacer pushes everything right -->
     <div class="flex-1"></div>
 
-    <!-- Desktop right section: nav links + login -->
+    <!-- Desktop right section: nav links + language + login -->
     <div class="hidden items-center gap-6 md:flex">
 
         <!-- Nav links -->
@@ -24,17 +24,38 @@
             <a th:href="@{/participation}"
                th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'inicio' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
                 <i data-lucide="users" class="h-4 w-4"></i>
-                Participación Ciudadana
+                <span th:text="#{navbar.link.participation}">Participación Ciudadana</span>
             </a>
             <a th:href="@{/voting-location}"
                th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'voting-location' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
                 <i data-lucide="map-pin" class="h-4 w-4"></i>
-                Local de Votacion
+                <span th:text="#{navbar.link.voting.location}">Local de Votacion</span>
             </a>
             <a th:href="@{/presidencial}"
                th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' + (activePage == 'presidencial' ? 'bg-white/10 text-white' : 'text-white hover:bg-white/5 hover:text-white')">
                 <i data-lucide="landmark" class="h-4 w-4"></i>
-                Resultados Presidenciales
+                <span th:text="#{navbar.link.presidential}">Resultados Presidenciales</span>
+            </a>
+        </div>
+
+        <!-- Language selector (desktop) -->
+        <div class="flex items-center gap-1 rounded-lg bg-white/10 px-2 py-1.5 text-xs font-semibold">
+            <a th:href="@{''(lang='es')}"
+               class="rounded px-2 py-1 transition-colors hover:bg-white/20"
+               th:classappend="${#locale.language == 'es'} ? 'bg-white/20 text-white' : 'text-white/60'">
+                ES
+            </a>
+            <span class="text-white/30">|</span>
+            <a th:href="@{''(lang='en')}"
+               class="rounded px-2 py-1 transition-colors hover:bg-white/20"
+               th:classappend="${#locale.language == 'en'} ? 'bg-white/20 text-white' : 'text-white/60'">
+                EN
+            </a>
+            <span class="text-white/30">|</span>
+            <a th:href="@{''(lang='qu')}"
+               class="rounded px-2 py-1 transition-colors hover:bg-white/20"
+               th:classappend="${#locale.language == 'qu'} ? 'bg-white/20 text-white' : 'text-white/60'">
+                QU
             </a>
         </div>
 
@@ -48,7 +69,7 @@
                 <button type="submit"
                         class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white">
                     <i data-lucide="log-out" class="h-4 w-4"></i>
-                    Salir
+                    <span th:text="#{navbar.logout}">Salir</span>
                 </button>
             </form>
         </div>
@@ -59,7 +80,7 @@
             <button @click="loginOpen = !loginOpen"
                     class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/5 hover:text-white">
                 <i data-lucide="log-in" class="h-4 w-4"></i>
-                <span>Iniciar Sesión</span>
+                <span th:text="#{navbar.login}">Iniciar Sesión</span>
                 <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
                    :class="{ 'rotate-180': loginOpen }"></i>
             </button>
@@ -75,17 +96,17 @@
                 <a th:href="@{/login/admin}"
                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
                     <i data-lucide="shield" class="h-4 w-4"></i>
-                    Administrador
+                    <span th:text="#{navbar.login.admin}">Administrador</span>
                 </a>
                 <a th:href="@{/login/operator}"
                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
                     <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
-                    Operador Electoral
+                    <span th:text="#{navbar.login.operator}">Operador Electoral</span>
                 </a>
                 <a th:href="@{/login/voter}"
                    class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white">
                     <i data-lucide="user" class="h-4 w-4"></i>
-                    Votante
+                    <span th:text="#{navbar.login.voter}">Votante</span>
                 </a>
             </div>
         </div>
@@ -110,19 +131,41 @@
         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
             <i data-lucide="vote" class="h-5 w-5"></i>
         </div>
-        <span class="text-sm font-bold">Sistema Electoral</span>
+        <span class="text-sm font-bold" th:text="#{navbar.app.name}">Sistema Electoral</span>
     </div>
     <nav class="flex flex-1 flex-col gap-1">
         <a th:href="@{/participation}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
-            <i data-lucide="users" class="h-4 w-4"></i> Participación Ciudadana
+            <i data-lucide="users" class="h-4 w-4"></i> <span th:text="#{navbar.link.participation}">Participación Ciudadana</span>
         </a>
         <a th:href="@{/voting-location}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
-            <i data-lucide="map-pin" class="h-4 w-4"></i> Local de Votacion
+            <i data-lucide="map-pin" class="h-4 w-4"></i> <span th:text="#{navbar.link.voting.location}">Local de Votacion</span>
         </a>
         <a th:href="@{/presidencial}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-white/5 hover:text-white">
-            <i data-lucide="landmark" class="h-4 w-4"></i> Resultados Presidenciales
+            <i data-lucide="landmark" class="h-4 w-4"></i> <span th:text="#{navbar.link.presidential}">Resultados Presidenciales</span>
         </a>
     </nav>
+
+    <!-- Language selector (mobile) -->
+    <div class="mb-2 flex items-center justify-center gap-1 rounded-lg bg-white/5 px-2 py-2 text-xs font-semibold">
+        <a th:href="@{''(lang='es')}"
+           class="rounded px-2 py-1 transition-colors hover:bg-white/20"
+           th:classappend="${#locale.language == 'es'} ? 'bg-white/20 text-white' : 'text-white/60'">
+            ES
+        </a>
+        <span class="text-white/30">|</span>
+        <a th:href="@{''(lang='en')}"
+           class="rounded px-2 py-1 transition-colors hover:bg-white/20"
+           th:classappend="${#locale.language == 'en'} ? 'bg-white/20 text-white' : 'text-white/60'">
+            EN
+        </a>
+        <span class="text-white/30">|</span>
+        <a th:href="@{''(lang='qu')}"
+           class="rounded px-2 py-1 transition-colors hover:bg-white/20"
+           th:classappend="${#locale.language == 'qu'} ? 'bg-white/20 text-white' : 'text-white/60'">
+            QU
+        </a>
+    </div>
+
     <!-- Mobile: voter authenticated -->
     <div sec:authorize="isAuthenticated()" class="border-t border-white/10 pt-4">
         <div class="mb-2 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
@@ -133,7 +176,7 @@
             <button type="submit"
                     class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                 <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
-                <span class="flex-1 text-left">Cerrar sesión</span>
+                <span class="flex-1 text-left" th:text="#{navbar.logout.full}">Cerrar sesión</span>
             </button>
         </form>
     </div>
@@ -144,7 +187,7 @@
         <button @click="mobileNavLoginOpen = !mobileNavLoginOpen"
                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
             <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
-            <span class="flex-1 text-left">Iniciar Sesión</span>
+            <span class="flex-1 text-left" th:text="#{navbar.login}">Iniciar Sesión</span>
             <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
                :class="{ 'rotate-180': mobileNavLoginOpen }"></i>
         </button>
@@ -152,15 +195,15 @@
              class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
             <a th:href="@{/login/admin}"
                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+                <i data-lucide="shield" class="h-4 w-4"></i> <span th:text="#{navbar.login.admin}">Administrador</span>
             </a>
             <a th:href="@{/login/operator}"
                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Operador Electoral
+                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> <span th:text="#{navbar.login.operator}">Operador Electoral</span>
             </a>
             <a th:href="@{/login/voter}"
                class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                <i data-lucide="user" class="h-4 w-4"></i> Votante
+                <i data-lucide="user" class="h-4 w-4"></i> <span th:text="#{navbar.login.voter}">Votante</span>
             </a>
         </div>
     </div>

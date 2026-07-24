@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head th:replace="~{fragments/head :: head}">
-    <title>Resumen de Voto</title>
+    <title th:text="#{voteSummary.page.title}">Resumen de Voto</title>
 </head>
 <body class="min-h-screen bg-zinc-100">
 
@@ -14,7 +14,7 @@
                 <i data-lucide="vote" class="h-5 w-5"></i>
             </div>
             <div>
-                <p class="text-xs text-white/60 uppercase tracking-wider">Resumen de Voto</p>
+                <p class="text-xs text-white/60 uppercase tracking-wider" th:text="#{voteSummary.header.label}">Resumen de Voto</p>
                 <p class="text-sm font-bold leading-tight" th:text="${election.name}">Elecciones Generales</p>
             </div>
         </div>
@@ -32,8 +32,8 @@
 
         <!-- Instruction -->
         <div class="mb-6 text-center">
-            <h2 class="font-heading text-2xl font-bold text-zinc-900">Confirme su voto</h2>
-            <p class="mt-1 text-sm text-zinc-500">Verifique su selección. Una vez confirmado, no se puede cambiar.</p>
+            <h2 class="font-heading text-2xl font-bold text-zinc-900" th:text="#{voteSummary.instruction.title}">Confirme su voto</h2>
+            <p class="mt-1 text-sm text-zinc-500" th:text="#{voteSummary.instruction.subtitle}">Verifique su selección. Una vez confirmado, no se puede cambiar.</p>
         </div>
 
         <!-- ── VOTO EN BLANCO ── -->
@@ -43,8 +43,8 @@
                 <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100">
                     <i data-lucide="square-slash" class="h-10 w-10 text-zinc-400"></i>
                 </div>
-                <h3 class="font-heading text-xl font-bold text-zinc-700">VOTO EN BLANCO</h3>
-                <p class="mt-2 text-sm text-zinc-400">Su voto no expresará preferencia por ningún candidato.</p>
+                <h3 class="font-heading text-xl font-bold text-zinc-700" th:text="#{voteSummary.blank.title}">VOTO EN BLANCO</h3>
+                <p class="mt-2 text-sm text-zinc-400" th:text="#{voteSummary.blank.description}">Su voto no expresará preferencia por ningún candidato.</p>
             </div>
         </div>
 
@@ -64,7 +64,7 @@
                         <i th:if="${selectedEntry.partyLogoUrl == null}" data-lucide="flag" class="h-6 w-6 text-zinc-400"></i>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-primary-400">Partido Político</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-primary-400" th:text="#{voteSummary.party.label}">Partido Político</p>
                         <p class="text-base font-bold text-zinc-900" th:text="${selectedEntry.partyName}">Partido</p>
                         <p class="text-xs text-zinc-500" th:text="${selectedEntry.partyAcronym}">ACR</p>
                     </div>
@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Candidato</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-400" th:text="#{voteSummary.candidate.label}">Candidato</p>
                     <p class="mt-1 font-heading text-xl font-bold text-zinc-900"
                        th:text="${selectedEntry.candidateFullName}">Nombre Completo</p>
                 </div>
@@ -98,7 +98,7 @@
         <!-- Warning banner -->
         <div class="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
             <i data-lucide="triangle-alert" class="mt-0.5 h-4 w-4 shrink-0 text-amber-500"></i>
-            <p class="text-xs text-amber-700">Esta acción es irreversible. Una vez confirmado el voto, no podrá ser modificado ni anulado.</p>
+            <p class="text-xs text-amber-700" th:text="#{voteSummary.warning}">Esta acción es irreversible. Una vez confirmado el voto, no podrá ser modificado ni anulado.</p>
         </div>
 
         <!-- Action bar -->
@@ -106,7 +106,7 @@
             <a th:href="@{/voter/vote/ballot}"
                class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
                 <i data-lucide="arrow-left" class="h-4 w-4"></i>
-                Cambiar selección
+                <span th:text="#{voteSummary.action.changeSelection}">Cambiar selección</span>
             </a>
 
             <form method="post" th:action="@{/voter/vote/confirm}">
@@ -115,7 +115,7 @@
                 <button type="submit"
                         class="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
                     <i data-lucide="check-circle" class="h-4 w-4"></i>
-                    Confirmar Voto
+                    <span th:text="#{voteSummary.action.confirm}">Confirmar Voto</span>
                 </button>
             </form>
         </div>
@@ -123,29 +123,29 @@
 </div>
 
 <script>
-function votingTimer() {
-    return {
-        remaining: 300,
-        formatted: '5:00',
-        init() {
-            this.tick();
-            setInterval(() => this.tick(), 1_000);
-        },
-        tick() {
-            const deadline = parseInt(sessionStorage.getItem('votingDeadline') || '0');
-            this.remaining = Math.max(0, Math.round((deadline - Date.now()) / 1_000));
-            const m = Math.floor(this.remaining / 60);
-            const s = this.remaining % 60;
-            this.formatted = m + ':' + String(s).padStart(2, '0');
-            if (this.remaining === 0) {
-                sessionStorage.removeItem('votingDeadline');
-                window.location.href = '/ems/voter/vote/conditions';
+    function votingTimer() {
+        return {
+            remaining: 300,
+            formatted: '5:00',
+            init() {
+                this.tick();
+                setInterval(() => this.tick(), 1_000);
+            },
+            tick() {
+                const deadline = parseInt(sessionStorage.getItem('votingDeadline') || '0');
+                this.remaining = Math.max(0, Math.round((deadline - Date.now()) / 1_000));
+                const m = Math.floor(this.remaining / 60);
+                const s = this.remaining % 60;
+                this.formatted = m + ':' + String(s).padStart(2, '0');
+                if (this.remaining === 0) {
+                    sessionStorage.removeItem('votingDeadline');
+                    window.location.href = '/ems/voter/vote/conditions';
+                }
             }
-        }
-    };
-}
+        };
+    }
 
-if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 </body>
 </html>

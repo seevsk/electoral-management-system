@@ -3,12 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificacion de identidad - Sistema Electoral</title>
+    <title th:text="#{reset.page.title}">Verificacion de identidad - Sistema Electoral</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/estilo.css}">
+    <script th:inline="javascript">
+        const CTX = /*[[@{/}]]*/ '/';
+        window.__i18n = {
+            validationRequired: /*[[#{reset.validation.required}]]*/ 'Campo obligatorio',
+            validationUbigeoFormat: /*[[#{reset.validation.ubigeo.format}]]*/ 'Debe tener 6 dígitos',
+            validationPasswordLength: /*[[#{reset.validation.password.length}]]*/ 'Mínimo 8 caracteres',
+            validationPasswordMismatch: /*[[#{reset.validation.password.mismatch}]]*/ 'No coinciden'
+        };
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -37,18 +46,31 @@
         errors: {},
         validate() {
             this.errors = {}
-            if (!this.form.birthDate) this.errors.birthDate = 'Campo obligatorio'
-            if (!this.form.dniExpiryDate) this.errors.dniExpiryDate = 'Campo obligatorio'
-            if (!this.form.locationCode.trim()) this.errors.locationCode = 'Campo obligatorio'
-            else if (!/^\d{6}$/.test(this.form.locationCode.trim())) this.errors.locationCode = 'Debe tener 6 digitos'
-            if (!this.form.password) this.errors.password = 'Campo obligatorio'
-            else if (this.form.password.length < 8) this.errors.password = 'Minimo 8 caracteres'
-            if (!this.form.confirmPassword) this.errors.confirmPassword = 'Campo obligatorio'
-            else if (this.form.password !== this.form.confirmPassword) this.errors.confirmPassword = 'No coinciden'
-            return Object.keys(this.errors).length === 0
+            if (!this.form.birthDate) {
+                this.errors.birthDate = window.__i18n.validationRequired;
+            }
+            if (!this.form.dniExpiryDate) {
+                this.errors.dniExpiryDate = window.__i18n.validationRequired;
+            }
+            if (!this.form.locationCode.trim()) {
+                this.errors.locationCode = window.__i18n.validationRequired;
+            } else if (!/^\d{6}$/.test(this.form.locationCode.trim())) {
+                this.errors.locationCode = window.__i18n.validationUbigeoFormat;
+            }
+            if (!this.form.password) {
+                this.errors.password = window.__i18n.validationRequired;
+            } else if (this.form.password.length < 8) {
+                this.errors.password = window.__i18n.validationPasswordLength;
+            }
+            if (!this.form.confirmPassword) {
+                this.errors.confirmPassword = window.__i18n.validationRequired;
+            } else if (this.form.password !== this.form.confirmPassword) {
+                this.errors.confirmPassword = window.__i18n.validationPasswordMismatch;
+            }
+            return Object.keys(this.errors).length === 0;
         },
         submit() {
-            if (this.validate()) this.$refs.resetForm.submit()
+            if (this.validate()) this.$refs.resetForm.submit();
         }
      }" class="w-full max-w-lg">
 
@@ -59,14 +81,14 @@
             <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600/10">
                 <i data-lucide="shield-check" class="h-7 w-7 text-primary-600"></i>
             </div>
-            <h1 class="text-lg font-bold text-zinc-900">Sistema Electoral</h1>
-            <p class="mt-1 text-xs text-zinc-400">Elecciones Generales 2026</p>
+            <h1 class="text-lg font-bold text-zinc-900" th:text="#{reset.header.title}">Sistema Electoral</h1>
+            <p class="mt-1 text-xs text-zinc-400" th:text="#{reset.header.subtitle}">Elecciones Generales 2026</p>
         </div>
 
         <div class="mb-5 border-b border-zinc-200 pb-4">
             <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
                 <i data-lucide="refresh-ccw-dot" class="mr-1.5 inline-block h-4 w-4"></i>
-                Recuperar contrasena - Verificacion de identidad
+                <span th:text="#{reset.section.title}">Recuperar contrasena - Verificacion de identidad</span>
             </h2>
         </div>
 
@@ -80,11 +102,11 @@
         <form x-ref="resetForm" th:action="@{/auth/voter/recovery/reset}" method="post"
               class="flex flex-col gap-4" novalidate>
 
-            <!-- DNI: readonly + hidden (value submitted via hidden input) -->
+            <!-- DNI: readonly + hidden -->
             <div class="flex flex-col gap-1.5">
                 <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="credit-card" class="h-3.5 w-3.5"></i>
-                    DNI
+                    <span th:text="#{reset.form.dni.label}">DNI</span>
                 </label>
                 <input type="text" th:value="${recoveryDni}" readonly
                        class="h-10 w-full border-0 border-b-2 border-b-zinc-200 bg-zinc-50 px-0 text-sm text-zinc-400 outline-none cursor-not-allowed">
@@ -95,11 +117,11 @@
             <div class="grid grid-cols-2 gap-4">
                 <!-- Birth date -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    <label for="birthDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                         <i data-lucide="calendar" class="h-3.5 w-3.5"></i>
-                        Fecha de nacimiento
+                        <span th:text="#{reset.form.birthdate.label}">Fecha de nacimiento</span>
                     </label>
-                    <input type="date" name="birthDate" x-model="form.birthDate"
+                    <input id="birthDate" type="date" name="birthDate" x-model="form.birthDate"
                            :class="errors.birthDate ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                            class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors text-zinc-600">
                     <p x-show="errors.birthDate" x-cloak x-text="errors.birthDate" class="text-xs text-red-500"></p>
@@ -107,11 +129,11 @@
 
                 <!-- DNI expiry date -->
                 <div class="flex flex-col gap-1.5">
-                    <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    <label for="dniExpiryDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                         <i data-lucide="calendar-x" class="h-3.5 w-3.5"></i>
-                        Vencimiento DNI
+                        <span th:text="#{reset.form.dniexpiry.label}">Vencimiento DNI</span>
                     </label>
-                    <input type="date" name="dniExpiryDate" x-model="form.dniExpiryDate"
+                    <input id="dniExpiryDate" type="date" name="dniExpiryDate" x-model="form.dniExpiryDate"
                            :class="errors.dniExpiryDate ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                            class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors text-zinc-600">
                     <p x-show="errors.dniExpiryDate" x-cloak x-text="errors.dniExpiryDate" class="text-xs text-red-500"></p>
@@ -120,13 +142,14 @@
 
             <!-- Location code -->
             <div class="flex flex-col gap-1.5">
-                <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                <label for="locationCode" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="map-pin" class="h-3.5 w-3.5"></i>
-                    Ubigeo (codigo de distrito)
+                    <span th:text="#{reset.form.ubigeo.label}">Ubigeo (codigo de distrito)</span>
                 </label>
-                <input type="text" name="locationCode" x-model="form.locationCode" maxlength="6"
+                <input id="locationCode" type="text" name="locationCode" x-model="form.locationCode" maxlength="6"
                        :class="errors.locationCode ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                       th:placeholder="#{reset.form.ubigeo.placeholder}"
                        placeholder="Ej: 140101">
                 <p x-show="errors.locationCode" x-cloak x-text="errors.locationCode" class="text-xs text-red-500"></p>
             </div>
@@ -134,25 +157,27 @@
             <!-- Password row -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1.5">
-                    <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    <label for="password" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                         <i data-lucide="lock" class="h-3.5 w-3.5"></i>
-                        Nueva contrasena
+                        <span th:text="#{reset.form.password.label}">Nueva contrasena</span>
                     </label>
-                    <input type="password" name="password" x-model="form.password"
+                    <input id="password" type="password" name="password" x-model="form.password"
                            :class="errors.password ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                            class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                           th:placeholder="#{reset.form.password.placeholder}"
                            placeholder="Min. 8 caracteres">
                     <p x-show="errors.password" x-cloak x-text="errors.password" class="text-xs text-red-500"></p>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    <label for="confirmPassword" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                         <i data-lucide="lock-keyhole" class="h-3.5 w-3.5"></i>
-                        Confirmar
+                        <span th:text="#{reset.form.confirmpassword.label}">Confirmar</span>
                     </label>
-                    <input type="password" name="confirmPassword" x-model="form.confirmPassword"
+                    <input id="confirmPassword" type="password" name="confirmPassword" x-model="form.confirmPassword"
                            :class="errors.confirmPassword ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                            class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                           th:placeholder="#{reset.form.confirmpassword.placeholder}"
                            placeholder="Repite la contrasena">
                     <p x-show="errors.confirmPassword" x-cloak x-text="errors.confirmPassword" class="text-xs text-red-500"></p>
                 </div>
@@ -162,7 +187,7 @@
             <button type="button" @click="submit()"
                     class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
                 <i data-lucide="key-round" class="h-4 w-4"></i>
-                Restablecer contrasena
+                <span th:text="#{reset.form.submit}">Restablecer contrasena</span>
             </button>
 
             <!-- Links -->
@@ -170,14 +195,14 @@
                 <a th:href="@{/recovery}"
                    class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
                     <i data-lucide="arrow-left" class="h-3 w-3"></i>
-                    Ingresar otro DNI
+                    <span th:text="#{reset.link.change_dni}">Ingresar otro DNI</span>
                 </a>
             </div>
 
         </form>
     </div>
 
-    <p class="mt-6 text-center text-xs text-white/60">Sistema Electoral - Lima Metropolitana</p>
+    <p class="mt-6 text-center text-xs text-white/60" th:text="#{reset.footer}">Sistema Electoral - Lima Metropolitana</p>
 </div>
 
 <script>
