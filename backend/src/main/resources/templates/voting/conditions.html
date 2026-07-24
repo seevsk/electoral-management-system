@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head th:replace="~{fragments/head :: head}">
-    <title>Condiciones de Votación</title>
+    <title th:text="#{voteConditions.page.title}">Condiciones de Votación</title>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900">
 
@@ -18,7 +18,7 @@
                         <i data-lucide="vote" class="h-5 w-5"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-white/60 uppercase tracking-wider">Proceso Electoral</p>
+                        <p class="text-xs text-white/60 uppercase tracking-wider" th:text="#{voteConditions.header.label}">Proceso Electoral</p>
                         <p class="text-sm font-bold leading-tight" th:text="${election.name}">Elecciones Generales</p>
                     </div>
                 </div>
@@ -35,7 +35,7 @@
             <div th:if="${votingExpired}"
                  class="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-6 py-3 text-sm text-amber-800">
                 <i data-lucide="clock-alert" class="h-4 w-4 shrink-0 text-amber-500"></i>
-                Tu sesión de votación expiró. El tiempo ha sido reiniciado.
+                <span th:text="#{voteConditions.flash.expired}">Tu sesión de votación expiró. El tiempo ha sido reiniciado.</span>
             </div>
             <div th:if="${voteError}"
                  class="flex items-center gap-3 border-b border-red-200 bg-red-50 px-6 py-3 text-sm text-red-800">
@@ -45,46 +45,46 @@
 
             <!-- Conditions body -->
             <div class="px-8 py-8">
-                <h2 class="mb-1 font-heading text-xl font-bold text-zinc-900">Condiciones de Votación</h2>
-                <p class="mb-6 text-sm text-zinc-500">Lea detenidamente antes de proceder a emitir su voto.</p>
+                <h2 class="mb-1 font-heading text-xl font-bold text-zinc-900" th:text="#{voteConditions.title}">Condiciones de Votación</h2>
+                <p class="mb-6 text-sm text-zinc-500" th:text="#{voteConditions.subtitle}">Lea detenidamente antes de proceder a emitir su voto.</p>
 
                 <ul class="space-y-3">
                     <li class="flex items-start gap-3">
                         <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                             <i data-lucide="check" class="h-3.5 w-3.5 text-primary-600"></i>
                         </div>
-                        <p class="text-sm text-zinc-700">El voto es <strong>personal, secreto e intransferible</strong>. Solo usted puede emitirlo.</p>
+                        <p class="text-sm text-zinc-700" th:utext="#{voteConditions.item1}">El voto es <strong>personal, secreto e intransferible</strong>. Solo usted puede emitirlo.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                             <i data-lucide="check" class="h-3.5 w-3.5 text-primary-600"></i>
                         </div>
-                        <p class="text-sm text-zinc-700">Dispone de <strong>5 minutos</strong> desde este momento para completar el proceso. Si el tiempo expira, deberá iniciar nuevamente.</p>
+                        <p class="text-sm text-zinc-700" th:utext="#{voteConditions.item2}">Dispone de <strong>5 minutos</strong> desde este momento para completar el proceso. Si el tiempo expira, deberá iniciar nuevamente.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                             <i data-lucide="check" class="h-3.5 w-3.5 text-primary-600"></i>
                         </div>
-                        <p class="text-sm text-zinc-700">Podrá seleccionar <strong>un candidato</strong> del partido de su preferencia, o emitir un <strong>voto en blanco</strong>.</p>
+                        <p class="text-sm text-zinc-700" th:utext="#{voteConditions.item3}">Podrá seleccionar <strong>un candidato</strong> del partido de su preferencia, o emitir un <strong>voto en blanco</strong>.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                             <i data-lucide="check" class="h-3.5 w-3.5 text-primary-600"></i>
                         </div>
-                        <p class="text-sm text-zinc-700">Una vez confirmado el voto, este <strong>no podrá ser modificado ni anulado</strong>.</p>
+                        <p class="text-sm text-zinc-700" th:utext="#{voteConditions.item4}">Una vez confirmado el voto, este <strong>no podrá ser modificado ni anulado</strong>.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100">
                             <i data-lucide="check" class="h-3.5 w-3.5 text-primary-600"></i>
                         </div>
-                        <p class="text-sm text-zinc-700">Solo podrá votar una vez en este proceso electoral. Cualquier intento de fraude es sancionado por ley.</p>
+                        <p class="text-sm text-zinc-700" th:text="#{voteConditions.item5}">Solo podrá votar una vez en este proceso electoral. Cualquier intento de fraude es sancionado por ley.</p>
                     </li>
                 </ul>
 
                 <!-- Warning -->
                 <div class="mt-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
                     <i data-lucide="triangle-alert" class="mt-0.5 h-4 w-4 shrink-0 text-amber-500"></i>
-                    <p class="text-xs text-amber-700">
+                    <p class="text-xs text-amber-700" th:utext="#{voteConditions.warning}">
                         Al presionar <strong>"Ir a la Cédula"</strong> el contador de 5 minutos estará en curso.
                         Asegúrese de estar listo antes de continuar.
                     </p>
@@ -97,13 +97,13 @@
                     <button type="submit"
                             class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
                         <i data-lucide="log-out" class="h-4 w-4"></i>
-                        Salir
+                        <span th:text="#{voteConditions.action.logout}">Salir</span>
                     </button>
                 </form>
                 <form th:action="@{/voter/vote/start}" method="post">
                     <button type="submit"
                             class="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                        Ir a la Cédula
+                        <span th:text="#{voteConditions.action.start}">Ir a la Cédula</span>
                         <i data-lucide="arrow-right" class="h-4 w-4"></i>
                     </button>
                 </form>
@@ -112,36 +112,36 @@
 
         <!-- Session info -->
         <p class="mt-5 text-center text-xs text-white/40">
-            Sesión: <span th:text="${#authentication.name}">DNI</span> &mdash; Oficina Nacional de Procesos Electorales &copy; 2026
+            <span th:text="#{voteConditions.session.label}">Sesión:</span> <span th:text="${#authentication.name}">DNI</span> — <span th:text="#{voteConditions.session.org}">Oficina Nacional de Procesos Electorales © 2026</span>
         </p>
     </div>
 </div>
 
 <script>
-function votingTimer() {
-    return {
-        remaining: 300,
-        formatted: '5:00',
-        init() {
-            // Reset timer each time conditions page loads (server also resets it)
-            sessionStorage.setItem('votingDeadline', Date.now() + 300_000);
-            this.tick();
-            setInterval(() => this.tick(), 1_000);
-        },
-        tick() {
-            const deadline = parseInt(sessionStorage.getItem('votingDeadline') || '0');
-            this.remaining = Math.max(0, Math.round((deadline - Date.now()) / 1_000));
-            const m = Math.floor(this.remaining / 60);
-            const s = this.remaining % 60;
-            this.formatted = m + ':' + String(s).padStart(2, '0');
-            if (this.remaining === 0) {
-                sessionStorage.removeItem('votingDeadline');
-                window.location.href = '/ems/voter/vote/conditions';
+    function votingTimer() {
+        return {
+            remaining: 300,
+            formatted: '5:00',
+            init() {
+                // Reset timer each time conditions page loads (server also resets it)
+                sessionStorage.setItem('votingDeadline', Date.now() + 300_000);
+                this.tick();
+                setInterval(() => this.tick(), 1_000);
+            },
+            tick() {
+                const deadline = parseInt(sessionStorage.getItem('votingDeadline') || '0');
+                this.remaining = Math.max(0, Math.round((deadline - Date.now()) / 1_000));
+                const m = Math.floor(this.remaining / 60);
+                const s = this.remaining % 60;
+                this.formatted = m + ':' + String(s).padStart(2, '0');
+                if (this.remaining === 0) {
+                    sessionStorage.removeItem('votingDeadline');
+                    window.location.href = '/ems/voter/vote/conditions';
+                }
             }
-        }
-    };
-}
-if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 </script>
 </body>
 </html>
