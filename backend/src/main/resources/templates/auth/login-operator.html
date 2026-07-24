@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="#{login.page.title}">Votante - Iniciar Sesión</title>
+    <title>Operador Electoral - Iniciar Sesion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,10 +13,6 @@
     <link rel="stylesheet" th:href="@{/css/estilo.css}">
     <script th:inline="javascript">
         const CTX = /*[[@{/}]]*/ '/';
-        window.__i18n = {
-            validationRequired: /*[[#{login.validation.required}]]*/ 'Este campo es obligatorio',
-            validationDniFormat: /*[[#{login.validation.dni.format}]]*/ 'El DNI debe tener 8 dígitos'
-        };
     </script>
     <script>
         tailwind.config = {
@@ -49,18 +45,12 @@
         errors: {},
         validate() {
             this.errors = {}
-            if (!this.form.dni.trim()) {
-                this.errors.dni = window.__i18n.validationRequired;
-            } else if (!/^\d{8}$/.test(this.form.dni.trim())) {
-                this.errors.dni = window.__i18n.validationDniFormat;
-            }
-            if (!this.form.password.trim()) {
-                this.errors.password = window.__i18n.validationRequired;
-            }
-            return Object.keys(this.errors).length === 0;
+            if (!this.form.dni.trim()) this.errors.dni = 'Este campo es obligatorio'
+            if (!this.form.password.trim()) this.errors.password = 'Este campo es obligatorio'
+            return Object.keys(this.errors).length === 0
         },
         submit() {
-            if (this.validate()) this.$refs.loginForm.submit();
+            if (this.validate()) this.$refs.loginForm.submit()
         }
      }" class="w-full max-w-md">
 
@@ -70,22 +60,15 @@
             <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600/10">
                 <i data-lucide="vote" class="h-7 w-7 text-primary-600"></i>
             </div>
-            <h1 class="text-lg font-bold text-zinc-900" th:text="#{login.header.title}">Sistema Electoral</h1>
-            <p class="mt-1 text-xs text-zinc-400" th:text="#{login.header.subtitle}">Elecciones Generales 2026</p>
+            <h1 class="text-lg font-bold text-zinc-900">Sistema Electoral</h1>
+            <p class="mt-1 text-xs text-zinc-400">Elecciones Generales 2026</p>
         </div>
 
         <div class="mb-6 border-b border-zinc-200 pb-4">
             <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
-                <i data-lucide="user" class="mr-1.5 inline-block h-4 w-4"></i>
-                <span th:text="#{login.section.title}">Inicio de Sesión - Votante</span>
+                <i data-lucide="file-spreadsheet" class="mr-1.5 inline-block h-4 w-4"></i>
+                Inicio de Sesion - Operador Electoral
             </h2>
-        </div>
-
-        <!-- Mensajes de feedback del backend -->
-        <div th:if="${loginSuccess}"
-             class="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
-            <i data-lucide="check-circle" class="h-3.5 w-3.5 shrink-0"></i>
-            <span th:text="${loginSuccess}"></span>
         </div>
 
         <div th:if="${loginError}"
@@ -94,74 +77,57 @@
             <span th:text="${loginError}"></span>
         </div>
 
-        <form x-ref="loginForm" th:action="@{/auth/voter/login}" method="post"
+        <form x-ref="loginForm" th:action="@{/auth/operator/login}" method="post"
               class="flex flex-col gap-6" novalidate>
 
-            <!-- Campo DNI -->
             <div role="group" class="flex flex-col gap-2">
                 <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
-                    <i data-lucide="credit-card" class="h-3.5 w-3.5"></i>
-                    <span th:text="#{login.dni.label}">DNI</span>
+                    <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                    DNI
                 </label>
-                <input id="dni" type="text" name="dni" x-model="form.dni" maxlength="8"
+                <input id="dni" type="text" name="dni" x-model="form.dni"
                        :class="errors.dni ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
-                       th:placeholder="#{login.dni.placeholder}"
-                       placeholder="Ingresa tu DNI (8 dígitos)">
-                <p x-show="errors.dni" x-cloak class="flex items-center gap-1 text-xs text-red-500">
+                       placeholder="Ingresa tu DNI (8 digitos)" maxlength="8">
+                <p x-show="errors.dni" x-cloak x-text="errors.dni"
+                   class="flex items-center gap-1 text-xs text-red-500">
                     <i data-lucide="alert-circle" class="inline-block h-3 w-3"></i>
-                    <span x-text="errors.dni"></span>
                 </p>
             </div>
 
-            <!-- Campo Contraseña -->
             <div role="group" class="flex flex-col gap-2">
                 <label for="password" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="lock" class="h-3.5 w-3.5"></i>
-                    <span th:text="#{login.password.label}">Contraseña</span>
+                    Contrasena
                 </label>
                 <input id="password" type="password" name="password" x-model="form.password"
                        :class="errors.password ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
-                       th:placeholder="#{login.password.placeholder}"
-                       placeholder="Ingresa tu contraseña">
-                <p x-show="errors.password" x-cloak class="flex items-center gap-1 text-xs text-red-500">
+                       placeholder="Ingresa tu contrasena">
+                <p x-show="errors.password" x-cloak x-text="errors.password"
+                   class="flex items-center gap-1 text-xs text-red-500">
                     <i data-lucide="alert-circle" class="inline-block h-3 w-3"></i>
-                    <span x-text="errors.password"></span>
                 </p>
             </div>
 
-            <!-- Botón Submit -->
             <button type="button" @click="submit()"
                     class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
                 <i data-lucide="log-in" class="h-4 w-4"></i>
-                <span th:text="#{login.submit}">Ingresar</span>
+                Ingresar
             </button>
 
-            <!-- Enlaces adicionales -->
-            <div class="flex flex-col items-center gap-2 text-center">
-                <a th:href="@{/activation}"
-                   class="inline-flex items-center gap-1 text-xs text-primary-600 transition-colors hover:text-primary-800 font-medium">
-                    <i data-lucide="user-plus" class="h-3 w-3"></i>
-                    <span th:text="#{login.link.activation}">¿Primera vez? Activa tu cuenta</span>
-                </a>
-                <a th:href="@{/recovery}"
-                   class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
-                    <i data-lucide="key-round" class="h-3 w-3"></i>
-                    <span th:text="#{login.link.recovery}">Olvidé mi contraseña</span>
-                </a>
+            <div class="text-center">
                 <a th:href="@{/participation}"
                    class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
                     <i data-lucide="arrow-left" class="h-3 w-3"></i>
-                    <span th:text="#{login.link.back}">Regresar al inicio</span>
+                    Regresar al inicio
                 </a>
             </div>
 
         </form>
     </div>
 
-    <!-- Pie de página -->
-    <p class="mt-6 text-center text-xs text-white/60" th:text="#{login.footer}">
+    <p class="mt-6 text-center text-xs text-white/60">
         Sistema Electoral - Lima Metropolitana
     </p>
 </div>

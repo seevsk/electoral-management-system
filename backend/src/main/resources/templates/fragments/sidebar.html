@@ -12,7 +12,7 @@
             <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
                 <i data-lucide="vote" class="h-5 w-5"></i>
             </div>
-            <span class="text-sm font-bold">Sistema Electoral</span>
+            <span class="text-sm font-bold" th:text="#{sidebar.app.name}">Sistema Electoral</span>
         </div>
 
         <!-- NOT authenticated: show login dropdown (UX handled by Alpine) -->
@@ -22,7 +22,7 @@
                 <button @click="loginOpen = !loginOpen"
                         class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                     <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
-                    <span class="flex-1 text-left">Iniciar Sesión</span>
+                    <span class="flex-1 text-left" th:text="#{sidebar.login}">Iniciar Sesión</span>
                     <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
                        :class="{ 'rotate-180': loginOpen }"></i>
                 </button>
@@ -38,12 +38,17 @@
                     <a th:href="@{/login/admin}"
                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                         <i data-lucide="shield" class="h-4 w-4"></i>
-                        Administrador
+                        <span th:text="#{sidebar.login.admin}">Administrador</span>
+                    </a>
+                    <a th:href="@{/login/operator}"
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                        <span th:text="#{sidebar.login.operator}">Operador Electoral</span>
                     </a>
                     <a th:href="@{/login/voter}"
                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
                         <i data-lucide="user" class="h-4 w-4"></i>
-                        Votante
+                        <span th:text="#{sidebar.login.voter}">Votante</span>
                     </a>
                 </div>
             </div>
@@ -59,7 +64,7 @@
                 <div class="flex-1 min-w-0">
                     <p class="truncate text-sm font-medium text-white"
                        th:text="${#authentication.name}">Admin</p>
-                    <p class="text-xs text-zinc-400">Administrador</p>
+                    <p class="text-xs text-zinc-400" th:text="#{sidebar.role.admin}">Administrador</p>
                 </div>
             </div>
 
@@ -68,27 +73,27 @@
                 <a th:href="@{/admin/parties}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'parties' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="vote" class="h-4 w-4"></i>
-                    Partidos Políticos
+                    <span th:text="#{sidebar.nav.parties}">Partidos Políticos</span>
                 </a>
                 <a th:href="@{/admin/candidates/list}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'candidates' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="users" class="h-4 w-4"></i>
-                    Candidatos
+                    <span th:text="#{sidebar.nav.candidates}">Candidatos</span>
                 </a>
                 <a th:href="@{/admin/voters}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'voters' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="badge-check" class="h-4 w-4"></i>
-                    Votantes
+                    <span th:text="#{sidebar.nav.voters}">Votantes</span>
                 </a>
                 <a th:href="@{/admin/elections}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'elections' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="calendar-check" class="h-4 w-4"></i>
-                    Elecciones
+                    <span th:text="#{sidebar.nav.elections}">Elecciones</span>
                 </a>
                 <a th:href="@{/admin/reports}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
                     <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
-                    Reportes
+                    <span th:text="#{sidebar.nav.reports}">Reportes</span>
                 </a>
             </nav>
 
@@ -98,7 +103,42 @@
                     <button type="submit"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                         <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
-                        <span class="flex-1 text-left">Cerrar sesión</span>
+                        <span class="flex-1 text-left" th:text="#{sidebar.logout}">Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Authenticated as operator: navigation limited to reports only -->
+        <div sec:authorize="hasRole('OPERATOR')" class="flex flex-1 flex-col">
+            <!-- User info -->
+            <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="truncate text-sm font-medium text-white"
+                       th:text="${#authentication.name}">Operador</p>
+                    <p class="text-xs text-zinc-400" th:text="#{sidebar.role.operator}">Operador Electoral</p>
+                </div>
+            </div>
+
+            <!-- Operator navigation: reports only -->
+            <nav class="flex flex-1 flex-col gap-1">
+                <a th:href="@{/admin/reports}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                    <span th:text="#{sidebar.nav.reports}">Reportes</span>
+                </a>
+            </nav>
+
+            <!-- Logout: real POST to Spring Security logout endpoint -->
+            <div class="border-t border-white/10 pt-4">
+                <form th:action="@{/auth/logout}" method="post">
+                    <button type="submit"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                        <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
+                        <span class="flex-1 text-left" th:text="#{sidebar.logout}">Cerrar sesión</span>
                     </button>
                 </form>
             </div>
@@ -120,7 +160,7 @@
             <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
                 <i data-lucide="vote" class="h-5 w-5"></i>
             </div>
-            <span class="text-sm font-bold">Sistema Electoral</span>
+            <span class="text-sm font-bold" th:text="#{sidebar.app.name}">Sistema Electoral</span>
         </div>
 
         <!-- NOT authenticated (mobile) -->
@@ -130,19 +170,23 @@
                 <button @click="mobileLoginOpen = !mobileLoginOpen"
                         class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                     <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
-                    <span class="flex-1 text-left">Iniciar Sesión</span>
+                    <span class="flex-1 text-left" th:text="#{sidebar.login}">Iniciar Sesión</span>
                     <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
                        :class="{ 'rotate-180': mobileLoginOpen }"></i>
                 </button>
                 <div x-show="mobileLoginOpen"
                      class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-primary-800 p-1.5">
                     <a th:href="@{/login/admin}"
-                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                        <i data-lucide="shield" class="h-4 w-4"></i> Administrador
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="shield" class="h-4 w-4"></i> <span th:text="#{sidebar.login.admin}">Administrador</span>
+                    </a>
+                    <a th:href="@{/login/operator}"
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> <span th:text="#{sidebar.login.operator}">Operador Electoral</span>
                     </a>
                     <a th:href="@{/login/voter}"
-                        class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
-                        <i data-lucide="user" class="h-4 w-4"></i> Votante
+                       class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+                        <i data-lucide="user" class="h-4 w-4"></i> <span th:text="#{sidebar.login.voter}">Votante</span>
                     </a>
                 </div>
             </div>
@@ -157,29 +201,29 @@
                 <div class="flex-1 min-w-0">
                     <p class="truncate text-sm font-medium text-white"
                        th:text="${#authentication.name}">Admin</p>
-                    <p class="text-xs text-zinc-400">Administrador</p>
+                    <p class="text-xs text-zinc-400" th:text="#{sidebar.role.admin}">Administrador</p>
                 </div>
             </div>
             <nav class="flex flex-1 flex-col gap-1">
                 <a th:href="@{/admin/parties}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'parties' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                    <i data-lucide="vote" class="h-4 w-4"></i> Partidos Políticos
+                    <i data-lucide="vote" class="h-4 w-4"></i> <span th:text="#{sidebar.nav.parties}">Partidos Políticos</span>
                 </a>
                 <a th:href="@{/admin/candidates/list}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'candidates' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                    <i data-lucide="users" class="h-4 w-4"></i> Candidatos
+                    <i data-lucide="users" class="h-4 w-4"></i> <span th:text="#{sidebar.nav.candidates}">Candidatos</span>
                 </a>
                 <a th:href="@{/admin/voters}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'voters' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                    <i data-lucide="badge-check" class="h-4 w-4"></i> Votantes
+                    <i data-lucide="badge-check" class="h-4 w-4"></i> <span th:text="#{sidebar.nav.voters}">Votantes</span>
                 </a>
                 <a th:href="@{/admin/elections}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'elections' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                    <i data-lucide="calendar-check" class="h-4 w-4"></i> Elecciones
+                    <i data-lucide="calendar-check" class="h-4 w-4"></i> <span th:text="#{sidebar.nav.elections}">Elecciones</span>
                 </a>
                 <a th:href="@{/admin/reports}"
                    th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
-                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Reportes
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> <span th:text="#{sidebar.nav.reports}">Reportes</span>
                 </a>
             </nav>
             <div class="border-t border-white/10 pt-4">
@@ -187,7 +231,36 @@
                     <button type="submit"
                             class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
                         <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
-                        <span class="flex-1 text-left">Cerrar sesión</span>
+                        <span class="flex-1 text-left" th:text="#{sidebar.logout}">Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Authenticated as operator (mobile): navigation limited to reports only -->
+        <div sec:authorize="hasRole('OPERATOR')" class="flex flex-1 flex-col">
+            <div class="mb-6 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4 text-white"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="truncate text-sm font-medium text-white"
+                       th:text="${#authentication.name}">Operador</p>
+                    <p class="text-xs text-zinc-400" th:text="#{sidebar.role.operator}">Operador Electoral</p>
+                </div>
+            </div>
+            <nav class="flex flex-1 flex-col gap-1">
+                <a th:href="@{/admin/reports}"
+                   th:class="'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' + (activePage == 'reports' ? 'bg-white/10 text-white' : 'text-zinc-400 hover:bg-white/5 hover:text-white')">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> <span th:text="#{sidebar.nav.reports}">Reportes</span>
+                </a>
+            </nav>
+            <div class="border-t border-white/10 pt-4">
+                <form th:action="@{/auth/logout}" method="post">
+                    <button type="submit"
+                            class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                        <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
+                        <span class="flex-1 text-left" th:text="#{sidebar.logout}">Cerrar sesión</span>
                     </button>
                 </form>
             </div>

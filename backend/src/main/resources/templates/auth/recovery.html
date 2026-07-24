@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recuperar contrasena - Sistema Electoral</title>
+    <title th:text="#{recovery.page.title}">Recuperar contraseña - Sistema Electoral</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
     <link rel="stylesheet" th:href="@{/css/estilo.css}">
+    <script th:inline="javascript">
+        const CTX = /*[[@{/}]]*/ '/';
+        window.__i18n = {
+            validationRequired: /*[[#{recovery.validation.required}]]*/ 'Campo obligatorio',
+            validationDniFormat: /*[[#{recovery.validation.dni.format}]]*/ 'Debe tener 8 dígitos'
+        };
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -37,12 +44,15 @@
         errors: {},
         validate() {
             this.errors = {}
-            if (!this.form.dni.trim()) this.errors.dni = 'Campo obligatorio'
-            else if (!/^\d{8}$/.test(this.form.dni.trim())) this.errors.dni = 'Debe tener 8 digitos'
-            return Object.keys(this.errors).length === 0
+            if (!this.form.dni.trim()) {
+                this.errors.dni = window.__i18n.validationRequired;
+            } else if (!/^\d{8}$/.test(this.form.dni.trim())) {
+                this.errors.dni = window.__i18n.validationDniFormat;
+            }
+            return Object.keys(this.errors).length === 0;
         },
         submit() {
-            if (this.validate()) this.$refs.recoveryForm.submit()
+            if (this.validate()) this.$refs.recoveryForm.submit();
         }
      }" class="w-full max-w-md">
 
@@ -53,17 +63,17 @@
             <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600/10">
                 <i data-lucide="key-round" class="h-7 w-7 text-primary-600"></i>
             </div>
-            <h1 class="text-lg font-bold text-zinc-900">Sistema Electoral</h1>
-            <p class="mt-1 text-xs text-zinc-400">Elecciones Generales 2026</p>
+            <h1 class="text-lg font-bold text-zinc-900" th:text="#{recovery.header.title}">Sistema Electoral</h1>
+            <p class="mt-1 text-xs text-zinc-400" th:text="#{recovery.header.subtitle}">Elecciones Generales 2026</p>
         </div>
 
         <div class="mb-5 border-b border-zinc-200 pb-4">
             <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
                 <i data-lucide="refresh-ccw-dot" class="mr-1.5 inline-block h-4 w-4"></i>
-                Recuperar contrasena
+                <span th:text="#{recovery.section.title}">Recuperar contraseña</span>
             </h2>
-            <p class="mt-2 text-center text-xs text-zinc-500">
-                Sigue los pasos para restablecer tu contrasena
+            <p class="mt-2 text-center text-xs text-zinc-500" th:text="#{recovery.section.subtitle}">
+                Sigue los pasos para restablecer tu contraseña
             </p>
         </div>
 
@@ -79,14 +89,15 @@
 
             <!-- DNI -->
             <div class="flex flex-col gap-1.5">
-                <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="credit-card" class="h-3.5 w-3.5"></i>
-                    DNI
+                    <span th:text="#{recovery.form.dni.label}">DNI</span>
                 </label>
-                <input type="text" name="dni" x-model="form.dni" maxlength="8"
+                <input id="dni" type="text" name="dni" x-model="form.dni" maxlength="8"
                        :class="errors.dni ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
-                       placeholder="Ingresa tu DNI (8 digitos)">
+                       th:placeholder="#{recovery.form.dni.placeholder}"
+                       placeholder="Ingresa tu DNI (8 dígitos)">
                 <p x-show="errors.dni" x-cloak x-text="errors.dni" class="text-xs text-red-500"></p>
             </div>
 
@@ -94,7 +105,7 @@
             <button type="button" @click="submit()"
                     class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
                 <i data-lucide="search" class="h-4 w-4"></i>
-                Verificar datos
+                <span th:text="#{recovery.form.submit}">Verificar datos</span>
             </button>
 
             <!-- Links -->
@@ -102,14 +113,14 @@
                 <a th:href="@{/login/voter}"
                    class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
                     <i data-lucide="arrow-left" class="h-3 w-3"></i>
-                    Volver al inicio de sesion
+                    <span th:text="#{recovery.link.login}">Volver al inicio de sesión</span>
                 </a>
             </div>
 
         </form>
     </div>
 
-    <p class="mt-6 text-center text-xs text-white/60">Sistema Electoral - Lima Metropolitana</p>
+    <p class="mt-6 text-center text-xs text-white/60" th:text="#{recovery.footer}">Sistema Electoral - Lima Metropolitana</p>
 </div>
 
 <script>

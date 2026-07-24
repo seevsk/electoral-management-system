@@ -43,6 +43,24 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public Account authenticateOperator(String dni, String password) {
+        Account account = accountRepository.findByDni(dni)
+                .orElseThrow(() -> new BusinessRuleException("Credenciales incorrectas"));
+
+        if (!"operator".equals(account.getRole()))
+            throw new BusinessRuleException("Credenciales incorrectas");
+
+        if (!account.getIsActive())
+            throw new BusinessRuleException("La cuenta de operador está desactivada");
+
+        if (account.getPasswordHash() == null
+                || !passwordEncoder.matches(password, account.getPasswordHash()))
+            throw new BusinessRuleException("Credenciales incorrectas");
+
+        return account;
+    }
+
+    @Override
     public Account authenticateVoter(String dni, String password) {
         Account account = accountRepository.findByDni(dni)
                 .orElseThrow(() -> new BusinessRuleException("Credenciales incorrectas"));

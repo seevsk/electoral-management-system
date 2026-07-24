@@ -40,6 +40,7 @@ public class SecurityConfig {
                     "/css/**", "/js/**", "/images/**", "/webjars/**",
                     "/error"
                 ).permitAll()
+                .requestMatchers("/admin/reports/**").hasAnyRole("ADMIN", "OPERATOR")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/voter/**", "/vote/**").hasRole("USER")
                 .anyRequest().permitAll()
