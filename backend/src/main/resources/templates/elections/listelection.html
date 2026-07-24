@@ -15,6 +15,13 @@
 
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Elecciones</li>
+                </ol>
+            </div>
+
             <!-- Page Header -->
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -48,7 +55,8 @@
                 <!-- Search bar -->
                 <div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
                     <i data-lucide="search" class="h-4 w-4 shrink-0 text-zinc-400"></i>
-                    <input x-model="search" type="text" placeholder="Buscar por nombre o tipo..."
+                    <label for="search-elections" class="sr-only">Buscar elección</label>
+                    <input id="search-elections" x-model.debounce.300ms="search" type="text" placeholder="Buscar por nombre o tipo..."
                            class="h-8 w-full min-w-0 border-0 bg-transparent px-0 py-1 text-sm outline-none placeholder:text-zinc-400 focus:ring-0">
                 </div>
 

@@ -12,6 +12,13 @@
     <main class="flex-1 pl-0 md:pl-60">
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Votantes</li>
+                </ol>
+            </div>
+
             <!-- Header -->
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -45,7 +52,8 @@
                 <!-- Search bar -->
                 <div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
                     <i data-lucide="search" class="h-4 w-4 shrink-0 text-zinc-400"></i>
-                    <input x-model="search" type="text"
+                    <label for="search-voters" class="sr-only">Buscar votante</label>
+                    <input id="search-voters" x-model.debounce.300ms="search" type="text"
                            placeholder="Buscar por nombre, DNI, departamento, provincia o distrito..."
                            class="h-8 w-full min-w-0 border-0 bg-transparent px-0 py-1 text-sm outline-none placeholder:text-zinc-400 focus:ring-0">
                 </div>

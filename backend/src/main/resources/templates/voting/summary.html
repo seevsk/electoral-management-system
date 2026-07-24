@@ -82,9 +82,9 @@
                     <i th:if="${selectedEntry.candidatePhotoUrl == null}"
                        data-lucide="user"
                        class="absolute inset-0 m-auto h-10 w-10 text-zinc-400"></i>
-                    <!-- Red X overlay -->
-                    <div class="absolute inset-0 flex items-center justify-center bg-primary-600/60">
-                        <i data-lucide="x" class="h-8 w-8 text-white drop-shadow"></i>
+                    <!-- Selection overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center bg-primary-600/60 rounded-xl">
+                        <i data-lucide="check" class="h-8 w-8 text-white drop-shadow"></i>
                     </div>
                 </div>
                 <div>
@@ -102,20 +102,23 @@
         </div>
 
         <!-- Action bar -->
-        <div class="mt-6 flex items-center justify-between">
+        <div class="mt-6 flex items-center justify-between" x-data="{ confirming: false }">
             <a th:href="@{/voter/vote/ballot}"
                class="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 hover:text-zinc-700">
                 <i data-lucide="arrow-left" class="h-4 w-4"></i>
                 <span th:text="#{voteSummary.action.changeSelection}">Cambiar selección</span>
             </a>
 
-            <form method="post" th:action="@{/voter/vote/confirm}">
+            <form method="post" th:action="@{/voter/vote/confirm}" @submit="confirming = true">
                 <input type="hidden" name="candidateId" th:value="${selectedCandidateId}">
                 <input type="hidden" name="electionId" th:value="${election.id}">
-                <button type="submit"
-                        class="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                    <i data-lucide="check-circle" class="h-4 w-4"></i>
-                    <span th:text="#{voteSummary.action.confirm}">Confirmar Voto</span>
+                <button type="submit" :disabled="confirming"
+                        class="flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                        :class="confirming ? 'bg-primary-500' : 'bg-primary-600 hover:bg-primary-700'">
+                    <svg x-show="confirming" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <i x-show="!confirming" data-lucide="check-circle" class="h-4 w-4"></i>
+                    <span x-text="confirming ? 'Confirmando...' : ''" x-show="confirming"></span>
+                    <span x-show="!confirming" th:text="#{voteSummary.action.confirm}">Confirmar Voto</span>
                 </button>
             </form>
         </div>

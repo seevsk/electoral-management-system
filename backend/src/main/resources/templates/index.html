@@ -86,7 +86,7 @@
                       hoveredDistrict: '',
                       mapError: '',
                       mapLoading: false,
-                      sortBy: 'participacion-desc',
+                      sortBy: 'todos',
                      currentPage: 1,
                      pageSize: 9,
                      totNacional: 0,
@@ -111,7 +111,7 @@
                         return [...new Set(this.locations.filter(l => l.department === this.selectedDepartment).map(l => l.province))].sort();
                     },
 
-                     get filteredDistricts() {
+                      get filteredDistricts() {
                          const items = this.districts.filter(item => {
                              if (this.selectedDepartment && item.department !== this.selectedDepartment) return false;
                              if (this.selectedProvince && item.province !== this.selectedProvince) return false;
@@ -120,10 +120,12 @@
                         });
 
                         const sorted = [...items];
-                        if (this.sortBy === 'alfabetico') sorted.sort((a, b) => a.name.localeCompare(b.name));
-                        if (this.sortBy === 'participacion-desc') sorted.sort((a, b) => b.pct - a.pct);
-                        if (this.sortBy === 'participacion-asc') sorted.sort((a, b) => a.pct - b.pct);
-                         if (this.sortBy === 'electores-desc') sorted.sort((a, b) => b.total - a.total);
+                        if (this.sortBy === 'todos') {
+                            sorted.sort((a, b) => a.name.localeCompare(b.name));
+                        } else if (this.sortBy === 'alfabetico') sorted.sort((a, b) => a.name.localeCompare(b.name));
+                        else if (this.sortBy === 'participacion-desc') sorted.sort((a, b) => b.pct - a.pct);
+                        else if (this.sortBy === 'participacion-asc') sorted.sort((a, b) => a.pct - b.pct);
+                        else if (this.sortBy === 'electores-desc') sorted.sort((a, b) => b.total - a.total);
                          return sorted;
                      },
 
@@ -131,7 +133,7 @@
                          return Math.ceil(this.filteredDistricts.length / this.pageSize);
                      },
 
-                     get pagedDistricts() {
+                      get pagedDistricts() {
                          if (this.selectedLocationCode) return this.filteredDistricts;
                          const start = (this.currentPage - 1) * this.pageSize;
                          return this.filteredDistricts.slice(start, start + this.pageSize);
@@ -457,11 +459,18 @@
                          this.syncSelectedDistrictStyle();
                      },
 
-                     onDistrictChange() {
-                         this.currentPage = 1;
-                         this.updateChart();
-                         this.syncSelectedDistrictStyle();
-                     },
+                      onDistrictChange() {
+                          this.currentPage = 1;
+                          this.updateChart();
+                          this.syncSelectedDistrictStyle();
+                          if (this.selectedLocationCode) {
+                              const loc = this.locations.find(l => l.locationCode === this.selectedLocationCode);
+                              const item = loc ? this.districts.find(d => d.code === loc.locationCode) : null;
+                              if (item) this.focusDistrict(item);
+                          } else {
+                              this.focusFullMap();
+                          }
+                      },
 
                      selectDistrict(item) {
                          this.selectedDepartment = item.department;
@@ -652,11 +661,18 @@
                         <div class="flex items-center gap-2">
                             <label for="ordenarDistritos" class="whitespace-nowrap text-xs text-zinc-500" th:text="#{districts.sort.label}">Ordenar por:</label>
                             <select id="ordenarDistritos" x-model="sortBy" @change="currentPage = 1" class="h-10 w-52 border-0 border-b-2 border-zinc-200 bg-transparent px-0 py-1 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                <option value="todos" th:text="#{districts.sort.all}">Todos los distritos</option>
                                 <option value="participacion-desc" th:text="#{districts.sort.participation.desc}">Mayor participación</option>
                                 <option value="participacion-asc" th:text="#{districts.sort.participation.asc}">Menor participación</option>
                                 <option value="alfabetico" th:text="#{districts.sort.alphabetical}">Alfabéticamente</option>
                                 <option value="electores-desc" th:text="#{districts.sort.electors.desc}">Mayor cantidad de electores</option>
                             </select>
+                            <button type="button" x-show="selectedLocationCode" x-transition
+                                    @click="limpiar()"
+                                    class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 ring-1 ring-inset ring-red-500/20 hover:bg-red-100 transition-colors cursor-pointer shrink-0">
+                                <i data-lucide="x" class="h-3 w-3"></i>
+                                Limpiar
+                            </button>
                         </div>
                     </div>
 
@@ -755,6 +771,7 @@
         districtEmitted: /*[[#{districts.card.emitted}]]*/ 'Emitidos',
         districtPending: /*[[#{districts.card.pending}]]*/ 'Pendientes',
         districtParticipation: /*[[#{districts.card.participation}]]*/ 'Participación',
+        sortAll: /*[[#{districts.sort.all}]]*/ 'Todos los distritos',
         pagShowing: /*[[#{pagination.showing}]]*/ 'Mostrando',
         pagOf: /*[[#{pagination.of}]]*/ 'de',
         pagDistricts: /*[[#{pagination.districts}]]*/ 'distritos'

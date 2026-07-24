@@ -13,6 +13,14 @@
 
         <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
 
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/candidates/list}" class="transition-colors hover:text-primary-600">Candidatos</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Actualizar</li>
+                </ol>
+            </div>
+
             <div class="mb-8">
                 <h1 class="font-heading text-3xl font-semibold text-zinc-900">Actualizar Candidato</h1>
                 <p class="mt-1 text-sm text-zinc-500">Modifique los datos del candidato seleccionado</p>
@@ -39,7 +47,7 @@
                     </div>
                 </div>
 
-                <form th:action="@{/admin/candidates/update/{id}(id=${candidate.id})}" th:object="${candidate}" method="post" enctype="multipart/form-data" class="flex flex-col gap-6">
+                <form th:action="@{/admin/candidates/update/{id}(id=${candidate.id})}" th:object="${candidate}" method="post" enctype="multipart/form-data" class="flex flex-col gap-6" x-data="{ submitting: false }" @submit="submitting = true">
 
                     <div class="grid gap-6 lg:grid-cols-2">
                         <div class="rounded-lg border border-zinc-100 bg-zinc-50/50 p-4 lg:col-span-2">
@@ -66,7 +74,7 @@
                         <div role="group" class="flex w-full flex-col gap-2">
                             <label for="partyId" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                                 <i data-lucide="vote" class="h-3.5 w-3.5"></i>
-                                Partido activo
+                                Partido activo <span class="text-red-500">*</span>
                             </label>
                             <select id="partyId" th:field="*{partyId}" required
                                     class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-600">
@@ -79,7 +87,7 @@
                         <div role="group" class="flex w-full flex-col gap-2">
                             <label for="electionId" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                                 <i data-lucide="calendar-range" class="h-3.5 w-3.5"></i>
-                                Elección presidencial disponible
+                                Elección presidencial disponible <span class="text-red-500">*</span>
                             </label>
                             <select id="electionId" th:field="*{electionId}" required
                                     class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-600">
@@ -92,7 +100,7 @@
                         <div role="group" class="flex w-full flex-col gap-2">
                             <label for="listNumber" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                                 <i data-lucide="list" class="h-3.5 w-3.5"></i>
-                                Número de lista
+                                Número de lista <span class="text-red-500">*</span>
                             </label>
                             <input id="listNumber" type="number" th:field="*{listNumber}" required min="1"
                                    class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-primary-600">
@@ -142,10 +150,12 @@
                     </div>
 
                     <div class="flex flex-wrap gap-3 pt-2">
-                        <button type="submit"
-                                class="inline-flex items-center gap-2 rounded-lg bg-primary-700 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
-                            <i data-lucide="save" class="h-4 w-4"></i>
-                            Actualizar
+                        <button type="submit" :disabled="submitting"
+                                class="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                                :class="submitting ? 'bg-primary-600' : 'bg-primary-700 hover:bg-primary-800'">
+                            <svg x-show="submitting" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <i x-show="!submitting" data-lucide="save" class="h-4 w-4"></i>
+                            <span x-text="submitting ? 'Guardando...' : 'Actualizar'"></span>
                         </button>
                         <a th:href="@{/admin/candidates/list}"
                            class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">

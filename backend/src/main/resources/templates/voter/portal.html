@@ -72,6 +72,19 @@
                     Regresa en esa fecha y horario para ejercer tu derecho al voto. Tu participación es fundamental para la democracia.
                 </p>
 
+                <!-- Mi local de votación -->
+                <a th:href="@{/voter/voting-location}"
+                   class="mt-6 flex items-center gap-4 rounded-xl border border-primary-200 bg-primary-50 px-5 py-4 text-left transition-colors hover:bg-primary-100">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-600/10">
+                        <i data-lucide="map-pin" class="h-5 w-5 text-primary-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-primary-800">Mi local de votación</p>
+                        <p class="text-xs text-primary-500">Consulta dónde te corresponde votar</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="h-4 w-4 shrink-0 text-primary-400"></i>
+                </a>
+
             </div>
 
             <!-- Footer con logout -->
@@ -131,6 +144,19 @@
                     Estimado(a) elector(a), queremos informarle que su voto ha sido emitido
                     satisfactoriamente. Gracias por ejercer su derecho democrático.
                 </p>
+
+                <!-- Mi local de votación -->
+                <a th:href="@{/voter/voting-location}"
+                   class="mt-6 flex items-center gap-4 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-left transition-colors hover:bg-emerald-100">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-600/10">
+                        <i data-lucide="map-pin" class="h-5 w-5 text-emerald-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-emerald-800">Mi local de votación</p>
+                        <p class="text-xs text-emerald-500">Consulta dónde te corresponde votar</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="h-4 w-4 shrink-0 text-emerald-400"></i>
+                </a>
 
             </div>
 
