@@ -12,6 +12,14 @@
     <main class="flex-1 pl-0 md:pl-60">
         <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
 
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/voters}" class="transition-colors hover:text-primary-600">Votantes</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Actualizar</li>
+                </ol>
+            </div>
+
             <div class="mb-8">
                 <h1 class="font-heading text-3xl font-semibold text-zinc-900">Actualizar Votante</h1>
                 <p class="mt-1 text-sm text-zinc-500">Modifique los datos del votante seleccionado</p>

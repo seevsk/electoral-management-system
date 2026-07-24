@@ -13,6 +13,14 @@
 
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/candidates/list}" class="transition-colors hover:text-primary-600">Candidatos</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Estado</li>
+                </ol>
+            </div>
+
             <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="font-heading text-3xl font-semibold text-zinc-900">Estado de Candidatos</h1>
@@ -191,10 +199,12 @@
                             </div>
                         </div>
                         <div class="mt-6 flex gap-3">
-                            <a :href="confirmUrl"
-                               class="flex-1 rounded-lg bg-primary-700 px-4 py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
-                                Sí, confirmar
-                            </a>
+                            <form :action="confirmUrl" method="post" class="flex-1">
+                                <button type="submit"
+                                        class="w-full rounded-lg bg-primary-700 px-4 py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                                    Sí, confirmar
+                                </button>
+                            </form>
                             <button @click="confirmUrl = null"
                                     class="flex-1 rounded-lg border border-zinc-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
                                 Cancelar

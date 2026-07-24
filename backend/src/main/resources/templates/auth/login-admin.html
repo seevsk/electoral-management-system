@@ -43,14 +43,22 @@
 <div x-data="{
         form: { dni: '', password: '' },
         errors: {},
+        submitting: false,
         validate() {
             this.errors = {}
-            if (!this.form.dni.trim()) this.errors.dni = 'Este campo es obligatorio'
+            if (!this.form.dni.trim()) {
+                this.errors.dni = 'Este campo es obligatorio'
+            } else if (!/^\d{8}$/.test(this.form.dni.trim())) {
+                this.errors.dni = 'El DNI debe tener 8 dígitos'
+            }
             if (!this.form.password.trim()) this.errors.password = 'Este campo es obligatorio'
             return Object.keys(this.errors).length === 0
         },
         submit() {
-            if (this.validate()) this.$refs.loginForm.submit()
+            if (this.validate()) {
+                this.submitting = true
+                this.$refs.loginForm.submit()
+            }
         }
      }" class="w-full max-w-md">
 
@@ -83,9 +91,9 @@
             <div role="group" class="flex flex-col gap-2">
                 <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="user" class="h-3.5 w-3.5"></i>
-                    DNI
+                    DNI <span class="text-red-500">*</span>
                 </label>
-                <input id="dni" type="text" name="dni" x-model="form.dni"
+                <input id="dni" type="text" name="dni" x-model="form.dni" inputmode="numeric" autocomplete="username"
                        :class="errors.dni ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
                        placeholder="Ingresa tu DNI (8 digitos)" maxlength="8">
@@ -98,9 +106,9 @@
             <div role="group" class="flex flex-col gap-2">
                 <label for="password" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
                     <i data-lucide="lock" class="h-3.5 w-3.5"></i>
-                    Contrasena
+                    Contrasena <span class="text-red-500">*</span>
                 </label>
-                <input id="password" type="password" name="password" x-model="form.password"
+                <input id="password" type="password" name="password" x-model="form.password" autocomplete="current-password"
                        :class="errors.password ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
                        class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
                        placeholder="Ingresa tu contrasena">
@@ -110,10 +118,12 @@
                 </p>
             </div>
 
-            <button type="button" @click="submit()"
-                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
-                <i data-lucide="log-in" class="h-4 w-4"></i>
-                Ingresar
+            <button type="button" @click="submit()" :disabled="submitting"
+                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    :class="submitting ? 'bg-primary-600' : 'bg-primary-700 hover:bg-primary-800'">
+                <svg x-show="submitting" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <i x-show="!submitting" data-lucide="log-in" class="h-4 w-4"></i>
+                <span x-text="submitting ? 'Ingresando...' : 'Ingresar'"></span>
             </button>
 
             <div class="text-center">
