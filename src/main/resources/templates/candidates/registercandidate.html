@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Candidatos - Registrar</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='candidates')}"></div>
+
+    <main class="flex-1 pl-0 md:pl-60">
+
+        <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/candidates/list}" class="transition-colors hover:text-primary-600">Candidatos</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Registrar</li>
+                </ol>
+            </div>
+
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Registrar Candidato</h1>
+                <p class="mt-1 text-sm text-zinc-500">Complete los datos del nuevo candidato</p>
+            </div>
+
+            <div th:if="${successMessage}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-emerald-600/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
+                <i data-lucide="check-circle" class="h-5 w-5 shrink-0 text-emerald-600"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <div th:if="${errorMessage}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-red-600/20 bg-red-500/5 p-4 text-sm text-red-600">
+                <i data-lucide="alert-circle" class="h-5 w-5 shrink-0 text-red-600"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                <div class="mb-5 rounded-lg border border-blue-600/20 bg-blue-500/5 p-3">
+                    <div class="flex items-start gap-2 text-xs text-blue-700">
+                        <i data-lucide="info" class="mt-0.5 h-4 w-4 shrink-0"></i>
+                        <span>El representante del partido se asignará automáticamente al guardar el candidato.</span>
+                    </div>
+                </div>
+
+                <form th:action="@{/admin/candidates/register}" method="get" class="mb-6 rounded-lg border border-zinc-100 bg-zinc-50/50 p-4">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                        <div class="flex-1">
+                            <label for="query" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-600">Buscar votante elegible</label>
+                            <input id="query" name="query" th:value="${query}" type="text"
+                                   placeholder="Buscar por nombre, apellido o DNI"
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                        </div>
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                            <i data-lucide="search" class="h-4 w-4"></i>
+                            Buscar
+                        </button>
+                    </div>
+                </form>
+
+                <form th:action="@{/admin/candidates/register}" th:object="${candidate}" method="post" enctype="multipart/form-data" class="flex flex-col gap-6" x-data="{ submitting: false }" @submit="submitting = true">
+
+                    <div class="grid gap-6 lg:grid-cols-2">
+                        <div role="group" class="flex w-full flex-col gap-2 lg:col-span-2">
+                            <label for="voterId" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="badge-check" class="h-3.5 w-3.5"></i>
+                                Votante elegible <span class="text-red-500">*</span>
+                            </label>
+                            <select id="voterId" th:field="*{voterId}" required
+                                    class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-600">
+                                <option value="">Seleccione un votante</option>
+                                <option th:each="voter : ${voters}" th:value="${voter.id}"
+                                        th:text="${voter.fullName + ' - DNI ' + voter.account.dni}"></option>
+                            </select>
+                            <p class="text-xs text-zinc-400">Solo se muestran votantes activos con cuenta activa.</p>
+                        </div>
+
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="partyId" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="vote" class="h-3.5 w-3.5"></i>
+                                Partido activo <span class="text-red-500">*</span>
+                            </label>
+                            <select id="partyId" th:field="*{partyId}" required
+                                    class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-600">
+                                <option value="">Seleccione un partido</option>
+                                <option th:each="party : ${parties}" th:value="${party.id}"
+                                        th:text="${party.name + ' (' + party.acronym + ')'}"></option>
+                            </select>
+                        </div>
+
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="electionId" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="calendar-range" class="h-3.5 w-3.5"></i>
+                                Elección presidencial disponible <span class="text-red-500">*</span>
+                            </label>
+                            <select id="electionId" th:field="*{electionId}" required
+                                    class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors focus:border-primary-600">
+                                <option value="">Seleccione una elección</option>
+                                <option th:each="election : ${elections}" th:value="${election.id}"
+                                        th:text="${election.name + ' - ' + election.year}"></option>
+                            </select>
+                        </div>
+
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="listNumber" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="list" class="h-3.5 w-3.5"></i>
+                                Número de lista <span class="text-red-500">*</span>
+                            </label>
+                            <input id="listNumber" type="number" th:field="*{listNumber}" required min="1"
+                                   placeholder="Ingrese el número de lista"
+                                   class="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-primary-600">
+                        </div>
+
+                        <div role="group" class="flex w-full flex-col gap-2 lg:col-span-2">
+                            <label for="photoFile" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="image" class="h-3.5 w-3.5"></i>
+                                Foto del candidato
+                            </label>
+                            <div class="flex items-center gap-3">
+                                <label class="cursor-pointer rounded-lg border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
+                                    <span>Seleccionar archivo</span>
+                                    <input id="photoFile" name="photoFile" type="file" accept="image/*"
+                                           class="hidden"
+                                           onchange="document.getElementById('candidate-photo-file-name').textContent = this.files[0]?.name || 'Ningún archivo seleccionado'">
+                                </label>
+                                <span id="candidate-photo-file-name" class="text-xs text-zinc-400">Ningún archivo seleccionado</span>
+                            </div>
+                            <p class="text-xs text-zinc-400">Si no sube una imagen, la foto quedará vacía.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit" :disabled="submitting"
+                                class="inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                                :class="submitting ? 'bg-primary-600' : 'bg-primary-700 hover:bg-primary-800'">
+                            <svg x-show="submitting" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <i x-show="!submitting" data-lucide="save" class="h-4 w-4"></i>
+                            <span x-text="submitting ? 'Guardando...' : 'Guardar'"></span>
+                        </button>
+                        <a th:href="@{/admin/candidates/list}"
+                           class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                            <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                            Regresar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+
+</body>
+</html>

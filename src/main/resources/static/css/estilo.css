@@ -1,0 +1,88 @@
+/* ============================================
+   Sistema Electoral - Custom Styles
+   ============================================ */
+
+@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+
+/* Transiciones globales */
+* {
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Animación de carga para barras de progreso */
+.animate-progress {
+    animation: progress-fill 1.2s ease-out forwards;
+}
+
+@keyframes progress-fill {
+    from {
+        width: 0;
+    }
+}
+
+/* Placeholder para mapa */
+.map-placeholder {
+    background: linear-gradient(135deg, #e8edf3 0%, #c5d1e0 100%);
+}
+
+/* Alpine.js: ocultar elementos antes de la hidratación */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Leaflet */
+.leaflet-container {
+    z-index: 0 !important;
+    background: #f8fafc;
+    font-family: inherit;
+}
+
+.leaflet-pane,
+.leaflet-map-pane,
+.leaflet-tile-pane,
+.leaflet-overlay-pane,
+.leaflet-marker-pane,
+.leaflet-tooltip-pane,
+.leaflet-popup-pane {
+    z-index: 1 !important;
+}
+
+.leaflet-control-container {
+    z-index: 10 !important;
+}
+
+#limaMap,
+.lima-map-container {
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.main-navbar,
+header,
+nav {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+}
+
+.participation-tooltip {
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}

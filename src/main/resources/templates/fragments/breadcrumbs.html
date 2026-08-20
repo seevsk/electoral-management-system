@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="breadcrumbs(items)" aria-label="Breadcrumb" class="mb-6">
+    <nav class="flex items-center gap-1 text-xs text-zinc-400">
+        <i data-lucide="home" class="h-3 w-3"></i>
+        <th:block th:each="item, iter : ${items}">
+            <span th:if="${!iter.last}" class="flex items-center gap-1">
+                <a th:href="${item.href}" class="transition-colors hover:text-primary-600" th:text="${item.label}"></a>
+                <i data-lucide="chevron-right" class="h-3 w-3"></i>
+            </span>
+            <span th:if="${iter.last}" class="font-medium text-zinc-600" th:text="${item.label}"></span>
+        </th:block>
+    </nav>
+</div>
+
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Votantes - Listado</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='voters')}"></div>
+
+    <main class="flex-1 pl-0 md:pl-60">
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Votantes</li>
+                </ol>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 class="font-heading text-3xl font-semibold text-zinc-900">Votantes</h1>
+                    <p class="mt-1 text-sm text-zinc-500">Listado de votantes registrados</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a th:href="@{/admin/voters/register}"
+                       class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                        <i data-lucide="plus" class="h-4 w-4"></i>
+                        Registrar Votante
+                    </a>
+                    <a th:href="@{/admin/voters/status}"
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                        <i data-lucide="toggle-left" class="h-4 w-4"></i>
+                        Estado
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div th:if="${successMessage}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-emerald-600/20 bg-emerald-500/5 p-4 text-sm text-emerald-700">
+                <i data-lucide="check-circle" class="h-5 w-5 shrink-0 text-emerald-600"></i>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Search + Table -->
+            <div x-data="{ search: '' }" class="rounded-xl border border-zinc-200 bg-white shadow-sm">
+
+                <!-- Search bar -->
+                <div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
+                    <i data-lucide="search" class="h-4 w-4 shrink-0 text-zinc-400"></i>
+                    <label for="search-voters" class="sr-only">Buscar votante</label>
+                    <input id="search-voters" x-model.debounce.300ms="search" type="text"
+                           placeholder="Buscar por nombre, DNI, departamento, provincia o distrito..."
+                           class="h-8 w-full min-w-0 border-0 bg-transparent px-0 py-1 text-sm outline-none placeholder:text-zinc-400 focus:ring-0">
+                </div>
+
+                <!-- Desktop table -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                        <tr class="border-b border-zinc-100 bg-zinc-50/50">
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Nombre Completo</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">DNI Cuenta</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Departamento</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Provincia</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Distrito</th>
+                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Estado</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-zinc-500">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(voters)}">
+                            <td colspan="7" class="px-4 py-12 text-center">
+                                <div class="flex flex-col items-center gap-2">
+                                    <i data-lucide="inbox" class="h-10 w-10 text-zinc-300"></i>
+                                    <p class="text-sm text-zinc-500">No se encontraron votantes.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:each="voter : ${voters}"
+                            x-show="search === '' || $el.textContent.toLowerCase().includes(search.toLowerCase())"
+                            class="border-b border-zinc-50 transition-colors hover:bg-zinc-50">
+                            <td class="px-4 py-4 font-medium text-zinc-900"
+                                th:text="|${voter.firstSurname} ${voter.secondSurname} ${voter.fullName}|"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.account.dni}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.department}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.province}"></td>
+                            <td class="px-4 py-4 text-zinc-600" th:text="${voter.district}"></td>
+                            <td class="px-4 py-4">
+                                <span th:if="${voter.status == 'A'}"
+                                      class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                                    Activo
+                                </span>
+                                <span th:unless="${voter.status == 'A'}"
+                                      class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600">
+                                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                    Inactivo
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <a th:href="@{/admin/voters/update/{id}(id=${voter.id})}"
+                                   class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
+                                    <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
+                                    Actualizar
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile cards -->
+                <div class="block md:hidden">
+                    <div th:if="${#lists.isEmpty(voters)}" class="p-6 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <i data-lucide="inbox" class="h-10 w-10 text-zinc-300"></i>
+                            <p class="text-sm text-zinc-500">No se encontraron votantes.</p>
+                        </div>
+                    </div>
+                    <div th:each="voter : ${voters}"
+                         x-show="search === '' || $el.textContent.toLowerCase().includes(search.toLowerCase())"
+                         class="border-b border-zinc-100 p-4 last:border-b-0">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <p class="text-sm font-semibold text-zinc-900"
+                                   th:text="|${voter.firstSurname} ${voter.secondSurname} ${voter.fullName}|"></p>
+                                <p class="mt-0.5 text-xs text-zinc-500">
+                                    DNI: <span th:text="${voter.account.dni}"></span>
+                                </p>
+                                <p class="mt-0.5 text-xs text-zinc-500">
+                                    <span th:text="${voter.department}"></span>
+                                    <span class="mx-1">·</span>
+                                    <span th:text="${voter.province}"></span>
+                                    <span class="mx-1">·</span>
+                                    <span th:text="${voter.district}"></span>
+                                </p>
+                            </div>
+                            <span th:if="${voter.status == 'A'}"
+                                  class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                                <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                                Activo
+                            </span>
+                            <span th:unless="${voter.status == 'A'}"
+                                  class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-600">
+                                <span class="inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                Inactivo
+                            </span>
+                        </div>
+                        <div class="mt-3 flex justify-end">
+                            <a th:href="@{/admin/voters/update/{id}(id=${voter.id})}"
+                               class="inline-flex items-center gap-1 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
+                                <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
+                                Actualizar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer count -->
+                <div class="border-t border-zinc-100 px-4 py-3 text-xs text-zinc-400">
+                    Mostrando <span th:text="${#lists.size(voters)}"></span> votante(s) registrado(s)
+                </div>
+
+            </div>
+
+            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

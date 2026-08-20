@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{votinglocation.page.title}">Local de Votacion - Sistema Electoral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#e8edf3', 100: '#c5d1e0', 200: '#9eb3cc',
+                            300: '#7795b8', 400: '#5a7ea8', 500: '#3d6799',
+                            600: '#2d5280', 700: '#1e3a5f', 800: '#152d4a', 900: '#0d1f33',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 flex items-center justify-center p-4">
+
+<!-- Textos i18n usados dinámicamente en JS/Alpine (validaciones del formulario) -->
+<script th:inline="javascript">
+    window.__i18n = {
+        validationRequired: /*[[#{votinglocation.validation.required}]]*/ 'Campo obligatorio',
+        validationDniFormat: /*[[#{votinglocation.validation.dni.format}]]*/ 'Debe tener 8 digitos'
+    };
+</script>
+
+<div class="w-full max-w-md">
+    <div class="rounded-2xl bg-white px-8 py-10 shadow-2xl">
+
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600/10">
+                <i data-lucide="map-pin" class="h-7 w-7 text-primary-600"></i>
+            </div>
+            <h1 class="text-lg font-bold text-zinc-900" th:text="#{votinglocation.header.title}">Sistema Electoral</h1>
+            <p class="mt-1 text-xs text-zinc-400" th:text="#{votinglocation.header.subtitle}">Elecciones Generales 2026</p>
+        </div>
+
+        <!-- ══════════════ RESULTADO ══════════════ -->
+        <div th:if="${result}">
+
+            <div class="mb-5 border-b border-zinc-200 pb-4">
+                <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
+                    <i data-lucide="circle-check" class="mr-1.5 inline-block h-4 w-4"></i>
+                    <span th:text="#{votinglocation.result.section.title}">Informacion de Votacion</span>
+                </h2>
+            </div>
+
+            <!-- Nombre del votante -->
+            <div class="mb-5">
+                <p class="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    <i data-lucide="user" class="h-3.5 w-3.5"></i> <span th:text="#{votinglocation.result.voter.label}">Votante</span>
+                </p>
+                <p class="text-base font-bold text-zinc-900" th:text="${result.voterFullName}"></p>
+            </div>
+
+            <div class="mb-5 border-t border-zinc-100 pt-5">
+                <!-- Nombre del local -->
+                <p class="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    <i data-lucide="building-2" class="h-3.5 w-3.5"></i> <span th:text="#{votinglocation.result.location.label}">Local de Votacion</span>
+                </p>
+                <p class="text-base font-bold leading-snug text-primary-700"
+                   th:text="${result.locationName}"></p>
+
+                <!-- Dirección -->
+                <p class="mt-3 mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    <i data-lucide="map-pin" class="h-3.5 w-3.5"></i> <span th:text="#{votinglocation.result.address.label}">Direccion</span>
+                </p>
+                <p class="text-sm text-zinc-700" th:text="${result.locationAddress}"></p>
+
+                <!-- Distrito -->
+                <p class="mt-3 mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    <i data-lucide="map" class="h-3.5 w-3.5"></i> <span th:text="#{votinglocation.result.district.label}">Distrito</span>
+                </p>
+                <p class="text-sm font-semibold text-primary-600" th:text="${result.district}"></p>
+            </div>
+
+            <!-- Card: Mesa de Votacion -->
+            <div class="mb-6">
+                <div class="rounded-xl bg-primary-50 px-5 py-4 text-center">
+                    <p class="mb-1 flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                        <i data-lucide="clipboard-list" class="h-3.5 w-3.5"></i> <span th:text="#{votinglocation.result.table.label}">Mesa de Votacion</span>
+                    </p>
+                    <p class="text-3xl font-bold text-primary-700"
+                       th:text="${result.tableNumber}"></p>
+                </div>
+            </div>
+
+            <!-- Solo volver al inicio -->
+            <div class="text-center">
+                <a th:href="@{/participation}"
+                   class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
+                    <i data-lucide="arrow-left" class="h-3 w-3"></i>
+                    <span th:text="#{votinglocation.result.back}">Volver al inicio</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ══════════════ FORMULARIO ══════════════ -->
+        <div th:if="${result == null}"
+             x-data="{
+                form: { dni: '' },
+                errors: {},
+                i18n: window.__i18n || {},
+                validate() {
+                    this.errors = {}
+                    if (!this.form.dni.trim()) this.errors.dni = this.i18n.validationRequired || 'Campo obligatorio'
+                    else if (!/^\d{8}$/.test(this.form.dni.trim())) this.errors.dni = this.i18n.validationDniFormat || 'Debe tener 8 digitos'
+                    return Object.keys(this.errors).length === 0
+                },
+                submit() {
+                    if (this.validate()) this.$refs.lookupForm.submit()
+                }
+             }">
+
+            <div class="mb-5 border-b border-zinc-200 pb-4">
+                <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
+                    <i data-lucide="search" class="mr-1.5 inline-block h-4 w-4"></i>
+                    <span th:text="#{votinglocation.form.section.title}">Consulta tu Local de Votacion</span>
+                </h2>
+                <p class="mt-2 text-center text-xs text-zinc-500" th:text="#{votinglocation.form.section.subtitle}">
+                    Ingresa tu DNI para conocer donde votas el dia de las elecciones
+                </p>
+            </div>
+
+            <!-- Error -->
+            <div th:if="${lookupError}"
+                 class="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+                <i data-lucide="alert-circle" class="h-3.5 w-3.5 shrink-0"></i>
+                <span th:text="${lookupError}"></span>
+            </div>
+
+            <form x-ref="lookupForm" th:action="@{/voting-location}" method="get"
+                  class="flex flex-col gap-6" novalidate>
+
+                <!-- DNI -->
+                <div class="flex flex-col gap-1.5">
+                    <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                        <i data-lucide="credit-card" class="h-3.5 w-3.5"></i>
+                        <span th:text="#{votinglocation.form.dni.label}">DNI</span>
+                    </label>
+                    <input type="text" name="dni"
+                           x-model="form.dni"
+                           th:value="${dni}"
+                           maxlength="8"
+                           :class="errors.dni ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                           class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                           th:placeholder="#{votinglocation.form.dni.placeholder}"
+                           placeholder="Ingresa tu DNI (8 digitos)">
+                    <p x-show="errors.dni" x-cloak x-text="errors.dni" class="text-xs text-red-500"></p>
+                </div>
+
+                <!-- Submit -->
+                <button type="button" @click="submit()"
+                        class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary-700 px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                    <i data-lucide="search" class="h-4 w-4"></i>
+                    <span th:text="#{votinglocation.form.submit}">Consultar local</span>
+                </button>
+
+                <!-- Volver al inicio -->
+                <div class="text-center">
+                    <a th:href="@{/participation}"
+                       class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
+                        <i data-lucide="arrow-left" class="h-3 w-3"></i>
+                        <span th:text="#{votinglocation.form.back}">Volver al inicio</span>
+                    </a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <p class="mt-6 text-center text-xs text-white/60" th:text="#{votinglocation.footer}">Sistema Electoral - Lima Metropolitana</p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+</body>
+</html>

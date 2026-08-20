@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{activation.page.title}">Activar cuenta - Sistema Electoral</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+    <script th:inline="javascript">
+        const CTX = /*[[@{/}]]*/ '/';
+        window.__i18n = {
+            validationRequired: /*[[#{activation.validation.required}]]*/ 'Campo obligatorio',
+            validationDniFormat: /*[[#{activation.validation.dni.format}]]*/ 'Debe tener 8 dígitos',
+            validationUbigeoFormat: /*[[#{activation.validation.ubigeo.format}]]*/ 'Debe tener 6 dígitos',
+            validationPasswordLength: /*[[#{activation.validation.password.length}]]*/ 'Mínimo 8 caracteres',
+            validationPasswordMismatch: /*[[#{activation.validation.password.mismatch}]]*/ 'Las contraseñas no coinciden'
+        };
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        primary: {
+                            50: '#e8edf3', 100: '#c5d1e0', 200: '#9eb3cc',
+                            300: '#7795b8', 400: '#5a7ea8', 500: '#3d6799',
+                            600: '#2d5280', 700: '#1e3a5f', 800: '#152d4a', 900: '#0d1f33',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 flex items-center justify-center p-4">
+
+<div x-data="{
+        form: { dni: '', birthDate: '', dniExpiryDate: '', locationCode: '', password: '', confirmPassword: '' },
+        errors: {},
+        validate() {
+            this.errors = {}
+            if (!this.form.dni.trim()) {
+                this.errors.dni = window.__i18n.validationRequired;
+            } else if (!/^\d{8}$/.test(this.form.dni.trim())) {
+                this.errors.dni = window.__i18n.validationDniFormat;
+            }
+
+            if (!this.form.birthDate) {
+                this.errors.birthDate = window.__i18n.validationRequired;
+            }
+
+            if (!this.form.dniExpiryDate) {
+                this.errors.dniExpiryDate = window.__i18n.validationRequired;
+            }
+
+            if (!this.form.locationCode.trim()) {
+                this.errors.locationCode = window.__i18n.validationRequired;
+            } else if (!/^\d{6}$/.test(this.form.locationCode.trim())) {
+                this.errors.locationCode = window.__i18n.validationUbigeoFormat;
+            }
+
+            if (!this.form.password) {
+                this.errors.password = window.__i18n.validationRequired;
+            } else if (this.form.password.length < 8) {
+                this.errors.password = window.__i18n.validationPasswordLength;
+            }
+
+            if (!this.form.confirmPassword) {
+                this.errors.confirmPassword = window.__i18n.validationRequired;
+            } else if (this.form.password !== this.form.confirmPassword) {
+                this.errors.confirmPassword = window.__i18n.validationPasswordMismatch;
+            }
+
+            return Object.keys(this.errors).length === 0;
+        },
+        submitting: false,
+        submit() {
+            if (this.validate()) {
+                this.submitting = true;
+                this.$refs.activationForm.submit();
+            }
+        }
+     }" class="w-full max-w-lg">
+
+    <div class="rounded-2xl bg-white px-8 py-10 shadow-2xl">
+
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary-600/10">
+                <i data-lucide="user-check" class="h-7 w-7 text-primary-600"></i>
+            </div>
+            <h1 class="text-lg font-bold text-zinc-900" th:text="#{activation.header.title}">Sistema Electoral</h1>
+            <p class="mt-1 text-xs text-zinc-400" th:text="#{activation.header.subtitle}">Elecciones Generales 2026</p>
+        </div>
+
+        <div class="mb-5 border-b border-zinc-200 pb-4">
+            <h2 class="text-center text-sm font-semibold uppercase tracking-wider text-primary-700">
+                <i data-lucide="shield-check" class="mr-1.5 inline-block h-4 w-4"></i>
+                <span th:text="#{activation.section.title}">Activación de cuenta - Verificación de identidad</span>
+            </h2>
+        </div>
+
+        <!-- Error block -->
+        <div th:if="${activationError}"
+             class="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">
+            <i data-lucide="alert-circle" class="h-3.5 w-3.5 shrink-0"></i>
+            <span th:text="${activationError}"></span>
+        </div>
+
+        <form x-ref="activationForm" th:action="@{/auth/voter/activation}" method="post"
+              class="flex flex-col gap-4" novalidate>
+
+            <!-- DNI -->
+            <div class="flex flex-col gap-1.5">
+                <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    <i data-lucide="credit-card" class="h-3.5 w-3.5"></i>
+                    <span th:text="#{activation.form.dni.label}">DNI</span> <span class="text-red-500">*</span>
+                </label>
+                <input id="dni" type="text" name="dni" x-model="form.dni" maxlength="8" inputmode="numeric" autocomplete="username"
+                       :class="errors.dni ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                       class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                       th:placeholder="#{activation.form.dni.placeholder}"
+                       placeholder="8 dígitos">
+                <p x-show="errors.dni" x-cloak x-text="errors.dni" class="text-xs text-red-500"></p>
+            </div>
+
+            <!-- Dates row -->
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Birth date -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="birthDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                        <i data-lucide="calendar" class="h-3.5 w-3.5"></i>
+                        <span th:text="#{activation.form.birthdate.label}">Fecha de nacimiento</span> <span class="text-red-500">*</span>
+                    </label>
+                    <input id="birthDate" type="date" name="birthDate" x-model="form.birthDate"
+                           :class="errors.birthDate ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                           class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors text-zinc-600">
+                    <p x-show="errors.birthDate" x-cloak x-text="errors.birthDate" class="text-xs text-red-500"></p>
+                </div>
+
+                <!-- DNI expiry date -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="dniExpiryDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                        <i data-lucide="calendar-x" class="h-3.5 w-3.5"></i>
+                        <span th:text="#{activation.form.dniexpiry.label}">Vencimiento DNI</span> <span class="text-red-500">*</span>
+                    </label>
+                    <input id="dniExpiryDate" type="date" name="dniExpiryDate" x-model="form.dniExpiryDate"
+                           :class="errors.dniExpiryDate ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                           class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors text-zinc-600">
+                    <p x-show="errors.dniExpiryDate" x-cloak x-text="errors.dniExpiryDate" class="text-xs text-red-500"></p>
+                </div>
+            </div>
+
+            <!-- Location code -->
+            <div class="flex flex-col gap-1.5">
+                <label for="locationCode" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    <i data-lucide="map-pin" class="h-3.5 w-3.5"></i>
+                    <span th:text="#{activation.form.ubigeo.label}">Ubigeo (código de distrito)</span> <span class="text-red-500">*</span>
+                    <span class="relative group ml-1">
+                        <i data-lucide="help-circle" class="h-3.5 w-3.5 text-zinc-400 cursor-help"></i>
+                        <span class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-64 -translate-x-1/2 rounded-lg border border-zinc-200 bg-white p-3 text-xs text-zinc-600 shadow-lg opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                            El <strong>ubigeo</strong> es el código de 6 dígitos que identifica tu distrito. Lo encuentras en tu DNI o en la página de la RENIEC.<br><br>
+                            Ejemplos:<br>
+                            <span class="font-mono text-zinc-800">140101</span> - Lima<br>
+                            <span class="font-mono text-zinc-800">070101</span> - Callao<br>
+                            <span class="font-mono text-zinc-800">150101</span> - Lima (distrito)
+                        </span>
+                    </span>
+                </label>
+                <input id="locationCode" type="text" name="locationCode" x-model="form.locationCode" maxlength="6" inputmode="numeric"
+                       :class="errors.locationCode ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                       class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                       th:placeholder="#{activation.form.ubigeo.placeholder}"
+                       placeholder="Ej: 140101">
+                <p x-show="errors.locationCode" x-cloak x-text="errors.locationCode" class="text-xs text-red-500"></p>
+            </div>
+
+            <!-- Password row -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label for="password" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                        <i data-lucide="lock" class="h-3.5 w-3.5"></i>
+                        <span th:text="#{activation.form.password.label}">Nueva contraseña</span> <span class="text-red-500">*</span>
+                    </label>
+                    <input id="password" type="password" name="password" x-model="form.password" autocomplete="new-password"
+                           :class="errors.password ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                           class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                           th:placeholder="#{activation.form.password.placeholder}"
+                           placeholder="Mín. 8 caracteres">
+                    <p x-show="errors.password" x-cloak x-text="errors.password" class="text-xs text-red-500"></p>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="confirmPassword" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                        <i data-lucide="lock-keyhole" class="h-3.5 w-3.5"></i>
+                        <span th:text="#{activation.form.confirmpassword.label}">Confirmar</span> <span class="text-red-500">*</span>
+                    </label>
+                    <input id="confirmPassword" type="password" name="confirmPassword" x-model="form.confirmPassword" autocomplete="new-password"
+                           :class="errors.confirmPassword ? 'border-b-red-500' : 'border-b-zinc-200 focus:border-b-primary-600'"
+                           class="h-10 w-full border-0 border-b-2 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400"
+                           th:placeholder="#{activation.form.confirmpassword.placeholder}"
+                           placeholder="Repite la contraseña">
+                    <p x-show="errors.confirmPassword" x-cloak x-text="errors.confirmPassword" class="text-xs text-red-500"></p>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="button" @click="submit()" :disabled="submitting"
+                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-wider text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                    :class="submitting ? 'bg-primary-600' : 'bg-primary-700 hover:bg-primary-800'">
+                <svg x-show="submitting" class="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <i x-show="!submitting" data-lucide="user-check" class="h-4 w-4"></i>
+                <span x-text="submitting ? 'Activando...' : ''" x-show="submitting"></span>
+                <span x-show="!submitting" th:text="#{activation.form.submit}">Activar mi cuenta</span>
+            </button>
+
+            <!-- Links -->
+            <div class="flex flex-col items-center gap-2 text-center">
+                <a th:href="@{/login/voter}"
+                   class="inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-primary-600">
+                    <i data-lucide="arrow-left" class="h-3 w-3"></i>
+                    <span th:text="#{activation.link.login}">Ya tengo cuenta. Iniciar sesión</span>
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+    <p class="mt-6 text-center text-xs text-white/60" th:text="#{activation.footer}">Sistema Electoral - Lima Metropolitana</p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Votantes - Registrar</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='voters')}"></div>
+
+    <main class="flex-1 pl-0 md:pl-60">
+        <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/voters}" class="transition-colors hover:text-primary-600">Votantes</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Registrar</li>
+                </ol>
+            </div>
+
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Registrar Votante</h1>
+                <p class="mt-1 text-sm text-zinc-500">Complete los datos del nuevo votante</p>
+            </div>
+
+            <!-- Error Message -->
+            <div th:if="${errorMessage}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-red-600/20 bg-red-500/5 p-4 text-sm text-red-600">
+                <i data-lucide="alert-circle" class="h-5 w-5 shrink-0 text-red-600"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <!-- Script con datos de ubicaciones -->
+            <script th:inline="javascript">
+                const locationsData = /*[[${locationsJson}]]*/ [];
+                const adminApiBase = /*[[@{/admin/api}]]*/ '/admin/api';
+            </script>
+
+            <!-- Form Card -->
+            <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
+                 x-data="{
+                    locations: locationsData,
+                    selectedDepartment: '',
+                    selectedProvince: '',
+                    selectedLocationCode: '',
+                    votingLocations: [],
+                    selectedVotingLocationId: '',
+                    votingTables: [],
+                    selectedVotingTableId: '',
+                    get departments() {
+                        return [...new Set(this.locations.map(l => l.department))].sort();
+                    },
+                    get provinces() {
+                        if (!this.selectedDepartment) return [];
+                        return [...new Set(
+                            this.locations
+                                .filter(l => l.department === this.selectedDepartment)
+                                .map(l => l.province)
+                        )].sort();
+                    },
+                    get districts() {
+                        if (!this.selectedProvince) return [];
+                        return this.locations.filter(l =>
+                            l.department === this.selectedDepartment &&
+                            l.province === this.selectedProvince
+                        );
+                    },
+                    onDepartmentChange() {
+                        this.selectedProvince = '';
+                        this.selectedLocationCode = '';
+                        this.resetVotingAssignment();
+                    },
+                    onProvinceChange() {
+                        this.selectedLocationCode = '';
+                        this.resetVotingAssignment();
+                    },
+                    onDistrictChange(locationCode) {
+                        this.selectedLocationCode = locationCode;
+                        this.resetVotingAssignment();
+                        if (locationCode) this.fetchVotingLocations(locationCode);
+                    },
+                    onVotingLocationChange(locationId) {
+                        this.selectedVotingLocationId = locationId;
+                        this.votingTables = [];
+                        this.selectedVotingTableId = '';
+                        if (locationId) this.fetchVotingTables(locationId);
+                    },
+                    resetVotingAssignment() {
+                        this.votingLocations = [];
+                        this.selectedVotingLocationId = '';
+                        this.votingTables = [];
+                        this.selectedVotingTableId = '';
+                    },
+                    async fetchVotingLocations(locationCode) {
+                        const res = await fetch(adminApiBase + '/voting-locations?locationCode=' + locationCode);
+                        this.votingLocations = await res.json();
+                    },
+                    async fetchVotingTables(locationId) {
+                        const res = await fetch(adminApiBase + '/voting-tables?locationId=' + locationId);
+                        this.votingTables = await res.json();
+                    }
+                 }">
+
+                <form th:action="@{/admin/voters/register}" th:object="${voter}" method="post" class="flex flex-col gap-6">
+
+                    <!-- Cuenta (DNI) -->
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label for="dni" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="id-card" class="h-3.5 w-3.5"></i>
+                            DNI
+                        </label>
+                        <input id="dni" type="text" name="dni" required
+                               minlength="8" maxlength="8" pattern="[0-9]{8}" title="Ingrese exactamente 8 dígitos"
+                               placeholder="Ingrese el DNI del votante"
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                    </div>
+
+                    <!-- Nombres y Apellidos -->
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="firstSurname" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                                Primer Apellido
+                            </label>
+                            <input id="firstSurname" type="text" th:field="*{firstSurname}" required
+                                   placeholder="Primer apellido"
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                        </div>
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="secondSurname" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                                Segundo Apellido
+                            </label>
+                            <input id="secondSurname" type="text" th:field="*{secondSurname}" required
+                                   placeholder="Segundo apellido"
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                        </div>
+                    </div>
+
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label for="nombresInput" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="user" class="h-3.5 w-3.5"></i>
+                            Nombres
+                        </label>
+                        <input id="nombresInput" type="text" th:field="*{fullName}" required
+                               placeholder="Nombres del votante"
+                               class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-b-primary-600">
+                    </div>
+
+                    <!-- Género y Estado Civil -->
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="gender" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="users" class="h-3.5 w-3.5"></i>
+                                Género
+                            </label>
+                            <select id="gender" th:field="*{gender}" required
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                <option value="">Seleccione</option>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="maritalStatus" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="heart" class="h-3.5 w-3.5"></i>
+                                Estado Civil
+                            </label>
+                            <select id="maritalStatus" th:field="*{maritalStatus}" required
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                <option value="">Seleccione</option>
+                                <option value="S">Soltero/a</option>
+                                <option value="C">Casado/a</option>
+                                <option value="D">Divorciado/a</option>
+                                <option value="V">Viudo/a</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fechas -->
+                    <div class="grid gap-6 sm:grid-cols-2">
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="birthDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="calendar" class="h-3.5 w-3.5"></i>
+                                Fecha de Nacimiento
+                            </label>
+                            <input id="birthDate" type="date" th:field="*{birthDate}" required
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                        </div>
+                        <div role="group" class="flex w-full flex-col gap-2">
+                            <label for="dniExpiryDate" class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="calendar-x" class="h-3.5 w-3.5"></i>
+                                Vencimiento DNI
+                            </label>
+                            <input id="dniExpiryDate" type="date" th:field="*{dniExpiryDate}" required
+                                   class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                        </div>
+                    </div>
+
+                    <!-- Ubigeo -->
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="map-pin" class="h-3.5 w-3.5"></i>
+                            Ubigeo
+                        </label>
+                        <div class="grid gap-4 sm:grid-cols-3">
+
+                            <!-- Departamento -->
+                            <select x-model="selectedDepartment" @change="onDepartmentChange()" required
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600">
+                                <option value="">Departamento</option>
+                                <template x-for="dept in departments" :key="dept">
+                                    <option :value="dept" x-text="dept"></option>
+                                </template>
+                            </select>
+
+                            <!-- Provincia -->
+                            <select x-model="selectedProvince" @change="onProvinceChange()" required
+                                    :disabled="!selectedDepartment"
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                <option value="">Provincia</option>
+                                <template x-for="prov in provinces" :key="prov">
+                                    <option :value="prov" x-text="prov"></option>
+                                </template>
+                            </select>
+
+                            <!-- Distrito -->
+                            <select name="locationCode" required
+                                    :disabled="!selectedProvince"
+                                    @change="onDistrictChange($event.target.value)"
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                <option value="">Distrito</option>
+                                <template x-for="loc in districts" :key="loc.locationCode">
+                                    <option :value="loc.locationCode" x-text="loc.district"></option>
+                                </template>
+                            </select>
+
+                        </div>
+                    </div>
+
+                    <!-- Local de Votación -->
+                    <div role="group" class="flex w-full flex-col gap-2">
+                        <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="building-2" class="h-3.5 w-3.5"></i>
+                            Local de Votación
+                        </label>
+                        <div class="grid gap-4 sm:grid-cols-2">
+
+                            <select required
+                                    :disabled="votingLocations.length === 0"
+                                    @change="onVotingLocationChange($event.target.value)"
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                <option value="">Seleccione local</option>
+                                <template x-for="vl in votingLocations" :key="vl.id">
+                                    <option :value="vl.id" x-text="vl.name"></option>
+                                </template>
+                            </select>
+
+                            <select name="votingTableId" required
+                                    :disabled="votingTables.length === 0"
+                                    x-model="selectedVotingTableId"
+                                    class="h-10 w-full border-0 border-b-2 border-zinc-200 bg-transparent px-0 text-sm outline-none transition-colors focus:border-b-primary-600 disabled:opacity-40">
+                                <option value="">Seleccione mesa</option>
+                                <template x-for="vt in votingTables" :key="vt.id">
+                                    <option :value="vt.id" x-text="vt.tableNumber"></option>
+                                </template>
+                            </select>
+
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-lg bg-primary-700 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            <i data-lucide="save" class="h-4 w-4"></i>
+                            Guardar
+                        </button>
+                        <a th:href="@{/admin/voters/list}"
+                           class="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-6 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                            <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                            Regresar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+package com.ems.backend.controller;
+
+import com.ems.backend.entity.Location;
+import com.ems.backend.entity.Voter;
+import com.ems.backend.entity.VoterAssignment;
+import com.ems.backend.repository.AccountRepository;
+import com.ems.backend.repository.LocationRepository;
+import com.ems.backend.repository.VoterAssignmentRepository;
+import com.ems.backend.repository.VotingTableRepository;
+import com.ems.backend.service.VoterService;
+import com.ems.backend.service.exception.BusinessRuleException;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Controller
+@RequestMapping("/admin/voters")
+public class VoterController {
+
+    private final VoterService voterService;
+    private final AccountRepository accountRepository;
+    private final LocationRepository locationRepository;
+    private final VoterAssignmentRepository voterAssignmentRepository;
+    private final VotingTableRepository votingTableRepository;
+
+    public VoterController(VoterService voterService,
+                           AccountRepository accountRepository,
+                           LocationRepository locationRepository,
+                           VoterAssignmentRepository voterAssignmentRepository,
+                           VotingTableRepository votingTableRepository) {
+        this.voterService = voterService;
+        this.accountRepository = accountRepository;
+        this.locationRepository = locationRepository;
+        this.voterAssignmentRepository = voterAssignmentRepository;
+        this.votingTableRepository = votingTableRepository;
+    }
+
+    @GetMapping
+    public String redirectToList() {return "redirect:/admin/voters/list";}
+
+    @GetMapping("/list")
+    public String listVoters(Model model){
+        List<Voter> voters = voterService.findAllActive();
+
+        List<Map<String, Object>> enrichedVoters = voters.stream()
+                .map(voter -> {
+                    Map<String, Object> enriched = new HashMap<>();
+                    enriched.put("id", voter.getId());
+                    enriched.put("fullName", voter.getFullName());
+                    enriched.put("firstSurname", voter.getFirstSurname());
+                    enriched.put("secondSurname", voter.getSecondSurname());
+                    enriched.put("status", voter.getStatus());
+                    enriched.put("account", voter.getAccount());
+
+                    Location location = locationRepository.findById(voter.getLocationCode()).orElse(null);
+                    enriched.put("department", location != null ? location.getDepartment() : "N/A");
+                    enriched.put("province", location != null ? location.getProvince() : "N/A");
+                    enriched.put("district", location != null ? location.getDistrict() : "N/A");
+
+                    return enriched;
+                })
+                .collect(Collectors.toList());
+
+        model.addAttribute("voters", enrichedVoters);
+        return "voters/listvoter";
+    }
+
+    @GetMapping("/register")
+    public String showRegisterForm(Model model) {
+        model.addAttribute("voter", new Voter());
+        model.addAttribute("locationsJson", buildLocationsJson());
+        // Ya se neceista el accounts en el modelo
+        return "voters/registervoter";
+    }
+
+    @PostMapping("/register")
+    public String registerVoter(
+            @Valid @ModelAttribute Voter voter,
+            BindingResult bindingResult,
+            @RequestParam("dni") String dni,
+            @RequestParam(value = "votingTableId", required = false) Integer votingTableId,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.hasFieldErrors()
+                    ? bindingResult.getFieldErrors().get(0).getDefaultMessage()
+                    : bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("errorMessage", msg);
+            return "redirect:/admin/voters/register";
+        }
+        try {
+            voterService.save(voter, dni, votingTableId);
+            redirectAttributes.addFlashAttribute("successMessage", "Votante registrado correctamente.");
+            return "redirect:/admin/voters/list";
+        } catch (BusinessRuleException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/admin/voters/register";
+        }
+    }
+    @GetMapping("/update/{id}")
+    public String showUpdateForm(@PathVariable Integer id, Model model) {
+        Voter voter = voterService.findById(id);
+        Location currentLocation = locationRepository.findById(voter.getLocationCode()).orElse(null);
+
+        VoterAssignment assignment = voterAssignmentRepository.findByVoter_Id(id).orElse(null);
+        Integer currentVotingTableId = null;
+        Integer currentVotingLocationId = null;
+        if (assignment != null) {
+            currentVotingTableId = assignment.getVotingTableId();
+            currentVotingLocationId = votingTableRepository.findById(currentVotingTableId)
+                    .map(vt -> vt.getVotingLocationId()).orElse(null);
+        }
+
+        model.addAttribute("currentDepartment", currentLocation != null ? currentLocation.getDepartment() : "");
+        model.addAttribute("currentProvince", currentLocation != null ? currentLocation.getProvince() : "");
+        model.addAttribute("currentLocationCode", voter.getLocationCode());
+        model.addAttribute("currentVotingLocationId", currentVotingLocationId);
+        model.addAttribute("currentVotingTableId", currentVotingTableId);
+        model.addAttribute("voter", voter);
+        model.addAttribute("accounts", accountRepository.findAll());
+        model.addAttribute("locationsJson", buildLocationsJson());
+
+        return "voters/updatevoter";
+    }
+
+    @PostMapping("/update/{id}")
+    public String updateVoter(
+            @PathVariable Integer id,
+            @Valid @ModelAttribute Voter voter,
+            BindingResult bindingResult,
+            @RequestParam(value = "votingTableId", required = false) Integer votingTableId,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.hasFieldErrors()
+                    ? bindingResult.getFieldErrors().get(0).getDefaultMessage()
+                    : bindingResult.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("errorMessage", msg);
+            return "redirect:/admin/voters/update/" + id;
+        }
+        try {
+            voterService.update(id, voter, votingTableId);
+            redirectAttributes.addFlashAttribute("successMessage", "Votante actualizado correctamente.");
+            return "redirect:/admin/voters/list";
+        } catch (BusinessRuleException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/admin/voters/update/" + id;
+        }
+    }
+
+    @GetMapping("/status")
+    public String showStatusPanel(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "50") int size,
+            @RequestParam(defaultValue = "")   String search,
+            @RequestParam(defaultValue = "")   String statusFilter,
+            Model model) {
+
+        int safeSize = (size < 1 || size > 100) ? 50 : size;
+        Page<Voter> voterPage = voterService.findPaginated(page, safeSize, search, statusFilter);
+
+        long totalItems  = voterPage.getTotalElements();
+        int  currentPage = voterPage.getNumber();
+        int  itemsFrom   = totalItems == 0 ? 0 : currentPage * safeSize + 1;
+        long itemsTo     = Math.min((long)(currentPage + 1) * safeSize, totalItems);
+
+        model.addAttribute("voters",       voterPage.getContent());
+        model.addAttribute("currentPage",  currentPage);
+        model.addAttribute("totalPages",   voterPage.getTotalPages());
+        model.addAttribute("totalItems",   totalItems);
+        model.addAttribute("itemsFrom",    itemsFrom);
+        model.addAttribute("itemsTo",      itemsTo);
+        model.addAttribute("pageSize",     safeSize);
+        model.addAttribute("search",       search);
+        model.addAttribute("statusFilter", statusFilter);
+        model.addAttribute("pageNumbers",  buildPageWindow(currentPage, voterPage.getTotalPages()));
+        return "voters/disablevoter";
+    }
+
+    private List<Integer> buildPageWindow(int current, int total) {
+        if (total <= 1) return List.of();
+        var pages = new LinkedHashSet<Integer>();
+        pages.add(0);
+        for (int i = Math.max(0, current - 2); i <= Math.min(total - 1, current + 2); i++) pages.add(i);
+        pages.add(total - 1);
+        var result = new ArrayList<Integer>();
+        int prev = -2;
+        for (int p : pages) {
+            if (prev >= 0 && p - prev > 1) result.add(-1);
+            result.add(p);
+            prev = p;
+        }
+        return result;
+    }
+
+    @GetMapping("/disable/{id}")
+    public String disableVoter(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        voterService.disable(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Votante deshabilitado correctamente.");
+        return "redirect:/admin/voters/status";
+    }
+
+    @GetMapping("/enable/{id}")
+    public String enableVoter(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        voterService.enable(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Votante habilitado correctamente.");
+        return "redirect:/admin/voters/status";
+    }
+
+    /** Construye la lista de ubicaciones en formato JSON para los selectores anidados del formulario */
+    private List<Map<String, String>> buildLocationsJson() {
+        return locationRepository.findAll().stream()
+                .map(l -> {
+                    Map<String, String> map = new HashMap<>();
+                    map.put("locationCode", l.getLocationCode());
+                    map.put("department", l.getDepartment());
+                    map.put("province", l.getProvince());
+                    map.put("district", l.getDistrict());
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
+}

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Elecciones - Programar</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <!-- SIDEBAR -->
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='elections')}"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 pl-0 md:pl-60">
+
+        <div class="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <div aria-label="Breadcrumb" class="mb-6">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="flex items-center gap-1"><a th:href="@{/admin/elections/list}" class="transition-colors hover:text-primary-600">Elecciones</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
+                    <li class="font-medium text-zinc-600">Programar</li>
+                </ol>
+            </div>
+
+            <!-- Page Header -->
+            <div class="mb-6">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Programar Elección</h1>
+                <p class="mt-1 text-sm text-zinc-500">Configura los datos del nuevo proceso electoral</p>
+            </div>
+
+            <!-- Error block -->
+            <div th:if="${electionError}"
+                 class="mb-6 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                <i data-lucide="alert-circle" class="h-5 w-5 shrink-0"></i>
+                <span th:text="${electionError}"></span>
+            </div>
+
+            <!-- Form card -->
+            <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+
+                <form th:action="@{/admin/elections/register}" method="post"
+                      th:object="${electionDto}" class="flex flex-col gap-5" novalidate>
+
+                    <!-- Nombre -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="type" class="h-3.5 w-3.5"></i>
+                            Nombre de la Elección
+                        </label>
+                        <input type="text" th:field="*{name}" maxlength="200"
+                               class="h-10 w-full rounded-lg border border-zinc-200 bg-transparent px-3 text-sm outline-none transition-colors placeholder:text-zinc-400 focus:border-primary-600 focus:ring-0"
+                               placeholder="Ej: Elecciones Generales Presidenciales 2026">
+                    </div>
+
+                    <!-- Tipo + Año (2 columns) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Tipo -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="landmark" class="h-3.5 w-3.5"></i>
+                                Tipo de Elección
+                            </label>
+                            <select th:field="*{electionType}" disabled
+                                    class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                <option value="PRESIDENCIAL">PRESIDENCIAL</option>
+                            </select>
+                            <input type="hidden" name="electionType" value="PRESIDENCIAL">
+                        </div>
+
+                        <!-- Año -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="calendar" class="h-3.5 w-3.5"></i>
+                                Año
+                            </label>
+                            <select th:field="*{year}"
+                                    class="h-10 w-full rounded-lg border border-zinc-200 bg-transparent px-3 text-sm outline-none transition-colors focus:border-primary-600 focus:ring-0">
+                                <option value="">Seleccionar año</option>
+                                <option th:each="y : ${years}" th:value="${y}" th:text="${y}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Fechas (2 columns) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Fecha inicio -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="calendar-plus" class="h-3.5 w-3.5"></i>
+                                Fecha de Inicio
+                            </label>
+                            <input type="datetime-local" th:field="*{startDate}"
+                                   class="h-10 w-full rounded-lg border border-zinc-200 bg-transparent px-3 text-sm text-zinc-600 outline-none transition-colors focus:border-primary-600 focus:ring-0">
+                            <p class="text-xs text-zinc-400">Incluye hora (ej. 07:00)</p>
+                        </div>
+
+                        <!-- Fecha cierre -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                                <i data-lucide="calendar-x" class="h-3.5 w-3.5"></i>
+                                Fecha de Cierre
+                            </label>
+                            <input type="datetime-local" th:field="*{endDate}"
+                                   class="h-10 w-full rounded-lg border border-zinc-200 bg-transparent px-3 text-sm text-zinc-600 outline-none transition-colors focus:border-primary-600 focus:ring-0">
+                            <p class="text-xs text-zinc-400">Incluye hora (ej. 17:00)</p>
+                        </div>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                            <i data-lucide="activity" class="h-3.5 w-3.5"></i>
+                            Estado Inicial
+                        </label>
+                        <select th:field="*{status}"
+                                class="h-10 w-full rounded-lg border border-zinc-200 bg-transparent px-3 text-sm outline-none transition-colors focus:border-primary-600 focus:ring-0">
+                            <option value="">Seleccionar estado</option>
+                            <option value="P">Pendiente — se activará manualmente</option>
+                            <option value="A">Activo — inicia de inmediato</option>
+                        </select>
+                        <div class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                            <i data-lucide="info" class="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5"></i>
+                            <p class="text-xs text-amber-700">
+                                Solo puede existir <strong>una elección Activa</strong> a la vez. El sistema la marcará
+                                como Completada automáticamente al finalizar el horario de votación.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex items-center justify-end gap-3 border-t border-zinc-100 pt-4">
+                        <a th:href="@{/admin/elections/list}"
+                           class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                            Cancelar
+                        </a>
+                        <button type="submit"
+                                class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            <i data-lucide="calendar-check" class="h-4 w-4"></i>
+                            Programar
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-8 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+
+</body>
+</html>

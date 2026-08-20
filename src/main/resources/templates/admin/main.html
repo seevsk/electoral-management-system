@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}">
+    <title>Módulos - Sistema Electoral</title>
+</head>
+<body class="min-h-screen bg-zinc-50">
+
+<div class="flex min-h-svh">
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <div th:replace="~{fragments/sidebar :: sidebar(activePage='inicio')}"></div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="flex-1 pl-0 md:pl-60">
+
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+            <!-- Page Header -->
+            <div class="mb-8">
+                <h1 class="font-heading text-3xl font-semibold text-zinc-900">Módulos del Sistema</h1>
+                <p class="mt-1 text-sm text-zinc-500">Panel principal de gestión electoral</p>
+            </div>
+
+            <!-- ==================== MODULE CARDS GRID ==================== -->
+            <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+                <!-- Card: Partidos Políticos (Activo) -->
+                <div class="group rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600/10">
+                        <i data-lucide="vote" class="h-6 w-6 text-primary-600"></i>
+                    </div>
+                    <h3 class="mb-1 text-lg font-semibold text-zinc-900">Partidos Políticos</h3>
+                    <p class="mb-4 text-sm text-zinc-500">Gestión de partidos políticos y candidatos electorales</p>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                            Activo
+                        </span>
+                        <a th:href="@{/admin/parties}"
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            Acceder
+                            <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card: Elecciones (Activo) -->
+                <div class="group rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600/10">
+                        <i data-lucide="calendar-check" class="h-6 w-6 text-primary-600"></i>
+                    </div>
+                    <h3 class="mb-1 text-lg font-semibold text-zinc-900">Elecciones</h3>
+                    <p class="mb-4 text-sm text-zinc-500">Programación y gestión de procesos electorales</p>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                            Activo
+                        </span>
+                        <a th:href="@{/admin/elections}"
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            Acceder
+                            <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card: Candidatos (Activo) -->
+                <div class="group rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600/10">
+                        <i data-lucide="user-check" class="h-6 w-6 text-primary-600"></i>
+                    </div>
+                    <h3 class="mb-1 text-lg font-semibold text-zinc-900">Candidatos</h3>
+                    <p class="mb-4 text-sm text-zinc-500">Gestión de candidatos postulantes a la elección presidencial</p>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                            Activo
+                        </span>
+                        <a th:href="@{/admin/candidates/list}"
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            Acceder
+                            <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card: Votantes (Activo) -->
+                <div class="group rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-600/10">
+                        <i data-lucide="users" class="h-6 w-6 text-primary-600"></i>
+                    </div>
+                    <h3 class="mb-1 text-lg font-semibold text-zinc-900">Votantes</h3>
+                    <p class="mb-4 text-sm text-zinc-500">Gestión del padrón electoral y asignación de mesas de votación</p>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
+                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                            Activo
+                        </span>
+                        <a th:href="@{/admin/voters/list}"
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                            Acceder
+                            <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card: Resultados (Próximamente) -->
+                <div class="group rounded-xl border border-zinc-200 bg-white p-6 shadow-sm opacity-60 transition-all duration-200">
+                    <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-100">
+                        <i data-lucide="bar-chart-3" class="h-6 w-6 text-zinc-400"></i>
+                    </div>
+                    <h3 class="mb-1 text-lg font-semibold text-zinc-900">Resultados</h3>
+                    <p class="mb-4 text-sm text-zinc-500">Visualización de resultados electorales en tiempo real</p>
+                    <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-500">
+                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-zinc-400"></span>
+                            Próximamente
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
+                Sistema Electoral - Lima Metropolitana
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<script th:src="@{/js/app.js}"></script>
+
+</body>
+</html>

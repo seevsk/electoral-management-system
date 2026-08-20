@@ -1,0 +1,1 @@
+ALTER TABLE votes ALTER COLUMN candidate_id INT NULL;
