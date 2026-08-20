@@ -1,70 +1,168 @@
-# Electoral Management System
+# Sistema de Gestion Electoral
 
-Monorepo for the Electoral Management System project focused on Lima Metropolitana (43 districts), simulating a full presidential election flow: voter activation, authentication, ballot casting, and public result visibility.
+Sistema de Gestion Electoral enfocado en Lima Metropolitana (43 distritos).
+Para PA2 se trabaja con Spring Boot MVC + Thymeleaf y flujos CRUD funcionales.
 
-## Repository Structure
+## Alcance
 
-```text
-electoral-management-system/
-├── backend/   # Spring Boot API (active)
-└── frontend/  # React client (in progress)
+- En PA2 las vistas se renderizan desde el propio backend con Thymeleaf.
+- El alcance geografico actual es Lima Metropolitana (43 distritos), con esquema escalable.
+- Rama integradora de trabajo PA2: `developer`.
+
+## Contexto del Proyecto
+
+Este sistema simula un proceso de eleccion presidencial con dos actores autenticados (`admin`, `user`) y una vista publica (sin autenticacion):
+
+- `admin`: configura y gestiona entidades electorales (votantes, partidos, candidatos, elecciones).
+- `user` (votante): activa cuenta con datos DNI, autentica y emite voto.
+- publico: accede a informacion de participacion y resultados segun estado de la eleccion.
+
+## Stack Tecnologico Backend
+
+- Java 21
+- Spring Boot 3.5.14
+- Spring Web
+- Spring Data JPA (Hibernate)
+- Spring MVC + Thymeleaf
+- Flyway
+- SQL Server (Microsoft JDBC driver)
+- Lombok
+- Maven
+
+## Arquitectura
+
+- Estilo backend PA2: MVC con renderizado server-side (Thymeleaf)
+- Integridad de datos: validaciones en servicio/JPA + constraints SQL (PK, FK, UNIQUE)
+
+## Modelo de Base de Datos (Nucleo)
+
+Tablas principales:
+
+- `locations`: datos de ubigeo INEI
+- `accounts`: identidad de autenticacion (`dni`, `password_hash`, `role`, `is_active`)
+- `voters`: perfil electoral asociado a `accounts`
+- `parties`, `candidates`, `elections`, `votes`
+
+Relacion importante:
+
+- `voters.account_id -> accounts.id` (FK)
+- `accounts.dni` es unico y se usa como identificador de login para admin y votantes
+
+## Reglas de Negocio (Criticas)
+
+1. Un voto por votante por eleccion (validacion de servicio + UNIQUE en BD).
+2. Disponibilidad de eleccion controlada por `start_date` y `end_date`.
+3. Resultados completos por candidato visibles al cierre de eleccion.
+4. Activacion y recuperacion validan datos de identidad DNI (`birth_date`, `dni_expiry_date`, `location_code`).
+5. Admin existe solo en `accounts` (sin fila en `voters`), por lo tanto no vota.
+6. El orden de partidos en cedula usa `parties.list_position`, nunca `id`.
+
+## Ajuste Temporal PA2
+
+Para esta entrega PA2 se definio temporalmente:
+
+- No usar JWT en esta fase.
+- No usar persistencia de tokens (`tokens` table).
+- No aplicar hasheo de contrasena en esta fase.
+
+Estos puntos se reintroducen en una fase posterior de hardening sin perder el avance CRUD.
+
+## Migraciones Flyway
+
+Baseline actual:
+
+- `V1__create_core_schema.sql` - Creacion del esquema base
+- `V2__seed_locations_lima_metropolitana.sql` - Seed de 43 distritos de Lima Metropolitana
+- `V3__seed_admin_account.sql` - Seed de cuenta admin
+- `V4__seed_initial_voter_accounts.sql` - Seed inicial de cuentas de votantes
+- `V5__seed_initial_voter_profile.sql` - Seed inicial de perfil de votantes
+- `V6__pa2_simplify_auth_schema.sql` - Elimina tabla `tokens` y ajusta `accounts.password_hash` para PA2
+- `V7__seed_parties_catalog.sql` - Seed de catalogo de partidos politicos para PA2
+
+Notas:
+
+- No usar `CREATE DATABASE`, `USE` ni `GO` dentro de migraciones Flyway.
+- La base (`EMS`) debe existir previamente; Flyway gestiona objetos y seeds.
+
+## Product Backlog Priorizado (PA2)
+
+| ID | Funcionalidad | Prioridad | Estado PA2 |
+|---|---|---|---|
+| PB-04 | Registrar votantes en el padron (CRUD) | Must have | En progreso |
+| PB-05 | Registrar partidos politicos | Must have | En progreso (seed + MVC base) |
+| PB-06 | Registrar candidatos presidenciales | Must have | En progreso |
+| PB-01 | Login del votante | Must have | Pendiente |
+| PB-02 | Activacion de cuenta del votante | Must have | Pendiente |
+| PB-03 | Login del administrador | Must have | Pendiente |
+| PB-07 | Crear eleccion con fechas | Must have | Pendiente |
+| PB-08 | Cedula de sufragio presidencial | Must have | Pendiente |
+| PB-09 | Emitir voto y confirmacion | Must have | Pendiente |
+| PB-10 | Vista de participacion y resultados publicos | Must have | Pendiente |
+| PB-11 | Restricciones del proceso | Must have | Pendiente |
+| PB-12 | Redireccion post-voto | Must have | Pendiente |
+| PB-13 | Landing publica con estado del proceso | Must have | Pendiente |
+| PB-14 | Busqueda de votante por DNI | Should have | Pendiente |
+| PB-15 | Restablecimiento de contrasena | Should have | Pendiente |
+| PB-16 | Inhabilitar candidato | Should have | Pendiente |
+| PB-17 | Editar datos de candidato | Should have | Pendiente |
+| PB-18 | Filtro de resultados por distrito | Should have | Pendiente |
+| PB-19 | Grafico porcentual de resultados | Should have | Pendiente |
+| PB-20 | API REST de resultados electorales | Should have | Pendiente |
+| PB-21 | Total de votantes habilitados por distrito | Should have | Pendiente |
+| PB-22 | Pantalla de condiciones de uso | Could have | Pendiente |
+| PB-23 | Historial de estados de la eleccion | Could have | Pendiente |
+
+## Configuracion Local
+
+Crear archivo local `.env` (no versionado) en la raiz del repositorio y usar esta plantilla minima:
+
+```properties
+DB_URL=jdbc:sqlserver://YOUR_SERVER;databaseName=EMS;encrypt=true;trustServerCertificate=true
+DB_USER=your_sql_user
+DB_PASSWORD=your_sql_password
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-## Modules
+En `application.properties` se importa `.env` y se resuelven variables:
 
-### Backend (`/backend`)
-- Java 21 + Spring Boot 3.5.14
-- Spring Security + JWT
-- Spring Data JPA + SQL Server
-- Flyway migrations (`V1`...`V5`)
-- Detailed setup and architecture: see `backend/README.md`
+```properties
+spring.config.import=optional:file:.env[.properties]
+spring.datasource.url=${DB_URL:}
+spring.datasource.username=${DB_USER:}
+spring.datasource.password=${DB_PASSWORD:}
+server.servlet.context-path=/ems
+```
 
-### Frontend (`/frontend`)
-- React + Vite
-- Routing/state/forms/UI stack defined by frontend owner
-- Detailed setup will live in `frontend/README.md` once module is fully integrated
+Plantilla versionada recomendada: `.env.example`.
 
-## Current Status
+## Rutas MVC de Partidos (PA2)
 
-- Backend schema and initial seed baseline are in place.
-- Initial Lima Metropolitana ubigeo seed is available.
-- Auth-related backend flows are the current implementation priority:
-  1. Account activation
-  2. Login (admin + voter)
-  3. Logout
-  4. Password recovery
+- Listado principal (solo activos): `/ems/admin/parties/list`
+- Registro: `/ems/admin/parties/register`
+- Actualizacion: `/ems/admin/parties/update/{id}`
+- Gestion de estado (activos e inactivos): `/ems/admin/parties/status`
 
-## Core Domain Notes
+## Ejecucion
 
-- Login identifier is DNI (`accounts.dni`).
-- Admin account exists in `accounts` only.
-- Voter identity/profile is stored in `voters`, linked by `account_id`.
-- Activation and recovery use DNI identity fields (no email or phone recovery flow).
-- One vote per voter per election is enforced in service logic and database constraints.
+Desde la raiz del repositorio (Windows PowerShell):
 
-## Local Development
+```powershell
+.\mvnw.cmd spring-boot:run
+```
 
-### Backend
-Use the backend module README for complete setup:
-- `backend/README.md`
+## Flujo Git
 
-### Frontend
-Setup instructions will be maintained in:
-- `frontend/README.md`
+- Durante PA2, la rama base para desarrollo es `developer`.
+- Las ramas de trabajo (feature/fix/chore/docs) deben partir desde `developer`.
+- `main` se mantiene como rama estable de referencia y recibe cambios por hitos via PR desde `developer`.
+- Se recomienda configurar `developer` como default branch del repositorio durante PA2 para clonado/onboarding.
+- Abrir PR por cada objetivo de negocio.
+- Mantener secretos fuera de commits (`.env` debe quedar local).
 
-## Configuration and Secrets
-
-- Never commit real credentials.
-- Use local `.env` files and tracked `.env.example` templates.
-- Database target: SQL Server (`EMS`).
-
-## Collaboration Workflow
-
-- Use feature branches from `main`.
-- Open Pull Requests for review.
-- Merge strategy follows repository standard configuration.
-
-## Team
+## Equipo
 
 - Escriba Arango, Cristhian Luis
 - Salas Rojas, Sebastian Jose
