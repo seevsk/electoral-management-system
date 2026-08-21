@@ -3,7 +3,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       xmlns:x-transition="http://www.w3.org/1999/xhtml">
 
-<nav th:fragment="navbar(activePage)" class="fixed left-0 top-0 z-40 flex h-16 w-full items-center border-b border-slate-200 bg-white px-4 shadow-lg">
+<nav th:fragment="navbar(activePage)" x-data="{ mobileOpen: false }" class="fixed left-0 top-0 z-40 flex h-16 w-full items-center border-b border-slate-200 bg-white px-4 shadow-lg">
 
     <!-- Logo + Title -->
     <div class="flex items-center gap-3">
@@ -15,22 +15,22 @@
     <div class="flex-1"></div>
 
     <!-- Desktop right section: nav links + language + login -->
-    <div class="hidden items-center gap-6 md:flex">
+    <div class="hidden items-center gap-6 lg:flex">
 
         <!-- Nav links -->
         <div class="flex items-center gap-1">
             <a th:href="@{/participation}"
-               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors ' + (activePage == 'inicio' ? 'bg-slate-100' : 'hover:bg-slate-100')">
+               th:class="'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[#c1121f] after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-90 focus:after:opacity-90 ' + (activePage == 'inicio' ? 'after:opacity-90' : '')">
                 <i data-lucide="users" class="h-4 w-4"></i>
                 <span th:text="#{navbar.link.participation}">Participación Ciudadana</span>
             </a>
             <a th:href="@{/voting-location}"
-               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors ' + (activePage == 'voting-location' ? 'bg-slate-100' : 'hover:bg-slate-100')">
+               th:class="'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[#c1121f] after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-90 focus:after:opacity-90 ' + (activePage == 'voting-location' ? 'after:opacity-90' : '')">
                 <i data-lucide="map-pin" class="h-4 w-4"></i>
                 <span th:text="#{navbar.link.voting.location}">Local de Votacion</span>
             </a>
             <a th:href="@{/presidencial}"
-               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors ' + (activePage == 'presidencial' ? 'bg-slate-100' : 'hover:bg-slate-100')">
+               th:class="'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[#c1121f] after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-90 focus:after:opacity-90 ' + (activePage == 'presidencial' ? 'after:opacity-90' : '')">
                 <i data-lucide="landmark" class="h-4 w-4"></i>
                 <span th:text="#{navbar.link.presidential}">Resultados Presidenciales</span>
             </a>
@@ -39,7 +39,7 @@
         <!-- Language selector (desktop) -->
         <div x-data="{ langOpen: false }" class="relative">
             <button @click="langOpen = !langOpen" :aria-expanded="langOpen"
-                    class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-900 transition-colors hover:bg-slate-200">
+                    class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-normal text-slate-900 transition-colors hover:bg-slate-200">
                 <span th:text="${#locale.language == 'es' ? 'ES' : (#locale.language == 'en' ? 'EN' : 'QU')}">ES</span>
                 <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
                    :class="{ 'rotate-180': langOpen }"></i>
@@ -54,19 +54,19 @@
                  x-transition:leave-end="opacity-0 translate-y-1"
                  class="absolute right-0 top-full mt-1 w-40 space-y-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl">
                 <a th:href="@{''(lang='es')}"
-                   class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-100 hover:text-slate-900"
+                   class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
                    th:classappend="${#locale.language == 'es'} ? 'text-slate-900' : 'text-slate-400'">
                     <span class="w-6 text-xs text-slate-400">ES</span>
                     <span>Español</span>
                 </a>
                 <a th:href="@{''(lang='en')}"
-                   class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-100 hover:text-slate-900"
+                   class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
                    th:classappend="${#locale.language == 'en'} ? 'text-slate-900' : 'text-slate-400'">
                     <span class="w-6 text-xs text-slate-400">EN</span>
                     <span>English</span>
                 </a>
                 <a th:href="@{''(lang='qu')}"
-                   class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-slate-100 hover:text-slate-900"
+                   class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
                    th:classappend="${#locale.language == 'qu'} ? 'text-slate-900' : 'text-slate-400'">
                     <span class="w-6 text-xs text-slate-400">QU</span>
                     <span>Quechua</span>
@@ -78,11 +78,11 @@
         <div sec:authorize="isAuthenticated()" class="flex items-center gap-3">
             <div class="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2">
                 <i data-lucide="user-check" class="h-4 w-4 text-slate-500"></i>
-                <span class="text-sm font-medium text-slate-900" th:text="${#authentication.name}">Votante</span>
+                <span class="text-sm font-normal text-slate-900" th:text="${#authentication.name}">Votante</span>
             </div>
             <form th:action="@{/auth/logout}" method="post">
                 <button type="submit"
-                        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900">
+                        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900">
                     <i data-lucide="log-out" class="h-4 w-4"></i>
                     <span th:text="#{navbar.logout}">Salir</span>
                 </button>
@@ -93,7 +93,7 @@
         <div sec:authorize="!isAuthenticated()"
              x-data="{ loginOpen: false }" class="relative">
             <button @click="loginOpen = !loginOpen"
-                    class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-100">
+                    class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                 <i data-lucide="log-in" class="h-4 w-4"></i>
                 <span th:text="#{navbar.login}">Iniciar Sesión</span>
                 <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
@@ -109,17 +109,17 @@
                  x-transition:leave-end="opacity-0 translate-y-1"
                  class="absolute right-0 top-full mt-1 w-48 space-y-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl">
                 <a th:href="@{/login/admin}"
-                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100">
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                     <i data-lucide="shield" class="h-4 w-4"></i>
                     <span th:text="#{navbar.login.admin}">Administrador</span>
                 </a>
                 <a th:href="@{/login/operator}"
-                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100">
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                     <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
                     <span th:text="#{navbar.login.operator}">Operador Electoral</span>
                 </a>
                 <a th:href="@{/login/voter}"
-                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100">
+                   class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                     <i data-lucide="user" class="h-4 w-4"></i>
                     <span th:text="#{navbar.login.voter}">Votante</span>
                 </a>
@@ -128,67 +128,82 @@
     </div>
 
     <!-- Mobile hamburger -->
-    <button type="button"
-            onclick="document.getElementById('mobile-nav-menu').classList.toggle('hidden'); document.getElementById('mobile-nav-overlay').classList.toggle('hidden')"
-            class="ml-auto inline-flex items-center justify-center rounded-md p-2 text-slate-900 hover:bg-slate-100 md:hidden">
+    <button type="button" @click="mobileOpen = true" aria-label="Abrir menú"
+            class="ml-auto inline-flex items-center justify-center rounded-md p-2 text-slate-900 hover:bg-slate-100 lg:hidden">
         <i data-lucide="menu" class="h-6 w-6"></i>
     </button>
 
-</nav>
+    <!-- Mobile menu overlay -->
+    <div x-show="mobileOpen" x-cloak @click="mobileOpen = false"
+         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"></div>
 
-<!-- Mobile menu overlay -->
-<div id="mobile-nav-overlay" class="fixed inset-0 z-30 hidden bg-black/50 md:hidden"
-     onclick="document.getElementById('mobile-nav-menu').classList.add('hidden'); this.classList.add('hidden')"></div>
-
-<!-- Mobile menu drawer -->
-<aside id="mobile-nav-menu" class="fixed left-0 top-0 z-40 hidden h-svh w-60 flex-col bg-slate-900 p-4 text-white md:hidden">
-    <div class="mb-8 flex items-center gap-3 px-2">
-        <img th:src="@{/img/ballot-icon.png}" alt="" class="h-9 w-9 object-contain">
-        <span class="text-sm font-bold" th:text="#{navbar.app.name}">Elecciones Generales</span>
+    <!-- Mobile menu drawer -->
+    <aside x-show="mobileOpen" x-cloak
+           x-effect="document.documentElement.classList.toggle('overflow-hidden', mobileOpen)"
+           x-transition:enter="transition ease-out duration-200" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+           x-transition:leave="transition ease-in duration-150" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
+           class="fixed left-0 top-0 z-40 flex h-svh w-[70%] flex-col overflow-y-auto bg-white p-4 text-slate-900 lg:hidden">
+    <div class="mb-6 flex items-center justify-end px-2">
+        <button type="button" @click="mobileOpen = false" aria-label="Cerrar menú"
+                class="rounded-md p-1 text-slate-900 hover:bg-slate-100">
+            <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
     </div>
     <nav class="flex flex-1 flex-col gap-1">
-        <a th:href="@{/participation}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-white/5 hover:text-white">
+        <a th:href="@{/participation}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
             <i data-lucide="users" class="h-4 w-4"></i> <span th:text="#{navbar.link.participation}">Participación Ciudadana</span>
         </a>
-        <a th:href="@{/voting-location}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-white/5 hover:text-white">
+        <a th:href="@{/voting-location}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
             <i data-lucide="map-pin" class="h-4 w-4"></i> <span th:text="#{navbar.link.voting.location}">Local de Votacion</span>
         </a>
-        <a th:href="@{/presidencial}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-white/5 hover:text-white">
+        <a th:href="@{/presidencial}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
             <i data-lucide="landmark" class="h-4 w-4"></i> <span th:text="#{navbar.link.presidential}">Resultados Presidenciales</span>
         </a>
     </nav>
 
     <!-- Language selector (mobile) -->
-    <div class="mb-2 space-y-1 rounded-lg bg-white/5 p-1.5">
-        <a th:href="@{''(lang='es')}"
-           class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/10 hover:text-white"
-           th:classappend="${#locale.language == 'es'} ? 'text-white' : 'text-white/60'">
-            <span class="w-6 text-xs text-white/50">ES</span>
-            <span>Español</span>
-        </a>
-        <a th:href="@{''(lang='en')}"
-           class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/10 hover:text-white"
-           th:classappend="${#locale.language == 'en'} ? 'text-white' : 'text-white/60'">
-            <span class="w-6 text-xs text-white/50">EN</span>
-            <span>English</span>
-        </a>
-        <a th:href="@{''(lang='qu')}"
-           class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors hover:bg-white/10 hover:text-white"
-           th:classappend="${#locale.language == 'qu'} ? 'text-white' : 'text-white/60'">
-            <span class="w-6 text-xs text-white/50">QU</span>
-            <span>Quechua</span>
-        </a>
+    <div x-data="{ mobileLangOpen: false }" class="border-t border-slate-200 pt-4">
+        <button type="button" @click="mobileLangOpen = !mobileLangOpen"
+                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
+            <i data-lucide="languages" class="h-4 w-4 shrink-0"></i>
+            <span class="flex-1 text-left" th:text="${#locale.language == 'es' ? 'Español' : (#locale.language == 'en' ? 'English' : 'Runasimi')}">Español</span>
+            <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
+               :class="{ 'rotate-180': mobileLangOpen }"></i>
+        </button>
+        <div x-show="mobileLangOpen"
+             class="mb-2 mt-1 space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-1.5">
+            <a th:href="@{''(lang='es')}"
+               class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
+               th:classappend="${#locale.language == 'es'} ? 'text-slate-900' : 'text-slate-400'">
+                <span class="w-6 text-xs text-slate-400">ES</span>
+                <span>Español</span>
+            </a>
+            <a th:href="@{''(lang='en')}"
+               class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
+               th:classappend="${#locale.language == 'en'} ? 'text-slate-900' : 'text-slate-400'">
+                <span class="w-6 text-xs text-slate-400">EN</span>
+                <span>English</span>
+            </a>
+            <a th:href="@{''(lang='qu')}"
+               class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
+               th:classappend="${#locale.language == 'qu'} ? 'text-slate-900' : 'text-slate-400'">
+                <span class="w-6 text-xs text-slate-400">QU</span>
+                <span>Quechua</span>
+            </a>
+        </div>
     </div>
 
     <!-- Mobile: voter authenticated -->
-    <div sec:authorize="isAuthenticated()" class="border-t border-white/10 pt-4">
-        <div class="mb-2 flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5">
-            <i data-lucide="user-check" class="h-4 w-4 text-white/70 shrink-0"></i>
-            <span class="text-sm font-medium text-white" th:text="${#authentication.name}">Votante</span>
+    <div sec:authorize="isAuthenticated()" class="border-t border-slate-200 pt-4">
+        <div class="mb-2 flex items-center gap-3 rounded-lg bg-slate-100 px-3 py-2.5">
+            <i data-lucide="user-check" class="h-4 w-4 text-slate-500 shrink-0"></i>
+            <span class="text-sm font-normal text-slate-900" th:text="${#authentication.name}">Votante</span>
         </div>
         <form th:action="@{/auth/logout}" method="post">
             <button type="submit"
-                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                    class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-normal text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900">
                 <i data-lucide="log-out" class="h-4 w-4 shrink-0"></i>
                 <span class="flex-1 text-left" th:text="#{navbar.logout.full}">Cerrar sesión</span>
             </button>
@@ -197,30 +212,32 @@
 
     <!-- Mobile: login dropdown (not authenticated) -->
     <div sec:authorize="!isAuthenticated()"
-         x-data="{ mobileNavLoginOpen: false }" class="border-t border-white/10 pt-4">
+         x-data="{ mobileNavLoginOpen: false }" class="border-t border-slate-200 pt-4">
         <button @click="mobileNavLoginOpen = !mobileNavLoginOpen"
-                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-white/5 hover:text-white">
+                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
             <i data-lucide="log-in" class="h-4 w-4 shrink-0"></i>
             <span class="flex-1 text-left" th:text="#{navbar.login}">Iniciar Sesión</span>
             <i data-lucide="chevron-down" class="h-3 w-3 transition-transform duration-200"
                :class="{ 'rotate-180': mobileNavLoginOpen }"></i>
         </button>
         <div x-show="mobileNavLoginOpen"
-             class="mb-2 mt-1 space-y-1 rounded-lg border border-white/10 bg-slate-800 p-1.5">
+             class="mb-2 mt-1 space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-1.5">
             <a th:href="@{/login/admin}"
-               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                 <i data-lucide="shield" class="h-4 w-4"></i> <span th:text="#{navbar.login.admin}">Administrador</span>
             </a>
             <a th:href="@{/login/operator}"
-               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                 <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> <span th:text="#{navbar.login.operator}">Operador Electoral</span>
             </a>
             <a th:href="@{/login/voter}"
-               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-zinc-400 transition-colors hover:bg-white/10 hover:text-white">
+               class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-normal text-slate-900 transition-colors hover:bg-slate-100">
                 <i data-lucide="user" class="h-4 w-4"></i> <span th:text="#{navbar.login.voter}">Votante</span>
             </a>
         </div>
     </div>
-</aside>
+    </aside>
+
+</nav>
 
 </html>
