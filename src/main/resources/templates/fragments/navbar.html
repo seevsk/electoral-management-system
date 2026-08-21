@@ -20,17 +20,17 @@
         <!-- Nav links -->
         <div class="flex items-center gap-1">
             <a th:href="@{/participation}"
-               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors ' + (activePage == 'inicio' ? 'bg-slate-100' : 'hover:bg-slate-100')">
+               th:class="'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[#c1121f] after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-90 focus:after:opacity-90 ' + (activePage == 'inicio' ? 'after:opacity-90' : '')">
                 <i data-lucide="users" class="h-4 w-4"></i>
                 <span th:text="#{navbar.link.participation}">Participación Ciudadana</span>
             </a>
             <a th:href="@{/voting-location}"
-               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors ' + (activePage == 'voting-location' ? 'bg-slate-100' : 'hover:bg-slate-100')">
+               th:class="'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[#c1121f] after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-90 focus:after:opacity-90 ' + (activePage == 'voting-location' ? 'after:opacity-90' : '')">
                 <i data-lucide="map-pin" class="h-4 w-4"></i>
                 <span th:text="#{navbar.link.voting.location}">Local de Votacion</span>
             </a>
             <a th:href="@{/presidencial}"
-               th:class="'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors ' + (activePage == 'presidencial' ? 'bg-slate-100' : 'hover:bg-slate-100')">
+               th:class="'relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-slate-900 transition-colors after:absolute after:bottom-0 after:left-3 after:right-3 after:h-[2px] after:rounded-full after:bg-[#c1121f] after:opacity-0 after:transition-opacity after:duration-200 hover:after:opacity-90 focus:after:opacity-90 ' + (activePage == 'presidencial' ? 'after:opacity-90' : '')">
                 <i data-lucide="landmark" class="h-4 w-4"></i>
                 <span th:text="#{navbar.link.presidential}">Resultados Presidenciales</span>
             </a>
