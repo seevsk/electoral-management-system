@@ -105,8 +105,6 @@
                     /* Textos i18n usados dinámicamente en JS (gráfico, tooltip, paginación) */
                     window.__i18n = {
                         country: /*[[#{results.filter.country}]]*/ 'PERÚ',
-                        departmentPlaceholder: /*[[#{results.filter.department}]]*/ 'Departamento',
-                        provincePlaceholder: /*[[#{results.filter.province}]]*/ 'Provincia',
                         districtAll: /*[[#{results.filter.district.all}]]*/ 'Todos los Distritos',
                         clean: /*[[#{results.filter.clean}]]*/ 'Limpiar',
                         sortLabel: /*[[#{results.sort.label}]]*/ 'Ordenar por:',
@@ -126,9 +124,9 @@
                 <!-- Filtro por ámbito (cascade departamento/provincia/distrito) -->
                 <div class="mb-6 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">
                     <div class="flex flex-col gap-4 md:flex-row md:items-center">
-                        <div class="flex items-center gap-2 text-zinc-500 text-xs font-semibold uppercase tracking-wider shrink-0">
+                        <div class="flex items-center gap-2 text-sm font-medium capitalize text-slate-900 shrink-0">
                             <i data-lucide="filter" class="h-4 w-4"></i>
-                            <span th:text="#{results.filter.label}">Filtrar Ámbito:</span>
+                            <span th:text="#{results.filter.label}">Filtrar Distritos:</span>
                         </div>
                         <div class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 items-center">
 
@@ -140,34 +138,26 @@
                                 </select>
                             </div>
 
-                            <!-- Departamento -->
+                            <!-- Departamento (FIJO - LIMA por defecto) -->
                             <div>
-                                <select x-model="selectedDepartment" @change="onDepartmentChange()"
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
-                                    <option value="" th:text="#{results.filter.department}">Departamento</option>
-                                    <template x-for="dept in departments" :key="dept">
-                                        <option :value="dept" x-text="dept"></option>
-                                    </template>
+                                <select disabled
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option th:text="#{results.filter.department}">LIMA</option>
                                 </select>
                             </div>
 
-                            <!-- Provincia -->
+                            <!-- Provincia (FIJO - LIMA por defecto) -->
                             <div>
-                                <select x-model="selectedProvince" @change="onProvinceChange()"
-                                        :disabled="!selectedDepartment"
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
-                                    <option value="" th:text="#{results.filter.province}">Provincia</option>
-                                    <template x-for="prov in provinces" :key="prov">
-                                        <option :value="prov" x-text="prov"></option>
-                                    </template>
+                                <select disabled
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-500 outline-none cursor-not-allowed">
+                                    <option th:text="#{results.filter.province}">LIMA</option>
                                 </select>
                             </div>
 
                             <!-- Distrito -->
                             <div>
                                 <select x-model="selectedLocationCode" @change="onDistrictChange()"
-                                        :disabled="!selectedProvince"
-                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors disabled:opacity-50 disabled:bg-zinc-50">
+                                        class="h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600 transition-colors">
                                     <option value="" th:text="#{results.filter.district.all}">Todos los Distritos</option>
                                     <template x-for="loc in districts" :key="loc.locationCode">
                                         <option :value="loc.locationCode" x-text="loc.district"></option>
@@ -466,6 +456,13 @@
 
                 this.locations = window.__initialLocations || [];
                 console.log('[resultsApp] locations:', this.locations.length, 'candidates:', initialData.candidateResults ? initialData.candidateResults.length : 0);
+
+                // Departamento/Provincia quedan fijos en Lima; solo el distrito es seleccionable
+                var limaDept = this.departments.find(function (d) { return d && d.toUpperCase() === 'LIMA'; });
+                this.selectedDepartment = limaDept || this.departments[0] || '';
+                var limaProv = this.provinces.find(function (p) { return p && p.toUpperCase() === 'LIMA'; });
+                this.selectedProvince = limaProv || this.provinces[0] || '';
+
                 this.allCandidates = initialData.candidateResults || [];
                 this.blankVoteCount = initialData.blankVoteCount || 0;
                 this.blankVotePercentage = initialData.blankVotePercentage || 0;
@@ -476,22 +473,11 @@
             },
 
             // --- Events ---
-            onDepartmentChange: function () {
-                this.selectedProvince = '';
-                this.selectedLocationCode = '';
-            },
-
-            onProvinceChange: function () {
-                this.selectedLocationCode = '';
-            },
-
             onDistrictChange: function () {
                 this.fetchResults();
             },
 
             limpiar: function () {
-                this.selectedDepartment = '';
-                this.selectedProvince = '';
                 this.selectedLocationCode = '';
                 this.fetchResults();
             },
