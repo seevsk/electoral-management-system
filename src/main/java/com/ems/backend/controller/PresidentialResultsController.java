@@ -29,6 +29,8 @@ public class PresidentialResultsController {
 
     @GetMapping("/presidencial")
     public String presidencial(Model model) {
+        model.addAttribute("pageTitle", "Resultados | Lima Metropolitana");
+
         Optional<Election> electionOpt = electionResultsService.findRelevantPresidentialElection();
 
         if (electionOpt.isEmpty()) {
