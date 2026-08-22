@@ -58,7 +58,7 @@
                                 (<span class="font-semibold" th:text="${#numbers.formatInteger(votosEmitidos, 1, 'POINT')}" style="display:contents"></span>)
                             </span>
                             <span class="flex items-center gap-1.5">
-                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-zinc-300"></span>
+                                <span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-500"></span>
                                 <span th:text="#{section.votes.pending}">Votos Pendientes</span>
                                 (<span class="font-semibold" th:text="${#numbers.formatInteger(votosPendientes, 1, 'POINT')}" style="display:contents"></span>)
                             </span>
@@ -541,7 +541,7 @@
                 <!-- DISTRICT MAP -->
 
                 <div class="mb-8 grid gap-6 lg:grid-cols-3">
-                    <div class="flex flex-col gap-6">
+                    <div class="order-3 flex flex-col gap-6 lg:order-1">
                         <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <div class="mb-4 flex items-center justify-between gap-3">
                                 <h3 class="text-sm font-medium text-slate-900">
@@ -583,25 +583,25 @@
 
                     <!-- FULL CITIZENS -->
 
-                    <div class="flex flex-col gap-6">
-                        <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-white">
+                    <div class="order-1 flex flex-col gap-6 lg:order-2">
+                        <div class="flex flex-1 flex-col rounded-xl border border-gray-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <div class="flex flex-1 flex-col items-center justify-center gap-[9px] text-center">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white">
                                     <i data-lucide="users" class="h-7 w-7 text-slate-900"></i>
                                 </div>
-                                <p class="text-base font-medium text-slate-900 lg:text-lg" th:text="#{card.total.citizens}">Total de ciudadanos</p>
-                                <p class="mt-1 text-3xl font-bold tracking-tight text-slate-900" x-text="totalPadron.toLocaleString('es-PE')">[[${#numbers.formatInteger(totalPadron, 3, 'POINT')}]]</p>
-                                <p class="mt-1 text-xs text-slate-900 lg:text-sm" th:text="#{card.total.citizens.subtitle}">Registrados en el padrón electoral</p>
+                                <p class="text-[20.8px] font-medium text-slate-900 lg:text-[23.4px]" th:text="#{card.total.citizens}">Total de ciudadanos</p>
+                                <p class="text-[39px] font-bold tracking-tight text-slate-900" x-text="totalPadron.toLocaleString('es-PE')">[[${#numbers.formatInteger(totalPadron, 3, 'POINT')}]]</p>
+                                <p class="text-[15.6px] text-slate-900 lg:text-[18.2px]" th:text="#{card.total.citizens.subtitle}">Registrados en el padrón electoral</p>
                             </div>
                         </div>
 
-                        <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                        <div class="flex flex-1 flex-col rounded-xl border border-gray-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h3 class="mb-1 text-base font-medium text-slate-900 lg:text-lg">
                                 <i data-lucide="bar-chart-3" class="mr-1.5 inline-block h-4 w-4"></i>
                                 <span class="capitalize lg:text-xl" th:text="#{card.voter.roll.status}">Estado del padrón</span>
                             </h3>
                             <p class="mb-4 text-sm text-slate-900" th:text="#{card.voter.roll.status.subtitle}">Participación ciudadana en general</p>
-                            <div class="space-y-4">
+                            <div class="flex flex-1 flex-col justify-center space-y-6">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
                                         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-white">
@@ -621,7 +621,7 @@
                                         </div>
                                         <div>
                                             <p class="text-sm font-medium text-slate-900 lg:text-base" th:text="#{card.votes.pending}">Votos pendientes</p>
-                                            <p class="text-xl font-bold text-slate-900 lg:text-2xl" x-text="votosPendientes.toLocaleString('es-PE')">[[${#numbers.formatInteger(votosPendientes, 3, 'POINT')}]]</p>
+                                            <p class="text-xl font-bold text-amber-500 lg:text-2xl" x-text="votosPendientes.toLocaleString('es-PE')">[[${#numbers.formatInteger(votosPendientes, 3, 'POINT')}]]</p>
                                         </div>
                                     </div>
                                     <span class="text-sm font-semibold text-slate-900 lg:text-base" x-text="pctPendientes.toFixed(2) + '%'">[[${#numbers.formatDecimal(porcentajePendientes, 1, 2, 'POINT')}]]%</span>
@@ -630,28 +630,32 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-6">
+                    <div class="order-2 flex flex-col gap-6 lg:order-3">
                         <div class="rounded-xl border border-gray-300 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h3 class="mb-4 text-base font-medium capitalize text-slate-900 lg:text-lg">
                                 <i data-lucide="pie-chart" class="mr-1.5 inline-block h-4 w-4"></i>
                                 <span th:text="#{chart.title}">Participación Ciudadana</span>
                             </h3>
-                            <div class="relative mx-auto max-w-[220px]">
-                                <canvas id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></canvas>
-                            </div>
-                            <div class="mt-4 space-y-2">
-                                <div class="flex items-center justify-between text-sm lg:text-[15px]">
-                                    <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-[#ef233c]"></span><span th:text="#{chart.legend.emitted}">Votos emitidos</span></span>
-                                    <span class="font-semibold text-slate-900" x-text="pctVotos.toFixed(2) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 2, 'POINT')}]]%</span>
+                            <div class="flex flex-col items-center">
+                                <div class="relative mx-auto max-w-[286px]">
+                                    <canvas id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></canvas>
                                 </div>
-                                <div class="flex items-center justify-between text-sm lg:text-[15px]">
-                                    <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-gray-300"></span><span th:text="#{chart.legend.pending}">Votos pendientes</span></span>
-                                    <span class="font-semibold text-slate-900" x-text="pctPendientes.toFixed(2) + '%'">[[${#numbers.formatDecimal(porcentajePendientes, 1, 2, 'POINT')}]]%</span>
+                                <div class="mt-8 w-full space-y-2">
+                                    <div class="flex items-center justify-between text-sm lg:text-[15px]">
+                                        <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-[#ef233c]"></span><span th:text="#{chart.legend.emitted}">Votos emitidos</span></span>
+                                        <span class="font-semibold text-slate-900" x-text="pctVotos.toFixed(2) + '%'">[[${#numbers.formatDecimal(porcentajeVotos, 1, 2, 'POINT')}]]%</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm lg:text-[15px]">
+                                        <span class="flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full bg-amber-500"></span><span th:text="#{chart.legend.pending}">Votos pendientes</span></span>
+                                        <span class="font-semibold text-slate-900" x-text="pctPendientes.toFixed(2) + '%'">[[${#numbers.formatDecimal(porcentajePendientes, 1, 2, 'POINT')}]]%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- DISTRICT PARTICIPATIONS -->
 
                 <div class="mb-8 rounded-xl border border-gray-300 bg-white p-6 shadow-sm">
                     <div class="mb-4">
@@ -728,7 +732,7 @@
         return {
             labels: hasData ? [window.i18n.chartLegendEmitted, window.i18n.chartLegendPending] : [window.i18n.chartNoData],
             data: hasData ? [pctVotos, pctPendientes] : [100],
-            colors: hasData ? ['#ef233c', '#d1d5db'] : ['#d4d4d8'],
+            colors: hasData ? ['#ef233c', '#f59e0b'] : ['#d4d4d8'],
             hasData: hasData
         };
     }
