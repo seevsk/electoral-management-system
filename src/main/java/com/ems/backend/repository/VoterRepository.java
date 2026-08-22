@@ -127,11 +127,11 @@ public interface VoterRepository extends JpaRepository<Voter, Integer> {
 
     @Query("""
             select l.department, l.province, l.locationCode, l.district,
-                   count(v),
+                   count(v.id),
                    sum(case when v.hasVoted = true then 1L else 0L end),
                    sum(case when v.hasVoted = false then 1L else 0L end)
-            from Voter v
-            join Location l on v.locationCode = l.locationCode
+            from Location l
+            left join Voter v on v.locationCode = l.locationCode
             where l.department = 'LIMA'
             group by l.department, l.province, l.locationCode, l.district
             order by l.district asc
