@@ -24,15 +24,15 @@
             <div class="mb-8 rounded-xl border border-gray-300 bg-white p-6 shadow-sm">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-2xl font-semibold text-slate-900" th:text="#{section.general.participation}">Participación general</h2>
-                        <p class="text-3xl font-semibold text-[#ef233c]" th:text="${#numbers.formatDecimal(porcentajeVotos, 1, 2, 'POINT')} + '%' "></p>
+                        <h2 class="text-[21.6px] font-semibold text-slate-900" th:text="#{section.general.participation}">Participación general</h2>
+                        <p class="text-[27px] font-semibold text-[#ef233c]" th:text="${#numbers.formatDecimal(porcentajeVotos, 1, 2, 'POINT')} + '%' "></p>
                     </div>
-                    <div class="text-right text-sm text-slate-800 lg:text-lg">
+                    <div class="text-right text-[12.6px] text-slate-800 lg:text-[16.2px]">
                         <p>
                             <span th:text="#{section.total.electors}">Total de Electores:</span>
                             <span class="font-semibold text-slate-900" th:text="${#numbers.formatInteger(totalPadron, 3, 'POINT')}"></span>
                         </p>
-                        <p class="text-xs lg:text-base">
+                        <p class="text-[10.8px] lg:text-[14.4px]">
                             <span class="font-semibold" th:text="${#numbers.formatInteger(votosPendientes, 1, 'POINT')}"></span>
                             <span th:text="#{section.pending.votes.pct}">votos pendientes de emitir</span>
                         </p>
@@ -45,13 +45,13 @@
 
                 <div class="mt-4 border-t border-gray-300 pt-4">
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <p class="text-xs font-normal tracking-wider text-slate-900 lg:text-sm" th:with="now=${#temporals.createNow()}">
+                        <p class="text-[10.8px] font-normal tracking-wider text-slate-900 lg:text-[12.6px]" th:with="now=${#temporals.createNow()}">
                             <i data-lucide="clock" class="mr-1 inline-block h-3 w-3"></i>
                             <span th:text="#{section.updated.time}">Última actualización a las:</span>
                             <span th:text="${#temporals.format(now, 'h:mm')}"></span>
                             <span th:text="${#temporals.hour(now) lt 12 ? 'A.M' : 'P.M'}"></span>
                         </p>
-                        <div class="flex flex-wrap gap-4 text-xs text-slate-900 lg:text-sm">
+                        <div class="flex flex-wrap gap-4 text-[10.8px] text-slate-900 lg:text-[12.6px]">
                             <span class="flex items-center gap-1.5">
                                 <span class="inline-block h-2.5 w-2.5 rounded-full bg-[#ef233c]"></span>
                                 <span th:text="#{section.votes.emitted}">Votos Emitidos</span>
@@ -480,14 +480,14 @@
                       },
 
                     updateChart() {
-                        const chart = Chart.getChart('participacionChart');
-                        if (chart) {
-                            const d = buildChartData(this.pctVotos, this.pctPendientes);
-                            chart.data.labels = d.labels;
-                            chart.data.datasets[0].data = d.data;
-                            chart.data.datasets[0].backgroundColor = d.colors;
-                            chart.data.datasets[0].borderWidth = d.hasData ? 2 : 0;
-                            chart.update();
+                        const hasData = this.pctVotos > 0;
+                        if (window.ApexCharts) {
+                            ApexCharts.exec('participacionChart', 'updateOptions', {
+                                labels: [hasData ? window.i18n.chartLegendEmitted : window.i18n.chartNoData],
+                                colors: [hasData ? '#ef233c' : '#d4d4d8'],
+                                plotOptions: { radialBar: { track: { background: hasData ? '#f59e0b' : '#d4d4d8' } } }
+                            });
+                            ApexCharts.exec('participacionChart', 'updateSeries', [hasData ? this.pctVotos : 0]);
                         }
                     }
                  }">
@@ -589,9 +589,9 @@
                                 <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white">
                                     <i data-lucide="users" class="h-7 w-7 text-slate-900"></i>
                                 </div>
-                                <p class="text-[20.8px] font-medium text-slate-900 lg:text-[23.4px]" th:text="#{card.total.citizens}">Total de ciudadanos</p>
-                                <p class="text-[39px] font-bold tracking-tight text-slate-900" x-text="totalPadron.toLocaleString('es-PE')">[[${#numbers.formatInteger(totalPadron, 3, 'POINT')}]]</p>
-                                <p class="text-[15.6px] text-slate-900 lg:text-[18.2px]" th:text="#{card.total.citizens.subtitle}">Registrados en el padrón electoral</p>
+                                <p class="text-[20.8px] font-medium text-slate-900 lg:text-[20.8px]" th:text="#{card.total.citizens}">Total de ciudadanos</p>
+                                <p class="text-[37px] font-bold tracking-tight text-slate-900" x-text="totalPadron.toLocaleString('es-PE')">[[${#numbers.formatInteger(totalPadron, 3, 'POINT')}]]</p>
+                                <p class="text-[15.6px] text-slate-900 lg:text-[16.2px]" th:text="#{card.total.citizens.subtitle}">Registrados en el padrón electoral</p>
                             </div>
                         </div>
 
@@ -637,8 +637,8 @@
                                 <span th:text="#{chart.title}">Participación Ciudadana</span>
                             </h3>
                             <div class="flex flex-col items-center">
-                                <div class="relative mx-auto max-w-[286px]">
-                                    <canvas id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></canvas>
+                                <div class="relative mx-auto max-w-[243px]">
+                                    <div id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></div>
                                 </div>
                                 <div class="mt-8 w-full space-y-2">
                                     <div class="flex items-center justify-between text-sm lg:text-[15px]">
@@ -725,53 +725,65 @@
     };
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script th:src="@{/js/app.js}"></script>
 <script>
-    function buildChartData(pctVotos, pctPendientes) {
-        const hasData = pctVotos > 0 || pctPendientes > 0;
-        return {
-            labels: hasData ? [window.i18n.chartLegendEmitted, window.i18n.chartLegendPending] : [window.i18n.chartNoData],
-            data: hasData ? [pctVotos, pctPendientes] : [100],
-            colors: hasData ? ['#ef233c', '#f59e0b'] : ['#d4d4d8'],
-            hasData: hasData
-        };
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('participacionChart');
-        if (ctx) {
-            const pctVotos = parseFloat(ctx.getAttribute('data-votos')) || 0;
-            const pctPendientes = parseFloat(ctx.getAttribute('data-pendientes')) || 0;
-            const d = buildChartData(pctVotos, pctPendientes);
+        const el = document.getElementById('participacionChart');
+        if (el) {
+            const pctVotos = parseFloat(el.getAttribute('data-votos')) || 0;
+            const hasData = pctVotos > 0;
 
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: d.labels,
-                    datasets: [{
-                        data: d.data,
-                        backgroundColor: d.colors,
-                        borderWidth: d.hasData ? 2 : 0,
-                        borderColor: '#ffffff'
-                    }]
+            new ApexCharts(el, {
+                chart: {
+                    id: 'participacionChart',
+                    type: 'radialBar',
+                    width: 243,
+                    height: 243,
+                    fontFamily: 'Poppins, sans-serif',
+                    sparkline: { enabled: true }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    cutout: '65%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            filter: function (item) { return item.label !== window.i18n.chartNoData; },
-                            callbacks: {
-                                label: function (context) {
-                                    return context.label + ': ' + context.parsed.toFixed(2) + '%';
+                series: [hasData ? pctVotos : 0],
+                labels: [hasData ? window.i18n.chartLegendEmitted : window.i18n.chartNoData],
+                colors: [hasData ? '#ef233c' : '#d4d4d8'],
+                stroke: { lineCap: 'round' },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -135,
+                        endAngle: 135,
+                        hollow: { size: '65%' },
+                        track: { background: hasData ? '#f59e0b' : '#d4d4d8', strokeWidth: '100%' },
+                        dataLabels: {
+                            name: {
+                                fontSize: '15px',
+                                fontFamily: 'Poppins, sans-serif',
+                                fontWeight: 400,
+                                color: '#0f172a',
+                                offsetY: -8
+                            },
+                            value: {
+                                fontSize: '22px',
+                                fontWeight: 600,
+                                color: '#0f172a',
+                                offsetY: 6,
+                                formatter: function (val) { return val.toFixed(2) + '%'; }
+                            }
+                        }
+                    }
+                },
+                responsive: [{
+                    breakpoint: 1024,
+                    options: {
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: { fontSize: '14px' }
                                 }
                             }
                         }
                     }
-                }
-            });
+                }]
+            }).render();
         }
     });
 </script>
