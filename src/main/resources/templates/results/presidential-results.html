@@ -566,7 +566,8 @@
                                 label: i18n.chartDatasetLabel || 'Votos',
                                 data: [0],
                                 backgroundColor: '#1e3a5f',
-                                borderRadius: 4
+                                borderRadius: 4,
+                                maxBarThickness: 130
                             }]
                         },
                         options: {
@@ -613,7 +614,10 @@
                 }
 
                 try {
-                    var yMax = Math.max(1, Math.round(self.chartMaxVotes * 1.1));
+                    // Escala relativa a la página visible, no al máximo global,
+                    // para que el candidato líder de cada página se vea alto igual que en la primera.
+                    var pageMax = items.length ? Math.max.apply(null, items.map(function (c) { return c.voteCount; })) : 1;
+                    var yMax = Math.max(1, Math.round(pageMax * 1.1));
                     chartInstance.options.scales.y.max = yMax;
                     chartInstance.data.labels = items.map(function (c) { return c.candidateFullName; });
                     chartInstance.data.datasets[0].data = items.map(function (c) { return c.voteCount; });
