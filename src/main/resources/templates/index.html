@@ -84,6 +84,7 @@
                       leafletMap: null,
                       leafletLayer: null,
                       fullMapBounds: null,
+                      fullMapZoom: null,
                       districtLayerByCode: {},
                       selectedDepartment: '',
                       selectedProvince: '',
@@ -153,17 +154,29 @@
                           return this.districtIndex.get(key) || null;
                       },
 
-                      districtColor(pct) {
-                          return '#d1d5db';
+                      statusPalette: {
+                          full:    { fill: '#2563eb', border: '#1d4ed8', hover: '#3b82f6' },
+                          pending: { fill: '#fbbf24', border: '#b45309', hover: '#fde68a' },
+                          none:    { fill: '#d1d5db', border: '#475569', hover: '#6b7280' }
+                      },
+
+                      districtStatus(item) {
+                          if (!item || !item.attended) return 'none';
+                          return item.pending > 0 ? 'pending' : 'full';
+                      },
+
+                      districtColor(item) {
+                          return this.statusPalette[this.districtStatus(item)].fill;
                       },
 
                       styleDistrict(item) {
                           const selected = item && item.code === this.selectedLocationCode;
+                          const palette = this.statusPalette[this.districtStatus(item)];
                           return {
-                              color: selected ? '#0f172a' : '#334155',
+                              color: selected ? palette.border : '#334155',
                               weight: selected ? 2.8 : 1.2,
                               opacity: 1,
-                              fillColor: this.districtColor(item ? item.pct : 0),
+                              fillColor: palette.fill,
                               fillOpacity: selected ? 0.96 : 0.82,
                               lineJoin: 'round',
                               lineCap: 'round'
@@ -256,10 +269,11 @@
 
                                   featureLayer.on({
                                       mouseover: () => {
+                                          const palette = this.statusPalette[this.districtStatus(item)];
                                           featureLayer.setStyle({
                                               weight: 3,
-                                              color: '#0f172a',
-                                              fillColor: '#6b7280',
+                                              color: palette.border,
+                                              fillColor: palette.hover,
                                               fillOpacity: 0.96
                                           });
                                           featureLayer.bringToFront();
@@ -281,6 +295,7 @@
                           this.fullMapBounds = layer.getBounds();
                           map.fitBounds(this.fullMapBounds, { padding: [32, 32], animate: false });
                           map.setMaxBounds(this.fullMapBounds.pad(0.12));
+                          this.fullMapZoom = map.getZoom();
                           setTimeout(() => map.invalidateSize(), 0);
                           this.syncSelectedDistrictStyle();
                       },
@@ -293,9 +308,10 @@
                       focusDistrict(item) {
                           if (!this.leafletMap) return;
                           const layer = item ? this.districtLayerByCode[item.code] : null;
-                          if (layer && layer.getBounds) {
-                              this.leafletMap.fitBounds(layer.getBounds(), { padding: [48, 48], animate: true });
-                          }
+                          if (!layer || !layer.getBounds) return;
+                          const base = this.fullMapZoom ?? this.leafletMap.getZoom();
+                          const targetZoom = Math.min(base + 1.5, this.leafletMap.getMaxZoom());
+                          this.leafletMap.setView(layer.getBounds().getCenter(), targetZoom, { animate: true });
                       },
 
                       syncSelectedDistrictStyle() {
@@ -535,7 +551,7 @@
                                 <span class="text-[11px] text-center font-normal capitalize text-slate-900 lg:text-sm" th:text="#{map.subtitle}">Lima Metropolitana</span>
                             </div>
 
-                            <div class="lima-map-container overflow-hidden rounded-xl border border-gray-300 bg-gradient-to-br from-slate-50 to-white shadow-sm">
+                            <div class="lima-map-container overflow-hidden rounded-xl border border-slate-300 bg-gradient-to-br from-slate-50 to-white shadow-sm">
                                 <div class="relative">
                                     <div id="limaMap" class="h-[480px] w-full bg-slate-100"></div>
                                     <div x-show="mapLoading" x-cloak class="absolute inset-0 flex items-center justify-center bg-white/70 text-sm font-medium text-slate-900" th:text="#{map.loading}">
@@ -554,9 +570,13 @@
                                 </div>
                             </div>
 
-                            <div class="mt-4 flex flex-col gap-2 text-xs text-slate-900 sm:flex-row sm:items-center sm:justify-between lg:flex-nowrap lg:text-[13.8px]">
-                                <span class="whitespace-nowrap" x-text="hoveredDistrict || selectedDistrictLabel">Lima Metropolitana</span>
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-500"></span><span th:text="#{map.legend.high}">Distrito seleccionado</span></span>
+                            <div class="mt-4 flex flex-col gap-3 text-xs text-slate-900 lg:text-[13.8px]">
+                                <span class="whitespace-nowrap font-medium" x-text="hoveredDistrict || selectedDistrictLabel">Lima Metropolitana</span>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2.5 w-2.5 shrink-0 rounded-full bg-blue-600"></span><span th:text="#{map.legend.full}">Votaciones completas</span></span>
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400"></span><span th:text="#{map.legend.pending}">Votos pendientes</span></span>
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap"><span class="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-300"></span><span th:text="#{map.legend.none}">Ninguna emisión de voto</span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
