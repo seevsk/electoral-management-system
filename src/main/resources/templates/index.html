@@ -480,14 +480,14 @@
                       },
 
                     updateChart() {
-                        const chart = Chart.getChart('participacionChart');
-                        if (chart) {
-                            const d = buildChartData(this.pctVotos, this.pctPendientes);
-                            chart.data.labels = d.labels;
-                            chart.data.datasets[0].data = d.data;
-                            chart.data.datasets[0].backgroundColor = d.colors;
-                            chart.data.datasets[0].borderWidth = d.hasData ? 2 : 0;
-                            chart.update();
+                        const hasData = this.pctVotos > 0;
+                        if (window.ApexCharts) {
+                            ApexCharts.exec('participacionChart', 'updateOptions', {
+                                labels: [hasData ? window.i18n.chartLegendEmitted : window.i18n.chartNoData],
+                                colors: [hasData ? '#ef233c' : '#d4d4d8'],
+                                plotOptions: { radialBar: { track: { background: hasData ? '#f59e0b' : '#d4d4d8' } } }
+                            });
+                            ApexCharts.exec('participacionChart', 'updateSeries', [hasData ? this.pctVotos : 0]);
                         }
                     }
                  }">
@@ -637,8 +637,8 @@
                                 <span th:text="#{chart.title}">Participación Ciudadana</span>
                             </h3>
                             <div class="flex flex-col items-center">
-                                <div class="relative mx-auto max-w-[286px]">
-                                    <canvas id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></canvas>
+                                <div class="relative mx-auto max-w-[243px]">
+                                    <div id="participacionChart" th:data-votos="${porcentajeVotos}" th:data-pendientes="${porcentajePendientes}"></div>
                                 </div>
                                 <div class="mt-8 w-full space-y-2">
                                     <div class="flex items-center justify-between text-sm lg:text-[15px]">
@@ -725,53 +725,65 @@
     };
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script th:src="@{/js/app.js}"></script>
 <script>
-    function buildChartData(pctVotos, pctPendientes) {
-        const hasData = pctVotos > 0 || pctPendientes > 0;
-        return {
-            labels: hasData ? [window.i18n.chartLegendEmitted, window.i18n.chartLegendPending] : [window.i18n.chartNoData],
-            data: hasData ? [pctVotos, pctPendientes] : [100],
-            colors: hasData ? ['#ef233c', '#f59e0b'] : ['#d4d4d8'],
-            hasData: hasData
-        };
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('participacionChart');
-        if (ctx) {
-            const pctVotos = parseFloat(ctx.getAttribute('data-votos')) || 0;
-            const pctPendientes = parseFloat(ctx.getAttribute('data-pendientes')) || 0;
-            const d = buildChartData(pctVotos, pctPendientes);
+        const el = document.getElementById('participacionChart');
+        if (el) {
+            const pctVotos = parseFloat(el.getAttribute('data-votos')) || 0;
+            const hasData = pctVotos > 0;
 
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: d.labels,
-                    datasets: [{
-                        data: d.data,
-                        backgroundColor: d.colors,
-                        borderWidth: d.hasData ? 2 : 0,
-                        borderColor: '#ffffff'
-                    }]
+            new ApexCharts(el, {
+                chart: {
+                    id: 'participacionChart',
+                    type: 'radialBar',
+                    width: 243,
+                    height: 243,
+                    fontFamily: 'Poppins, sans-serif',
+                    sparkline: { enabled: true }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    cutout: '65%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            filter: function (item) { return item.label !== window.i18n.chartNoData; },
-                            callbacks: {
-                                label: function (context) {
-                                    return context.label + ': ' + context.parsed.toFixed(2) + '%';
+                series: [hasData ? pctVotos : 0],
+                labels: [hasData ? window.i18n.chartLegendEmitted : window.i18n.chartNoData],
+                colors: [hasData ? '#ef233c' : '#d4d4d8'],
+                stroke: { lineCap: 'round' },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: -135,
+                        endAngle: 135,
+                        hollow: { size: '65%' },
+                        track: { background: hasData ? '#f59e0b' : '#d4d4d8', strokeWidth: '100%' },
+                        dataLabels: {
+                            name: {
+                                fontSize: '15px',
+                                fontFamily: 'Poppins, sans-serif',
+                                fontWeight: 400,
+                                color: '#0f172a',
+                                offsetY: -8
+                            },
+                            value: {
+                                fontSize: '22px',
+                                fontWeight: 600,
+                                color: '#0f172a',
+                                offsetY: 6,
+                                formatter: function (val) { return val.toFixed(2) + '%'; }
+                            }
+                        }
+                    }
+                },
+                responsive: [{
+                    breakpoint: 1024,
+                    options: {
+                        plotOptions: {
+                            radialBar: {
+                                dataLabels: {
+                                    name: { fontSize: '14px' }
                                 }
                             }
                         }
                     }
-                }
-            });
+                }]
+            }).render();
         }
     });
 </script>
