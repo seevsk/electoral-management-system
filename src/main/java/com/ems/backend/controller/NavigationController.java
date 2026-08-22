@@ -50,6 +50,7 @@ public class NavigationController
         double porcentajeVotos      = totalPadron > 0 ? (votosEmitidos   * 100.0) / totalPadron : 0.0;
         double porcentajePendientes = totalPadron > 0 ? (votosPendientes * 100.0) / totalPadron : 0.0;
 
+        model.addAttribute("pageTitle", "Elecciones | Lima Metropolitana");
         model.addAttribute("totalPadron",        totalPadron);
         model.addAttribute("votosEmitidos",      votosEmitidos);
         model.addAttribute("votosPendientes",    votosPendientes);
