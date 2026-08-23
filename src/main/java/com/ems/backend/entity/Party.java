@@ -31,6 +31,9 @@ public class Party {
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
 
+    @Column(name = "color_hex", length = 7)
+    private String colorHex;
+
     @Column(name = "list_position", nullable = false)
     private Integer listPosition;
 
@@ -94,6 +97,14 @@ public class Party {
 
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
+    }
+
+    public String getColorHex() {
+        return colorHex;
+    }
+
+    public void setColorHex(String colorHex) {
+        this.colorHex = colorHex;
     }
 
     public Integer getListPosition() {

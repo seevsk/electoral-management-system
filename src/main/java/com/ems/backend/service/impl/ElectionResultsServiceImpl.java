@@ -84,6 +84,7 @@ public class ElectionResultsServiceImpl implements ElectionResultsService {
                             + voter.getSecondSurname()).trim();
                     long voteCount = votesByCandidate.getOrDefault(per.getCandidate().getId(), 0L);
                     double percentage = totalVotes > 0 ? (voteCount * 100.0) / totalVotes : 0.0;
+                    String colorHex = per.getParty().getColorHex();
                     return new CandidateResultDto(
                             per.getCandidate().getId(),
                             fullName,
@@ -92,6 +93,7 @@ public class ElectionResultsServiceImpl implements ElectionResultsService {
                             per.getParty().getName(),
                             per.getParty().getAcronym(),
                             per.getParty().getLogoUrl(),
+                            colorHex != null ? colorHex : "#1e3a5f",
                             voteCount,
                             percentage
                     );

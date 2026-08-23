@@ -9,12 +9,13 @@ public class CandidateResultDto {
     private final String partyName;
     private final String partyAcronym;
     private final String partyLogoUrl;
+    private final String partyColorHex;
     private final long voteCount;
     private final double percentage;
 
     public CandidateResultDto(Integer candidateId, String candidateFullName, String candidatePhotoUrl,
                               Integer listNumber, String partyName, String partyAcronym, String partyLogoUrl,
-                              long voteCount, double percentage) {
+                              String partyColorHex, long voteCount, double percentage) {
         this.candidateId = candidateId;
         this.candidateFullName = candidateFullName;
         this.candidatePhotoUrl = candidatePhotoUrl;
@@ -22,6 +23,7 @@ public class CandidateResultDto {
         this.partyName = partyName;
         this.partyAcronym = partyAcronym;
         this.partyLogoUrl = partyLogoUrl;
+        this.partyColorHex = partyColorHex;
         this.voteCount = voteCount;
         this.percentage = percentage;
     }
@@ -33,6 +35,7 @@ public class CandidateResultDto {
     public String getPartyName() { return partyName; }
     public String getPartyAcronym() { return partyAcronym; }
     public String getPartyLogoUrl() { return partyLogoUrl; }
+    public String getPartyColorHex() { return partyColorHex; }
     public long getVoteCount() { return voteCount; }
     public double getPercentage() { return percentage; }
 }
