@@ -274,6 +274,11 @@
                 if (!yScale) return;
                 var base = yScale.getPixelForValue(0);
                 var pageItems = window.__pageItems || [];
+                // La foto crece un 20% solo en desktop (>=1024px); el logo de partido, otro 30% más sobre eso.
+                // En mobile ambas quedan en su tamaño original.
+                var isDesktop = window.innerWidth >= 1024;
+                var photoSize = isDesktop ? 31 : 26;
+                var logoSize = isDesktop ? 29 : 18;
 
                 meta.data.forEach(function (bar, i) {
                     var c = pageItems[i];
@@ -285,9 +290,9 @@
 
                     var offset = 0;
 
-                    // --- Draw photo above bar ---
+                    // --- Draw photo above bar (+20% on desktop only) ---
                     if (c.photoImg) {
-                        var pSize = 26;
+                        var pSize = photoSize;
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(x, y - pSize - 4 + pSize / 2, pSize / 2, 0, Math.PI * 2);
@@ -297,14 +302,14 @@
                         offset = pSize + 4;
                     } else {
                         // Placeholder gris cuando no hay foto
-                        var pSize = 26;
+                        var pSize = photoSize;
                         ctx.save();
                         ctx.fillStyle = '#e4e4e7';
                         ctx.beginPath();
                         ctx.arc(x, y - pSize - 4 + pSize / 2, pSize / 2, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.fillStyle = '#a1a1aa';
-                        ctx.font = '14px Poppins, sans-serif';
+                        ctx.font = (isDesktop ? '17px' : '14px') + ' Poppins, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'middle';
                         ctx.fillText('👤', x, y - pSize - 4 + pSize / 2);
@@ -312,18 +317,18 @@
                         offset = pSize + 4;
                     }
 
-                    // --- Draw percentage ---
+                    // --- Draw percentage (normal weight, +20% size, slate-900) ---
                     ctx.save();
-                    ctx.fillStyle = '#1e3a5f';
-                    ctx.font = 'bold 10px Poppins, sans-serif';
+                    ctx.fillStyle = '#0f172a';
+                    ctx.font = '12px Poppins, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'bottom';
                     ctx.fillText(c.percentage.toFixed(2) + '%', x, y - offset - 2);
                     ctx.restore();
 
-                    // --- Draw party logo below bar ---
+                    // --- Draw party logo below bar (+20% on desktop only) ---
                     if (c.logoImg) {
-                        var lSize = 18;
+                        var lSize = logoSize;
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(x, base + 6 + lSize / 2, lSize / 2, 0, Math.PI * 2);
@@ -548,8 +553,10 @@
                 var self = this;
                 var start = self.currentPage * self.pageSize;
                 var items = self.allCandidates.slice(start, start + self.pageSize);
-                self.pageItems = items;
+                // El gráfico usa el orden "natural" del sort (ascendente en "menor votación").
                 window.__pageItems = items;
+                // Solo la tabla, con "menor votación", se muestra de mayor a menor dentro de la página.
+                self.pageItems = (self.sortBy === 'menor') ? items.slice().reverse() : items;
 
                 var canvas = document.getElementById('resultsChart');
                 if (!canvas) return;
@@ -578,14 +585,19 @@
                                 legend: { display: false },
                                 tooltip: {
                                     enabled: true,
+                                    displayColors: false,
+                                    // Siempre encima de la foto del candidato, aunque se sobreponga
+                                    yAlign: 'top',
                                     callbacks: {
+                                        title: function (contextItems) {
+                                            var c = window.__pageItems[contextItems[0].dataIndex];
+                                            return c ? c.candidateFullName : '';
+                                        },
                                         label: function (context) {
                                             var c = window.__pageItems[context.dataIndex];
                                             if (!c) return '';
-                                            var votosLabel = i18n.tooltipVotesLabel || 'votos';
-                                            return c.candidateFullName + ' — ' + c.partyName +
-                                                ' — ' + c.voteCount.toLocaleString('es-PE') +
-                                                ' ' + votosLabel + ' (' + c.percentage.toFixed(2) + '%)';
+                                            var voteCountLabel = i18n.tooltipVoteCountLabel || 'Cantidad de votos:';
+                                            return [c.partyName, voteCountLabel + ' ' + c.voteCount.toLocaleString('es-PE')];
                                         }
                                     }
                                 }
@@ -593,16 +605,22 @@
                             scales: {
                                 x: {
                                     ticks: { display: false },
-                                    grid: { display: false }
+                                    grid: { display: false },
+                                    border: { display: true, color: '#5c5c5c' }
                                 },
                                 y: {
                                     beginAtZero: true,
                                     max: 1,
                                     ticks: {
+                                        // 10% más oscuro que el gris por defecto de Chart.js (#666)
+                                        color: '#5c5c5c',
                                         callback: function (value) {
                                             return value.toLocaleString('es-PE');
                                         }
-                                    }
+                                    },
+                                    // Líneas horizontales de fondo en un gris suave (más claro que el borde/números del eje)
+                                    grid: { display: true, color: '#e4e4e7' },
+                                    border: { display: true, color: '#5c5c5c' }
                                 }
                             }
                         },
@@ -618,6 +636,7 @@
                     chartInstance.options.scales.y.max = yMax;
                     chartInstance.data.labels = items.map(function (c) { return c.candidateFullName; });
                     chartInstance.data.datasets[0].data = items.map(function (c) { return c.voteCount; });
+                    chartInstance.data.datasets[0].backgroundColor = items.map(function (c) { return c.partyColorHex || '#1e3a5f'; });
                     chartInstance.update();
                 } catch (e) {
                     console.error('[renderPage] chart update error:', e);
