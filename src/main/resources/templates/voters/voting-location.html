@@ -31,7 +31,9 @@
         body { font-family: 'Poppins', sans-serif; }
     </style>
 </head>
-<body class="min-h-screen bg-white flex items-center justify-center p-4">
+<body class="min-h-screen bg-white">
+
+<div th:replace="~{fragments/navbar :: navbar(activePage='voting-location')}"></div>
 
 <!-- Textos i18n usados dinámicamente en JS/Alpine (validaciones del formulario) -->
 <script th:inline="javascript">
@@ -41,6 +43,7 @@
     };
 </script>
 
+<div class="flex min-h-screen items-center justify-center p-4 pt-20">
 <div class="w-full max-w-md">
     <div class="rounded-2xl bg-white border border-slate-300 px-8 py-10">
 
@@ -185,6 +188,7 @@
             </form>
         </div>
     </div>
+</div>
 </div>
 
 <script>
