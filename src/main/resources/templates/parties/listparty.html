@@ -23,7 +23,7 @@
             </div>
 
             <!-- Page Header -->
-            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-6 flex flex-col gap-4 border border-zinc-200 bg-zinc-200 p-[22.4px] sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 class="font-heading text-3xl font-semibold text-zinc-900">Partidos Políticos</h1>
                     <p class="mt-1 text-sm text-zinc-500">Listado de partidos políticos registrados</p>
@@ -50,10 +50,10 @@
             </div>
 
             <!-- Search + Table -->
-            <div x-data="{ search: '' }" class="rounded-xl border border-zinc-200 bg-white shadow-sm">
+            <div x-data="{ search: '' }" class="border border-zinc-200 bg-white">
 
                 <!-- Search bar -->
-                <div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
+                <div class="flex items-center gap-3 border-b border-zinc-100 px-[22.4px] py-[16.8px]">
                     <i data-lucide="search" class="h-4 w-4 shrink-0 text-zinc-400"></i>
                     <label for="search-parties" class="sr-only">Buscar partido</label>
                     <input id="search-parties" x-model.debounce.300ms="search" type="text" placeholder="Buscar partido por nombre, siglas o representante..."
@@ -186,7 +186,7 @@
                 </div>
 
                 <!-- Footer count -->
-                <div class="border-t border-zinc-100 px-4 py-3 text-xs text-zinc-400">
+                <div class="border-t border-zinc-100 px-[22.4px] py-[16.8px] text-xs text-zinc-400">
                     Mostrando <span th:text="${#lists.size(parties)}"></span> partido(s) registrado(s)
                 </div>
 
