@@ -11,31 +11,31 @@
     <div th:replace="~{fragments/sidebar :: sidebar(activePage='parties')}"></div>
 
     <!-- ==================== MAIN CONTENT ==================== -->
-    <main class="flex-1 pl-0 md:pl-60">
+    <main class="flex-1 pl-0 bg-gray-200 md:pl-60 md:pt-16">
 
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
             <div aria-label="Breadcrumb" class="mb-6">
-                <ol class="flex items-center gap-1 text-xs text-zinc-400">
+                <ol class="flex items-center gap-1 text-xs text-zinc-400 md:text-sm">
                     <li class="flex items-center gap-1"><a th:href="@{/admin/main}" class="transition-colors hover:text-primary-600">Inicio</a><i data-lucide="chevron-right" class="h-3 w-3"></i></li>
                     <li class="font-medium text-zinc-600">Partidos Políticos</li>
                 </ol>
             </div>
 
             <!-- Page Header -->
-            <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
+            <div class="mb-6 flex flex-col gap-4 border border-zinc-200 bg-white p-[22.4px] shadow-md sm:flex-row sm:items-center sm:justify-between">
+                <div class="my-3">
                     <h1 class="font-heading text-3xl font-semibold text-zinc-900">Partidos Políticos</h1>
-                    <p class="mt-1 text-sm text-zinc-500">Listado de partidos políticos registrados</p>
+                    <p class="mt-1 text-sm text-slate-800 lg:text-[15px]">Listado de partidos políticos registrados</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <a th:href="@{/admin/parties/register}"
-                       class="inline-flex items-center gap-1.5 rounded-lg bg-primary-700 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-primary-800">
+                       class="inline-flex items-center gap-1.5 rounded-lg bg-[#2D2327]/90 px-4 py-2.5 text-xs tracking-widest text-white transition-colors hover:bg-[#2D2327] lg:text-sm">
                         <i data-lucide="plus" class="h-4 w-4"></i>
                         Registrar Partido
                     </a>
                     <a th:href="@{/admin/parties/status}"
-                       class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-zinc-700 transition-colors hover:bg-zinc-50">
+                       class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-400 bg-white px-4 py-2.5 text-xs tracking-wider text-zinc-900 transition-colors hover:bg-zinc-50 lg:text-sm">
                         <i data-lucide="toggle-left" class="h-4 w-4"></i>
                         Estado
                     </a>
@@ -50,10 +50,10 @@
             </div>
 
             <!-- Search + Table -->
-            <div x-data="{ search: '' }" class="rounded-xl border border-zinc-200 bg-white shadow-sm">
+            <div x-data="{ search: '' }" class="border border-zinc-200 bg-white shadow-md">
 
                 <!-- Search bar -->
-                <div class="flex items-center gap-3 border-b border-zinc-100 px-4 py-3">
+                <div class="flex items-center gap-3 border-b border-zinc-100 px-[26.88px] py-[16.8px]">
                     <i data-lucide="search" class="h-4 w-4 shrink-0 text-zinc-400"></i>
                     <label for="search-parties" class="sr-only">Buscar partido</label>
                     <input id="search-parties" x-model.debounce.300ms="search" type="text" placeholder="Buscar partido por nombre, siglas o representante..."
@@ -63,16 +63,15 @@
                 <!-- Desktop table (hidden on mobile) -->
                 <div class="hidden md:block">
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
+                        <table class="w-full table-fixed text-left text-sm">
                             <thead>
                             <tr class="border-b border-zinc-100 bg-zinc-50/50">
-                                <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Orden</th>
-                                <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Logo</th>
-                                <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Nombre</th>
-                                <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Siglas</th>
-                                <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Representante</th>
-                                <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">Estado</th>
-                                <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-zinc-500">Acción</th>
+                                <th class="w-24 px-[19.2px] py-3 text-center text-xs font-medium text-slate-700 lg:text-[15px]">Logo</th>
+                                <th class="w-56 px-[19.2px] py-3 text-left text-xs font-medium text-slate-700 lg:text-[15px]">Nombre</th>
+                                <th class="w-24 px-[19.2px] py-3 text-center text-xs font-medium text-slate-700 lg:text-[15px]">Siglas</th>
+                                <th class="w-56 px-[19.2px] py-3 text-left text-xs font-medium text-slate-700 lg:text-[15px]">Representante</th>
+                                <th class="w-24 px-[19.2px] py-3 text-center text-xs font-medium text-slate-700 lg:text-[15px]">Estado</th>
+                                <th class="w-32 px-[19.2px] py-3 text-center text-xs font-medium text-slate-700 lg:text-[15px]">Acción</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -87,30 +86,29 @@
                             <tr th:each="party : ${parties}"
                                 x-show="search === '' || $el.textContent.toLowerCase().includes(search.toLowerCase())"
                                 class="border-b border-zinc-50 transition-colors hover:bg-zinc-50">
-                                <td class="px-4 py-4">
-                                    <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-600/10 text-xs font-bold text-primary-700" th:text="${party.listPosition}"></span>
+
+                                <td class="w-24 px-[19.2px] py-4">
+                                    <div class="flex items-center justify-center">
+                                        <img th:if="${party.logoUrl != null and !#strings.isEmpty(party.logoUrl)}"
+                                             th:src="${party.logoUrl}"
+                                             alt="Logo"
+                                             class="h-12 w-12 shrink-0 rounded-full border border-zinc-500 object-cover shadow-sm">
+                                        <span th:if="${party.logoUrl == null or #strings.isEmpty(party.logoUrl)}"
+                                              class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs text-zinc-400">
+                                            <i data-lucide="image-off" class="h-4 w-4"></i>
+                                        </span>
+                                    </div>
                                 </td>
-                                <td class="px-4 py-4">
-                                    <img th:if="${party.logoUrl != null and !#strings.isEmpty(party.logoUrl)}"
-                                         th:src="${party.logoUrl}"
-                                         alt="Logo"
-                                         class="h-10 w-10 rounded-full border border-zinc-200 object-cover shadow-sm">
-                                    <span th:if="${party.logoUrl == null or #strings.isEmpty(party.logoUrl)}"
-                                          class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 text-xs text-zinc-400">
-                                        <i data-lucide="image-off" class="h-4 w-4"></i>
-                                    </span>
+                                <td class="w-56 px-[19.2px] py-4 text-left font-normal text-[15px] text-slate-800" th:text="${party.name}"></td>
+                                <td class="w-24 px-[19.2px] py-4 text-center">
+                                    <span class="inline-block px-2 py-0.5 text-[15px] font-medium tracking-wider text-slate-700" th:text="${party.acronym}"></span>
                                 </td>
-                                <td class="px-4 py-4 font-medium text-zinc-900" th:text="${party.name}"></td>
-                                <td class="px-4 py-4">
-                                    <span class="inline-block rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600" th:text="${party.acronym}"></span>
-                                </td>
-                                <td class="px-4 py-4 text-zinc-600"
+                                <td class="w-56 px-[19.2px] py-4 text-left font-normal text-slate-700 tracking-[0.5px]"
                                     th:text="${representativesByPartyId[party.id] != null ? representativesByPartyId[party.id] : 'SIN REPRESENTANTE'}"></td>
-                                <td class="px-4 py-4">
+                                <td class="w-24 px-[19.2px] py-4 text-center">
                                     <span th:if="${party.isActive}"
-                                          class="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                        <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
-                                        Activo
+                                          class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold text-emerald-700">
+                                        <span class="inline-block h-3 w-3 rounded-full bg-emerald-400"></span>
                                     </span>
                                     <span th:unless="${party.isActive}"
                                           class="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600">
@@ -118,9 +116,9 @@
                                         Inactivo
                                     </span>
                                 </td>
-                                <td class="px-4 py-4 text-center">
+                                <td class="w-32 px-[19.2px] py-4 text-center">
                                     <a th:href="@{/admin/parties/update/{id}(id=${party.id})}"
-                                       class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
+                                       class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-400 px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50">
                                         <i data-lucide="pencil" class="h-3.5 w-3.5"></i>
                                         Actualizar
                                     </a>
@@ -186,7 +184,7 @@
                 </div>
 
                 <!-- Footer count -->
-                <div class="border-t border-zinc-100 px-4 py-3 text-xs text-zinc-400">
+                <div class="border-t border-zinc-100 px-[22.4px] py-[16.8px] text-xs text-zinc-400">
                     Mostrando <span th:text="${#lists.size(parties)}"></span> partido(s) registrado(s)
                 </div>
 
