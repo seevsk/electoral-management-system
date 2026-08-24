@@ -6,15 +6,51 @@
 
     <!-- ==================== DESKTOP TOP NAVBAR ==================== -->
     <nav class="fixed left-0 top-0 z-50 hidden h-16 w-full items-center justify-between bg-amber-300 px-4 shadow-lg md:flex">
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-6">
             <img th:src="@{/img/ballot-icon.png}" alt="" class="h-9 w-9 object-contain">
-            <span class="text-sm font-medium tracking-wider uppercase text-slate-900" th:text="#{sidebar.app.name} + ' | Lima'">Sistema Electoral | Lima</span>
+            <span class="text-sm font-medium tracking-wider uppercase text-slate-900" th:text="#{sidebar.app.name}">Sistema Electoral</span>
         </div>
         <div sec:authorize="isAuthenticated()" class="flex items-center gap-4">
             <div class="flex items-center gap-2 text-sm text-slate-900">
                 <i data-lucide="circle-user" class="h-[22px] w-[22px] text-zinc-600"></i>
                 <span class="tracking-wider" sec:authorize="hasRole('ADMIN')">ADMIN</span>
                 <span sec:authorize="hasRole('OPERATOR')" th:text="#{sidebar.role.operator}">Operador Electoral</span>
+            </div>
+            <div x-data="{ langOpen: false }" class="relative">
+                <button type="button" @click="langOpen = !langOpen" :aria-expanded="langOpen" aria-label="Cambiar idioma"
+                        class="relative flex items-center justify-center font-medium rounded-lg p-2 text-zinc-600 transition-colors hover:bg-amber-400 hover:text-slate-900">
+                    <i data-lucide="languages" class="h-[17.6px] w-[17.6px]"></i>
+                    <i data-lucide="chevron-down" class="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-300 text-zinc-600 transition-transform duration-200"
+                       :class="{ 'rotate-180': langOpen }"></i>
+                </button>
+                <div x-show="langOpen" x-cloak
+                     @click.outside="langOpen = false"
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-1"
+                     class="absolute right-0 top-full mt-1 w-40 space-y-1 rounded-lg border border-slate-200 bg-white p-1.5 shadow-xl">
+                    <a th:href="@{''(lang='es')}"
+                       class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
+                       th:classappend="${#locale.language == 'es'} ? 'text-slate-900' : 'text-slate-400'">
+                        <span class="w-6 text-xs text-slate-400">ES</span>
+                        <span>Español</span>
+                    </a>
+                    <a th:href="@{''(lang='en')}"
+                       class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
+                       th:classappend="${#locale.language == 'en'} ? 'text-slate-900' : 'text-slate-400'">
+                        <span class="w-6 text-xs text-slate-400">EN</span>
+                        <span>English</span>
+                    </a>
+                    <a th:href="@{''(lang='qu')}"
+                       class="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-normal transition-colors hover:bg-slate-100 hover:text-slate-900"
+                       th:classappend="${#locale.language == 'qu'} ? 'text-slate-900' : 'text-slate-400'">
+                        <span class="w-6 text-xs text-slate-400">QU</span>
+                        <span>Quechua</span>
+                    </a>
+                </div>
             </div>
             <form th:action="@{/auth/logout}" method="post">
                 <button type="submit" aria-label="Cerrar sesión"
